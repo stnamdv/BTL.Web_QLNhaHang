@@ -8,86 +8,189 @@
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <i class="fas fa-table"></i> Quản lý Bàn Ăn
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">
+                        <i class="bi bi-table"></i> Quản lý Bàn Ăn
                     </h3>
                     <div class="card-tools">
-                        <a asp-action="Create" class="btn btn-primary btn-sm">
-                            <i class="fas fa-plus"></i> Thêm Bàn Mới
+                        <a asp-action="Create" class="btn btn-light btn-sm">
+                            <i class="bi bi-plus-circle"></i> Thêm Bàn Mới
                         </a>
                     </div>
                 </div>
                 <div class="card-body">
                     @if (TempData["Message"] != null)
                     {
-                        <div class="alert alert-success alert-dismissible">
-                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                            <i class="icon fas fa-check"></i> @TempData["Message"]
+                        <div class="alert alert-success alert-dismissible fade show">
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            <i class="bi bi-check-circle-fill"></i> @TempData["Message"]
                         </div>
                     }
                     @if (TempData["Error"] != null)
                     {
-                        <div class="alert alert-danger alert-dismissible">
-                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                            <i class="icon fas fa-ban"></i> @TempData["Error"]
+                        <div class="alert alert-danger alert-dismissible fade show">
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            <i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]
                         </div>
                     }
 
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-striped">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Số Hiệu</th>
-                                    <th>Loại Bàn</th>
-                                    <th>Sức Chứa</th>
-                                    <th>Thao Tác</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var item in Model)
-                                {
-                                    <tr>
-                                        <td>@item.ban_id</td>
-                                        <td>
-                                            <span>@item.so_hieu</span>
-                                        </td>
-                                        <td>
-                                            <span>Loại @item.loai_ban_id</span>
-                                        </td>
-                                        <td>
-                                            <span>@item.suc_chua người</span>
-                                        </td>
-                                        <td>
-                                            <div class="btn-group" role="group">
-                                                <a asp-action="Details" asp-route-id="@item.ban_id"
-                                                    class="btn btn-info btn-sm" title="Chi tiết">
-                                                    <i class="fas fa-eye"></i> Xem
-                                                </a>
-                                                <a asp-action="Edit" asp-route-id="@item.ban_id"
-                                                    class="btn btn-warning btn-sm" title="Sửa">
-                                                    <i class="fas fa-edit"></i> Sửa
-                                                </a>
-                                                <a asp-action="Delete" asp-route-id="@item.ban_id"
-                                                    class="btn btn-danger btn-sm" title="Xóa">
-                                                    <i class="fas fa-trash"></i> Xóa
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
+                    @{
+                        var groupedTables = Model.GroupBy(x => x.loai_ban_id).OrderBy(g => g.Key);
+                    }
 
-                    @if (!Model.Any())
+                    @if (groupedTables.Any())
                     {
-                        <div class="text-center text-muted py-4">
-                            <i class="fas fa-table fa-3x mb-3"></i>
-                            <p>Chưa có bàn nào được tạo.</p>
-                            <a asp-action="Create" class="btn btn-primary">
-                                <i class="fas fa-plus"></i> Tạo Bàn Đầu Tiên
+                        <div class="accordion" id="banAnAccordion">
+                            @foreach (var group in groupedTables)
+                            {
+                                var groupId = $"collapse-{group.Key}";
+                                var headingId = $"heading-{group.Key}";
+                                var tableCount = group.Count();
+                                var totalCapacity = group.Sum(x => x.suc_chua);
+                                
+                                <div class="accordion-item border-0 mb-3 shadow-sm">
+                                    <h2 class="accordion-header" id="@headingId">
+                                        <button class="accordion-button @(group.Key == groupedTables.First().Key ? "" : "collapsed") bg-light" 
+                                                type="button" 
+                                                data-bs-toggle="collapse" 
+                                                data-bs-target="#@groupId" 
+                                                aria-expanded="@(group.Key == groupedTables.First().Key ? "true" : "false")" 
+                                                aria-controls="@groupId">
+                                            <div class="d-flex justify-content-between align-items-center w-100 me-3">
+                                                <div class="d-flex align-items-center">
+                                                    <span class="badge bg-primary me-3 fs-6">Loại @group.Key</span>
+                                                    <div class="d-flex flex-column">
+                                                        <span class="fw-bold text-dark">@tableCount bàn</span>
+                                                        <small class="text-muted">Tổng sức chứa: @totalCapacity người</small>
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex align-items-center">
+                                                    <span class="badge bg-success me-2">
+                                                        <i class="bi bi-people-fill"></i> @totalCapacity
+                                                    </span>
+                                                    <span class="badge bg-info">
+                                                        <i class="bi bi-table"></i> @tableCount
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    </h2>
+                                    <div id="@groupId" 
+                                         class="accordion-collapse collapse @(group.Key == groupedTables.First().Key ? "show" : "")" 
+                                         aria-labelledby="@headingId" 
+                                         data-bs-parent="#banAnAccordion">
+                                        <div class="accordion-body p-0">
+                                            <div class="table-responsive">
+                                                <table class="table table-hover mb-0">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th class="text-center" style="width: 80px;">ID</th>
+                                                            <th style="width: 150px;">Số Hiệu</th>
+                                                            <th style="width: 120px;">Sức Chứa</th>
+                                                            <th style="width: 200px;">Thao Tác</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var item in group.OrderBy(x => x.ban_id))
+                                                        {
+                                                            <tr class="align-middle">
+                                                                <td class="text-center">
+                                                                    <span class="badge bg-secondary">@item.ban_id</span>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="d-flex align-items-center">
+                                                                        <i class="bi bi-door-open text-primary me-2"></i>
+                                                                        <span class="fw-medium">@item.so_hieu</span>
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="d-flex align-items-center">
+                                                                        <span class="badge bg-success me-2">
+                                                                            <i class="bi bi-people-fill"></i> @item.suc_chua
+                                                                        </span>
+                                                                        <small class="text-muted">người</small>
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="d-flex gap-2" role="group">
+                                                                        <a asp-action="Details" asp-route-id="@item.ban_id"
+                                                                            class="btn btn-info btn-sm px-3" title="Xem chi tiết">
+                                                                            <i class="bi bi-eye-fill me-1"></i>
+                                                                            Xem
+                                                                        </a>
+                                                                        <a asp-action="Edit" asp-route-id="@item.ban_id"
+                                                                            class="btn btn-warning btn-sm px-3" title="Chỉnh sửa">
+                                                                            <i class="bi bi-pencil-fill me-1"></i>
+                                                                            Sửa
+                                                                        </a>
+                                                                        <a asp-action="Delete" asp-route-id="@item.ban_id"
+                                                                            class="btn btn-danger btn-sm px-3" title="Xóa bàn">
+                                                                            <i class="bi bi-trash-fill me-1"></i>
+                                                                            Xóa
+                                                                        </a>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Summary Cards -->
+                        <div class="row mt-4">
+                            <div class="col-md-3">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-layers-fill fs-1 mb-2"></i>
+                                        <h5 class="card-title">Tổng Loại Bàn</h5>
+                                        <h3 class="mb-0">@groupedTables.Count()</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-table fs-1 mb-2"></i>
+                                        <h5 class="card-title">Tổng Số Bàn</h5>
+                                        <h3 class="mb-0">@Model.Count()</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-people-fill fs-1 mb-2"></i>
+                                        <h5 class="card-title">Tổng Sức Chứa</h5>
+                                        <h3 class="mb-0">@Model.Sum(x => x.suc_chua)</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-warning text-white">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-calculator-fill fs-1 mb-2"></i>
+                                        <h5 class="card-title">Trung Bình/Bàn</h5>
+                                        <h3 class="mb-0">@(Model.Any() ? Math.Round((double)Model.Sum(x => x.suc_chua) / Model.Count(), 1) : 0)</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-5">
+                            <div class="mb-4">
+                                <i class="bi bi-table fs-1 text-muted"></i>
+                            </div>
+                            <h4 class="text-muted mb-3">Chưa có bàn nào được tạo</h4>
+                            <p class="text-muted mb-4">Bắt đầu bằng cách tạo bàn đầu tiên cho nhà hàng của bạn</p>
+                            <a asp-action="Create" class="btn btn-primary btn-lg">
+                                <i class="bi bi-plus-circle"></i> Tạo Bàn Đầu Tiên
                             </a>
                         </div>
                     }
@@ -105,14 +208,25 @@
                 $('.alert').fadeOut('slow');
             }, 5000);
 
-            // Initialize DataTable
-            $('.table').DataTable({
-                "language": {
-                    "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Vietnamese.json"
+            // Add smooth animation to accordion
+            $('.accordion-button').on('click', function() {
+                $(this).find('.accordion-button').toggleClass('collapsed');
+            });
+
+            // Add hover effects to table rows
+            $('.table tbody tr').hover(
+                function() {
+                    $(this).addClass('table-active');
                 },
-                "responsive": true,
-                "autoWidth": false,
-                "order": [[0, "asc"]]
+                function() {
+                    $(this).removeClass('table-active');
+                }
+            );
+
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
             });
         });
     </script>
