@@ -199,5 +199,15 @@ namespace BTL.Web.Services
 
             return await _banAnRepository.GetAvailableAsync(capacity);
         }
+
+        public async Task<int> GetCountByLoaiBanIdAsync(int loaiBanId)
+        {
+            if (loaiBanId <= 0)
+            {
+                throw new ArgumentException("ID loại bàn phải lớn hơn 0", nameof(loaiBanId));
+            }
+
+            return await _banAnRepository.GetCountByLoaiBanIdAsync(loaiBanId);
+        }
     }
 }

@@ -146,5 +146,13 @@ namespace BTL.Web.Repositories
                 "EXEC sp_BanAn_GetAvailable @capacity",
                 new { capacity });
         }
+
+        public async Task<int> GetCountByLoaiBanIdAsync(int loaiBanId)
+        {
+            using var connection = _context.CreateConnection();
+            return await connection.QuerySingleAsync<int>(
+                "SELECT COUNT(*) FROM dbo.BanAn WHERE loai_ban_id = @LoaiBanId",
+                new { LoaiBanId = loaiBanId });
+        }
     }
 }

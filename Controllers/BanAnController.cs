@@ -61,7 +61,17 @@ namespace BTL.Web.Controllers
             {
                 // Lấy danh sách loại bàn để hiển thị trong dropdown
                 var loaiBans = await _loaiBanService.GetAllAsync();
+
+                // Lấy số lượng bàn đã được tạo cho mỗi loại bàn
+                var banCounts = new Dictionary<int, int>();
+                foreach (var loaiBan in loaiBans)
+                {
+                    var count = await _banAnService.GetCountByLoaiBanIdAsync(loaiBan.loai_ban_id);
+                    banCounts[loaiBan.loai_ban_id] = count;
+                }
+
                 ViewBag.LoaiBans = loaiBans;
+                ViewBag.BanCounts = banCounts;
                 return View();
             }
             catch (Exception ex)
@@ -105,7 +115,17 @@ namespace BTL.Web.Controllers
             try
             {
                 var loaiBans = await _loaiBanService.GetAllAsync();
+
+                // Lấy số lượng bàn đã được tạo cho mỗi loại bàn
+                var banCounts = new Dictionary<int, int>();
+                foreach (var loaiBan in loaiBans)
+                {
+                    var count = await _banAnService.GetCountByLoaiBanIdAsync(loaiBan.loai_ban_id);
+                    banCounts[loaiBan.loai_ban_id] = count;
+                }
+
                 ViewBag.LoaiBans = loaiBans;
+                ViewBag.BanCounts = banCounts;
             }
             catch
             {

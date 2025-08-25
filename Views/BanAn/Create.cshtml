@@ -19,6 +19,31 @@
                     </div>
                 </div>
                 <div class="card-body">
+                    @if (ViewBag.LoaiBans != null && ViewBag.BanCounts != null)
+                    {
+                        <div class="alert alert-info mb-3">
+                            <h6><i class="fas fa-info-circle"></i> Tình Trạng Các Loại Bàn:</h6>
+                            <div class="row">
+                                @foreach (var loaiBan in ViewBag.LoaiBans)
+                                {
+                                    var banCount = ViewBag.BanCounts[loaiBan.loai_ban_id];
+                                    var remainingCount = loaiBan.so_luong - banCount;
+                                    var statusClass = remainingCount > 0 ? "text-success" : "text-danger";
+                                    var statusIcon = remainingCount > 0 ? "fas fa-check-circle" : "fas fa-times-circle";
+                                    
+                                    <div class="col-md-6 mb-2">
+                                        <small>
+                                            <i class="@statusIcon text-@(remainingCount > 0 ? "success" : "danger")"></i>
+                                            <strong>Loại @loaiBan.loai_ban_id:</strong> 
+                                            @banCount/@loaiBan.so_luong bàn đã tạo
+                                            <span class="@statusClass">(@(remainingCount > 0 ? $"Còn {remainingCount} bàn" : "Đã đủ"))</span>
+                                        </small>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                    
                     <form asp-action="Create" method="post">
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                         
@@ -30,12 +55,28 @@
                                 {
                                     foreach (var loaiBan in ViewBag.LoaiBans)
                                     {
-                                        <option value="@loaiBan.loai_ban_id">
-                                            Loại @loaiBan.loai_ban_id - @loaiBan.suc_chua người (SL: @loaiBan.so_luong)
-                                        </option>
+                                        var banCount = ViewBag.BanCounts != null ? ViewBag.BanCounts[loaiBan.loai_ban_id] : 0;
+                                        var remainingCount = loaiBan.so_luong - banCount;
+                                        var statusText = remainingCount > 0 ? $"Còn lại: {remainingCount} bàn" : "Đã đủ số lượng";
+                                        
+                                        @if (remainingCount > 0)
+                                        {
+                                            <option value="@loaiBan.loai_ban_id">
+                                                Loại @loaiBan.loai_ban_id - @loaiBan.suc_chua người (Tổng: @loaiBan.so_luong, Đã tạo: @banCount, Còn lại: @remainingCount bàn)
+                                            </option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@loaiBan.loai_ban_id" disabled>
+                                                Loại @loaiBan.loai_ban_id - @loaiBan.suc_chua người (Tổng: @loaiBan.so_luong, Đã tạo: @banCount, Đã đủ số lượng)
+                                            </option>
+                                        }
                                     }
                                 }
                             </select>
+                            <small class="form-text text-muted" id="remaining-info">
+                                <i class="fas fa-info-circle"></i> Vui lòng chọn loại bàn để xem thông tin chi tiết.
+                            </small>
                             <span asp-validation-for="loai_ban_id" class="text-danger"></span>
                         </div>
 
@@ -68,6 +109,29 @@
         $(document).ready(function () {
             // Auto-focus on so_hieu field
             $('#so_hieu').focus();
+            
+            // Update remaining count info when loai_ban_id changes
+            $('#loai_ban_id').on('change', function() {
+                var selectedOption = $(this).find('option:selected');
+                var optionText = selectedOption.text();
+                
+                // Extract remaining count from option text
+                if (optionText.includes('Còn lại:')) {
+                    var match = optionText.match(/Còn lại: (\d+) bàn/);
+                    if (match) {
+                        var remainingCount = parseInt(match[1]);
+                        if (remainingCount > 0) {
+                            $('#remaining-info').html('<i class="fas fa-info-circle text-info"></i> Còn <strong>' + remainingCount + '</strong> bàn có thể thêm cho loại bàn này.');
+                        } else {
+                            $('#remaining-info').html('<i class="fas fa-exclamation-triangle text-warning"></i> Loại bàn này đã đủ số lượng.');
+                        }
+                    }
+                } else if (optionText.includes('Đã đủ số lượng')) {
+                    $('#remaining-info').html('<i class="fas fa-exclamation-triangle text-warning"></i> Loại bàn này đã đủ số lượng.');
+                } else {
+                    $('#remaining-info').html('<i class="fas fa-info-circle"></i> Vui lòng chọn loại bàn để xem thông tin chi tiết.');
+                }
+            });
             
             // Real-time validation for so_hieu
             $('#so_hieu').on('input', function() {
