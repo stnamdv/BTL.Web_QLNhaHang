@@ -1,0 +1,119 @@
+@model BTL.Web.Models.BanAn
+
+@{
+    ViewData["Title"] = "Chỉnh Sửa Bàn";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-edit"></i> Chỉnh Sửa Bàn
+                    </h3>
+                    <div class="card-tools">
+                        <a asp-action="Index" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Quay Lại
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="ban_id" />
+                        
+                        <div class="form-group">
+                            <label class="control-label">ID Bàn</label>
+                            <input value="@Model.ban_id" class="form-control" readonly />
+                            <small class="form-text text-muted">ID bàn không thể thay đổi.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="loai_ban_id" class="control-label">Loại Bàn</label>
+                            <select asp-for="loai_ban_id" class="form-control" required>
+                                <option value="">-- Chọn Loại Bàn --</option>
+                                @if (ViewBag.LoaiBans != null)
+                                {
+                                    foreach (var loaiBan in ViewBag.LoaiBans)
+                                    {
+                                        var isSelected = loaiBan.loai_ban_id == Model.loai_ban_id;
+                                        <option value="@loaiBan.loai_ban_id" selected="@isSelected">
+                                            Loại @loaiBan.loai_ban_id - @loaiBan.suc_chua người (SL: @loaiBan.so_luong)
+                                        </option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="loai_ban_id" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="so_hieu" class="control-label">Số Hiệu Bàn</label>
+                            <input asp-for="so_hieu" class="form-control" placeholder="VD: A1, B2, C3..." maxlength="10" required />
+                            <small class="form-text text-muted">Số hiệu bàn phải là duy nhất và không được trùng lặp.</small>
+                            <span asp-validation-for="so_hieu" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Lưu Thay Đổi
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Hủy
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function () {
+            // Auto-focus on so_hieu field
+            $('#so_hieu').focus();
+            
+            // Real-time validation for so_hieu
+            $('#so_hieu').on('input', function() {
+                var value = $(this).val();
+                if (value.length > 0) {
+                    $(this).removeClass('is-invalid').addClass('is-valid');
+                } else {
+                    $(this).removeClass('is-valid').addClass('is-invalid');
+                }
+            });
+            
+            // Form validation
+            $('form').on('submit', function(e) {
+                var isValid = true;
+                
+                // Check loai_ban_id
+                if (!$('#loai_ban_id').val()) {
+                    $('#loai_ban_id').addClass('is-invalid');
+                    isValid = false;
+                } else {
+                    $('#loai_ban_id').removeClass('is-invalid').addClass('is-valid');
+                }
+                
+                // Check so_hieu
+                if (!$('#so_hieu').val().trim()) {
+                    $('#so_hieu').addClass('is-invalid');
+                    isValid = false;
+                } else {
+                    $('#so_hieu').removeClass('is-invalid').addClass('is-valid');
+                }
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    $('html, body').animate({
+                        scrollTop: $('.is-invalid:first').offset().top - 100
+                    }, 500);
+                }
+            });
+        });
+    </script>
+}

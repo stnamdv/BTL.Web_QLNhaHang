@@ -1,0 +1,119 @@
+@model IEnumerable<BTL.Web.Models.BanAnWithLoaiBan>
+
+@{
+    ViewData["Title"] = "Quản lý Bàn Ăn";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-table"></i> Quản lý Bàn Ăn
+                    </h3>
+                    <div class="card-tools">
+                        <a asp-action="Create" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus"></i> Thêm Bàn Mới
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Message"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible">
+                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                            <i class="icon fas fa-check"></i> @TempData["Message"]
+                        </div>
+                    }
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible">
+                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                            <i class="icon fas fa-ban"></i> @TempData["Error"]
+                        </div>
+                    }
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Số Hiệu</th>
+                                    <th>Loại Bàn</th>
+                                    <th>Sức Chứa</th>
+                                    <th>Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>@item.ban_id</td>
+                                        <td>
+                                            <span>@item.so_hieu</span>
+                                        </td>
+                                        <td>
+                                            <span>Loại @item.loai_ban_id</span>
+                                        </td>
+                                        <td>
+                                            <span>@item.suc_chua người</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a asp-action="Details" asp-route-id="@item.ban_id"
+                                                    class="btn btn-info btn-sm" title="Chi tiết">
+                                                    <i class="fas fa-eye"></i> Xem
+                                                </a>
+                                                <a asp-action="Edit" asp-route-id="@item.ban_id"
+                                                    class="btn btn-warning btn-sm" title="Sửa">
+                                                    <i class="fas fa-edit"></i> Sửa
+                                                </a>
+                                                <a asp-action="Delete" asp-route-id="@item.ban_id"
+                                                    class="btn btn-danger btn-sm" title="Xóa">
+                                                    <i class="fas fa-trash"></i> Xóa
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if (!Model.Any())
+                    {
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-table fa-3x mb-3"></i>
+                            <p>Chưa có bàn nào được tạo.</p>
+                            <a asp-action="Create" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Tạo Bàn Đầu Tiên
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Auto-hide alerts after 5 seconds
+            setTimeout(function () {
+                $('.alert').fadeOut('slow');
+            }, 5000);
+
+            // Initialize DataTable
+            $('.table').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Vietnamese.json"
+                },
+                "responsive": true,
+                "autoWidth": false,
+                "order": [[0, "asc"]]
+            });
+        });
+    </script>
+}

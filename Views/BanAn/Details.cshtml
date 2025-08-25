@@ -1,0 +1,486 @@
+@model BTL.Web.Models.BanAn
+
+@{
+    ViewData["Title"] = "Chi Tiết Bàn";
+
+    // Calculate statistics
+    var orders = ViewBag.Orders as List<BTL.Web.Models.Order>;
+    var todayOrders = orders?.Count(o => o.thoi_diem_dat.Date == DateTime.Today) ?? 0;
+    var completedOrders = orders?.Count(o => o.trang_thai == "completed") ?? 0;
+    var preparingOrders = orders?.Count(o => o.trang_thai == "preparing") ?? 0;
+    var cancelledOrders = orders?.Count(o => o.trang_thai == "cancelled") ?? 0;
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="bi bi-info-circle"></i> Thông Tin Bàn
+                    </h3>
+                    <div class="card-tools">
+                        <a asp-action="Index" class="btn btn-secondary btn-sm">
+                            <i class="bi bi-arrow-left"></i> Quay Lại
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">ID Bàn:</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge badge-primary">@Model.ban_id</span>
+                        </dd>
+
+                        <dt class="col-sm-4">Số Hiệu:</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge badge-info">@Model.so_hieu</span>
+                        </dd>
+
+                        <dt class="col-sm-4">Sức Chứa:</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.LoaiBan != null)
+                            {
+                                <span class="badge badge-success">@Model.LoaiBan.suc_chua người</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">N/A</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4">Số Lượng Loại Bàn:</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.LoaiBan != null)
+                            {
+                                <span class="badge badge-info">@Model.LoaiBan.so_luong bàn</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">N/A</span>
+                            }
+                        </dd>
+
+
+
+                        <dt class="col-sm-4">Tổng Đơn Hàng:</dt>
+                        <dd class="col-sm-8">
+                            @if (ViewBag.Orders != null)
+                            {
+                                <span class="badge badge-warning">@ViewBag.Orders.Count</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-secondary">0</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4">Tổng Doanh Thu:</dt>
+                        <dd class="col-sm-8">
+                            @{
+                                var totalRevenue = 0m;
+                                if (ViewBag.Orders != null)
+                                {
+                                    foreach (var order in ViewBag.Orders)
+                                    {
+                                        if (order.tong_tien != null && order.tong_tien > 0)
+                                        {
+                                            totalRevenue += (decimal)order.tong_tien;
+                                        }
+                                    }
+                                }
+                            }
+                            @if (totalRevenue > 0)
+                            {
+                                <span class="badge badge-success">@totalRevenue.ToString("N0") VNĐ</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-secondary">0 VNĐ</span>
+                            }
+                        </dd>
+
+
+                    </dl>
+
+                    <div class="mt-3">
+                        <a asp-action="Edit" asp-route-id="@Model.ban_id" class="btn btn-warning">
+                            <i class="bi bi-pencil"></i> Chỉnh Sửa
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@Model.ban_id" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Xóa
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="bi bi-list-ul"></i> Lịch Sử Đơn Hàng
+                    </h3>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.Orders != null && ViewBag.Orders.Count > 0)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Thời Điểm</th>
+                                        <th>Trạng Thái</th>
+                                        <th>Số Khách</th>
+                                        <th>Tổng Tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var order in ViewBag.Orders)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <span class="badge badge-primary">@order.order_id</span>
+                                            </td>
+                                            <td>
+                                                <small>@order.thoi_diem_dat.ToString("dd/MM/yyyy HH:mm")</small>
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var statusClass = order.trang_thai switch
+                                                    {
+                                                        "pending" => "badge-warning",
+                                                        "confirmed" => "badge-info",
+                                                        "preparing" => "badge-primary",
+                                                        "ready" => "badge-success",
+                                                        "completed" => "badge-secondary",
+                                                        "cancelled" => "badge-danger",
+                                                        _ => "badge-secondary"
+                                                    };
+                                                }
+                                                <span class="badge @statusClass">@order.trang_thai</span>
+                                            </td>
+                                            <td>
+                                                @if (order.so_khach != null)
+                                                {
+                                                    <span class="badge badge-info">@order.so_khach người</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (order.tong_tien != null && order.tong_tien > 0)
+                                                {
+                                                    <span class="text-success fw-bold">@order.tong_tien.ToString("N0") VNĐ</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Chưa tính</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-3">
+                            <i class="bi bi-receipt" style="font-size: 2rem;"></i>
+                            <p>Chưa có đơn hàng nào cho bàn này.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (ViewBag.Orders != null && ViewBag.Orders.Count > 0)
+    {
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="bi bi-bar-chart"></i> Thống Kê Đơn Hàng
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-info">
+                                        <i class="bi bi-clock"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Đơn Hàng Hôm Nay</span>
+                                        <span class="info-box-number">
+                                            @todayOrders
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-success">
+                                        <i class="bi bi-check-circle"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Đã Hoàn Thành</span>
+                                        <span class="info-box-number">
+                                            @{
+                                                var completedCount = 0;
+                                                if (ViewBag.Orders != null)
+                                                {
+                                                    foreach (var order in ViewBag.Orders)
+                                                    {
+                                                        if (order.trang_thai == "completed")
+                                                        {
+                                                            completedCount++;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            @completedCount
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-warning">
+                                        <i class="bi bi-arrow-clockwise"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Đang Xử Lý</span>
+                                        <span class="info-box-number">
+                                            @{
+                                                var preparingCount = 0;
+                                                if (ViewBag.Orders != null)
+                                                {
+                                                    foreach (var order in ViewBag.Orders)
+                                                    {
+                                                        if (order.trang_thai == "preparing")
+                                                        {
+                                                            preparingCount++;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            @preparingCount
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-danger">
+                                        <i class="bi bi-x-circle"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Đã Hủy</span>
+                                        <span class="info-box-number">
+                                            @{
+                                                var cancelledCount = 0;
+                                                if (ViewBag.Orders != null)
+                                                {
+                                                    foreach (var order in ViewBag.Orders)
+                                                    {
+                                                        if (order.trang_thai == "cancelled")
+                                                        {
+                                                            cancelledCount++;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            @cancelledCount
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thông tin đơn hàng có tổng tiền cao nhất -->
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="bi bi-trophy"></i> Đơn Hàng Cao Nhất
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        @{
+                            dynamic highestOrder = null;
+                            decimal maxAmount = 0;
+                            if (ViewBag.Orders != null)
+                            {
+                                foreach (var order in ViewBag.Orders)
+                                {
+                                    if (order.tong_tien != null && order.tong_tien > maxAmount)
+                                    {
+                                        maxAmount = (decimal)order.tong_tien;
+                                        highestOrder = order;
+                                    }
+                                }
+                            }
+                        }
+                        @if (highestOrder != null)
+                        {
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="info-box bg-warning">
+                                        <span class="info-box-icon">
+                                            <i class="bi bi-receipt"></i>
+                                        </span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">ID Đơn Hàng</span>
+                                            <span class="info-box-number">@highestOrder.order_id</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="info-box bg-success">
+                                        <span class="info-box-icon">
+                                            <i class="bi bi-currency-dollar"></i>
+                                        </span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Tổng Tiền</span>
+                                            <span class="info-box-number">@highestOrder.tong_tien.ToString("N0")
+                                                VNĐ</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="info-box bg-info">
+                                        <span class="info-box-icon">
+                                            <i class="bi bi-people"></i>
+                                        </span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Số Khách</span>
+                                            <span class="info-box-number">@(highestOrder.so_khach?.ToString() ?? "-")</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="info-box bg-primary">
+                                        <span class="info-box-icon">
+                                            <i class="bi bi-calendar"></i>
+                                        </span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Ngày Đặt</span>
+                                            <span
+                                                class="info-box-number">@highestOrder.thoi_diem_dat.ToString("dd/MM/yyyy")</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center text-muted py-3">
+                                <i class="bi bi-info-circle" style="font-size: 2rem;"></i>
+                                <p>Chưa có đơn hàng nào có tổng tiền.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Auto-refresh page every 30 seconds to show latest data
+            setTimeout(function () {
+                location.reload();
+            }, 30000);
+        });
+    </script>
+}
+
+<style>
+    .info-box {
+        display: flex;
+        min-height: 80px;
+        background: #fff;
+        width: 100%;
+        box-shadow: 0 0 1px rgba(0, 0, 0, .125), 0 1px 3px rgba(0, 0, 0, .2);
+        border-radius: 0.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .info-box-icon {
+        border-radius: 0.25rem 0 0 0.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.875rem;
+        font-weight: 700;
+        text-align: center;
+        width: 70px;
+        text-shadow: 0 0 1px rgba(0, 0, 0, .2);
+    }
+
+    .info-box-content {
+        padding: 5px 10px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .info-box-text {
+        display: block;
+        font-size: 1rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .info-box-number {
+        display: block;
+        font-weight: 700;
+        font-size: 1.25rem;
+    }
+
+    .bg-warning .info-box-icon {
+        background-color: #ffc107 !important;
+        color: #fff;
+    }
+
+    .bg-success .info-box-icon {
+        background-color: #28a745 !important;
+        color: #fff;
+    }
+
+    .bg-info .info-box-icon {
+        background-color: #17a2b8 !important;
+        color: #fff;
+    }
+
+    .bg-primary .info-box-icon {
+        background-color: #007bff !important;
+        color: #fff;
+    }
+
+    .table th {
+        background-color: #f8f9fa;
+        border-top: none;
+        font-weight: 600;
+    }
+
+    .badge {
+        font-size: 0.75rem;
+    }
+</style>

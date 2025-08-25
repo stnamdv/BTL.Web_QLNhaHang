@@ -1,0 +1,52 @@
+@model IEnumerable<BTL.Web.Models.LoaiBan>
+
+@{
+    ViewData["Title"] = "Danh sách loại bàn";
+}
+
+<h1>Danh sách loại bàn</h1>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Message"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Tạo mới</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Sức chứa</th>
+            <th>Số lượng</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model)
+{
+                                <tr>
+                                                <td>@item.loai_ban_id</td>
+                            <td>@item.suc_chua</td>
+                            <td>@item.so_luong</td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@item.loai_ban_id" class="btn btn-sm btn-warning">Sửa</a> |
+                                <a asp-action="Details" asp-route-id="@item.loai_ban_id" class="btn btn-sm btn-info">Chi tiết</a> |
+                                <a asp-action="Delete" asp-route-id="@item.loai_ban_id" class="btn btn-sm btn-danger">Xóa</a>
+                                    </td>
+                                </tr>
+}
+    </tbody>
+</table>

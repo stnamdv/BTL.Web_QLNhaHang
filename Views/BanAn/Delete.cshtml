@@ -1,0 +1,114 @@
+@model BTL.Web.Models.BanAn
+
+@{
+    ViewData["Title"] = "Xóa Bàn";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-trash"></i> Xác Nhận Xóa Bàn
+                    </h3>
+                    <div class="card-tools">
+                        <a asp-action="Index" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Quay Lại
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Cảnh báo:</strong> Hành động này không thể hoàn tác. Bàn sẽ bị xóa vĩnh viễn.
+                    </div>
+
+                    <dl class="row">
+                        <dt class="col-sm-4">ID Bàn:</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge badge-primary">@Model.ban_id</span>
+                        </dd>
+
+                        <dt class="col-sm-4">Số Hiệu:</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge badge-info">@Model.so_hieu</span>
+                        </dd>
+
+                        <dt class="col-sm-4">Loại Bàn:</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.LoaiBan != null)
+                            {
+                                <span class="badge badge-secondary">Loại @Model.LoaiBan.loai_ban_id</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">N/A</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4">Sức Chứa:</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.LoaiBan != null)
+                            {
+                                <span class="badge badge-success">@Model.LoaiBan.suc_chua người</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">N/A</span>
+                            }
+                        </dd>
+                    </dl>
+
+                    <form asp-action="Delete" method="post">
+                        <input type="hidden" asp-for="ban_id" />
+
+                        <div class="form-group">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="confirmDelete" required>
+                                <label class="custom-control-label" for="confirmDelete">
+                                    Tôi xác nhận muốn xóa bàn này
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-danger" id="deleteBtn" disabled>
+                                <i class="fas fa-trash"></i> Xóa Bàn
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Hủy
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Enable/disable delete button based on checkbox
+            $('#confirmDelete').change(function () {
+                $('#deleteBtn').prop('disabled', !this.checked);
+            });
+
+            // Form validation
+            $('form').on('submit', function (e) {
+                if (!$('#confirmDelete').is(':checked')) {
+                    e.preventDefault();
+                    alert('Vui lòng xác nhận muốn xóa bàn này.');
+                    return false;
+                }
+
+                // Show confirmation dialog
+                if (!confirm('Bạn có chắc chắn muốn xóa bàn này? Hành động này không thể hoàn tác.')) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,38 @@
+﻿@{
+    ViewData["Title"] = "Quản lý nhà hàng";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Hệ thống quản lý nhà hàng</h1>
+    <p>Chào mừng đến với hệ thống quản lý nhà hàng</p>
+
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Quản lý loại bàn</h5>
+                    <p class="card-text">Thêm, sửa, xóa các loại bàn trong nhà hàng</p>
+                    <a asp-controller="LoaiBan" asp-action="Index" class="btn btn-primary">Quản lý loại bàn</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Quản lý bàn ăn</h5>
+                    <p class="card-text">Quản lý các bàn ăn theo loại</p>
+                    <a asp-controller="BanAn" asp-action="Index" class="btn btn-primary">Quản lý bàn ăn</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Quản lý món ăn</h5>
+                    <p class="card-text">Thêm, sửa, xóa các món ăn trong thực đơn</p>
+                    <a asp-controller="MonAn" asp-action="Index" class="btn btn-primary">Quản lý món ăn</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

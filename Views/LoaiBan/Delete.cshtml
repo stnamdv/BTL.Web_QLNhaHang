@@ -1,0 +1,50 @@
+@model BTL.Web.Models.LoaiBan
+
+@{
+    ViewData["Title"] = "Xóa loại bàn";
+}
+
+<h1>Xóa loại bàn</h1>
+
+@if (ViewBag.DeleteCheck != null)
+{
+    var deleteCheck = (BTL.Web.Models.LoaiBanDeleteCheck)ViewBag.DeleteCheck;
+            <div class="alert alert-warning" role="alert">
+                <i class="bi bi-exclamation-triangle"></i>
+                <strong>Cảnh báo:</strong> 
+                @if (deleteCheck.ban_count > 0)
+                {
+                            <span>Có @deleteCheck.ban_count bàn đang sử dụng loại này.</span>
+                }
+                @if (deleteCheck.active_order_count > 0)
+                {
+                            <span>Có @deleteCheck.active_order_count đơn hàng đang hoạt động.</span>
+                }
+            </div>
+}
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Thông tin loại bàn sẽ xóa</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">ID:</dt>
+            <dd class="col-sm-9">@Model.loai_ban_id</dd>
+
+            <dt class="col-sm-3">Sức chứa:</dt>
+            <dd class="col-sm-9">@Model.suc_chua người</dd>
+
+            <dt class="col-sm-3">Số lượng:</dt>
+            <dd class="col-sm-9">@Model.so_luong bàn</dd>
+        </dl>
+    </div>
+</div>
+
+<div class="mt-3">
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="loai_ban_id" />
+        <input type="submit" value="Xóa" class="btn btn-danger" />
+        <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+    </form>
+</div>

@@ -1,0 +1,90 @@
+@model BTL.Web.Models.LoaiBanDetails
+
+@{
+    ViewData["Title"] = "Chi tiết loại bàn";
+}
+
+<h1>Chi tiết loại bàn</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Thông tin loại bàn</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">ID:</dt>
+                    <dd class="col-sm-8">@Model.loai_ban_id</dd>
+
+                    <dt class="col-sm-4">Sức chứa:</dt>
+                    <dd class="col-sm-8">@Model.suc_chua người</dd>
+
+                    <dt class="col-sm-4">Số lượng:</dt>
+                    <dd class="col-sm-8">@Model.so_luong bàn</dd>
+
+                    <dt class="col-sm-4">Bàn đang sử dụng:</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge bg-info">Thông tin sẽ được cập nhật</span>
+                    </dd>
+
+                    <dt class="col-sm-4">Đơn hàng hoạt động:</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge bg-success">Thông tin sẽ được cập nhật</span>
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Danh sách bàn thuộc loại này</h5>
+            </div>
+            <div class="card-body">
+                @if (ViewBag.Tables != null && ((IEnumerable<BTL.Web.Models.BanAnInfo>)ViewBag.Tables).Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Số hiệu</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var table in (IEnumerable<BTL.Web.Models.BanAnInfo>)ViewBag.Tables)
+                                {
+                                    <tr>
+                                        <td>@table.so_hieu</td>
+                                        <td>
+                                            @if (table.has_active_orders)
+                                            {
+                                                <span class="badge bg-warning">Đang sử dụng</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success">Trống</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">Chưa có bàn nào thuộc loại này.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a asp-action="Edit" asp-route-id="@Model.loai_ban_id" class="btn btn-warning">Sửa</a>
+    <a asp-action="Delete" asp-route-id="@Model.loai_ban_id" class="btn btn-danger">Xóa</a>
+    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+</div>

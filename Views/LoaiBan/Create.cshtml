@@ -1,0 +1,43 @@
+@model BTL.Web.Models.LoaiBan
+
+@{
+    ViewData["Title"] = "Tạo loại bàn mới";
+}
+
+<h1>Tạo loại bàn mới</h1>
+
+<div class="alert alert-info" role="alert">
+    <i class="bi bi-info-circle"></i>
+    <strong>Lưu ý:</strong> Nếu đã tồn tại loại bàn có cùng sức chứa, hệ thống sẽ tự động cộng thêm số lượng vào loại bàn hiện có thay vì tạo mới.
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <div class="form-group">
+                <label asp-for="suc_chua" class="control-label">Sức chứa</label>
+                <input asp-for="suc_chua" class="form-control" />
+                <span asp-validation-for="suc_chua" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="so_luong" class="control-label">Số lượng</label>
+                <input asp-for="so_luong" class="form-control" />
+                <span asp-validation-for="so_luong" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mt-3">
+                <input type="submit" value="Tạo" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

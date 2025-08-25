@@ -1,0 +1,22 @@
+using BTL.Web.Models;
+
+namespace BTL.Web.Repositories
+{
+    public interface IBanAnRepository
+    {
+        Task<IEnumerable<BanAnWithLoaiBan>> GetAllAsync();
+        Task<BanAn?> GetByIdAsync(int id);
+        Task<IEnumerable<BanAnWithLoaiBan>> GetByLoaiBanIdAsync(int loaiBanId);
+        Task<BanAn> CreateAsync(BanAn banAn);
+        Task<BanAn> UpdateAsync(BanAn banAn);
+        Task<bool> DeleteAsync(int id);
+
+        // Additional methods for enhanced functionality
+        Task<BanAn?> GetDetailsWithUsageAsync(int id);
+        Task<IEnumerable<Order>> GetOrdersAsync(int banId);
+        Task<bool> ExistsBySoHieuAsync(string soHieu, int? excludeId = null);
+        Task<(bool can_update, string message)> CanUpdateAsync(int id, int loaiBanId, string soHieu);
+        Task<(bool can_delete, string message)> CanDeleteAsync(int id);
+        Task<IEnumerable<BanAnWithLoaiBan>> GetAvailableAsync(int? capacity = null);
+    }
+}

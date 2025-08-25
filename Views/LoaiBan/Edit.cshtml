@@ -1,0 +1,60 @@
+@model BTL.Web.Models.LoaiBan
+
+@{
+    ViewData["Title"] = "Sửa loại bàn";
+}
+
+<h1>Sửa loại bàn</h1>
+
+@if (ViewBag.UpdateCheck != null)
+{
+    var updateCheck = (BTL.Web.Models.LoaiBanUpdateCheck)ViewBag.UpdateCheck;
+        <div class="alert alert-info" role="alert">
+            <i class="bi bi-info-circle"></i>
+            <strong>Thông tin:</strong> 
+            @if (updateCheck.ban_count > 0)
+            {
+                    <span>Có @updateCheck.ban_count bàn đang sử dụng loại này.</span>
+            }
+            else
+            {
+                    <span>Chưa có bàn nào sử dụng loại này.</span>
+            }
+            @if (updateCheck.active_order_count > 0)
+            {
+                    <span>Có @updateCheck.active_order_count đơn hàng đang hoạt động.</span>
+            }
+        </div>
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="loai_ban_id" />
+
+            <div class="form-group">
+                <label asp-for="suc_chua" class="control-label">Sức chứa</label>
+                <input asp-for="suc_chua" class="form-control" />
+                <span asp-validation-for="suc_chua" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="so_luong" class="control-label">Số lượng</label>
+                <input asp-for="so_luong" class="form-control" />
+                <span asp-validation-for="so_luong" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mt-3">
+                <input type="submit" value="Lưu" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
