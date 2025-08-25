@@ -8,11 +8,13 @@ namespace BTL.Web.Controllers
     {
         private readonly IBanAnService _banAnService;
         private readonly ILoaiBanService _loaiBanService;
+        private readonly ILayoutService _layoutService;
 
-        public BanAnController(IBanAnService banAnService, ILoaiBanService loaiBanService)
+        public BanAnController(IBanAnService banAnService, ILoaiBanService loaiBanService, ILayoutService layoutService)
         {
             _banAnService = banAnService;
             _loaiBanService = loaiBanService;
+            _layoutService = layoutService;
         }
 
         // GET: BanAn
@@ -318,6 +320,120 @@ namespace BTL.Web.Controllers
             {
                 TempData["Error"] = $"Lỗi: {ex.Message}";
                 return RedirectToAction(nameof(Index));
+            }
+        }
+
+        // GET: BanAn/Layout
+        public async Task<IActionResult> Layout(string? layoutName = null)
+        {
+            try
+            {
+                var banAns = await _banAnService.GetAllAsync();
+                var loaiBans = await _loaiBanService.GetAllAsync();
+                var layouts = await _layoutService.GetLayoutListAsync();
+
+                // Load layout hiện tại
+                LayoutResponse? currentLayout = null;
+                if (!string.IsNullOrEmpty(layoutName))
+                {
+                    currentLayout = await _layoutService.GetLayoutAsync(layoutName);
+                }
+                else if (layouts.Any())
+                {
+                    // Load layout đầu tiên nếu không có layoutName
+                    currentLayout = await _layoutService.GetLayoutAsync();
+                }
+
+                ViewBag.LoaiBans = loaiBans;
+                ViewBag.Layouts = layouts;
+                ViewBag.CurrentLayout = currentLayout;
+                return View(banAns);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Lỗi: {ex.Message}";
+                return View(new List<BanAnWithLoaiBan>());
+            }
+        }
+
+        // POST: BanAn/SaveLayout
+        [HttpPost]
+        public async Task<IActionResult> SaveLayout([FromBody] LayoutSaveRequest request)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage)
+                        .ToList();
+                    return Json(new { success = false, message = string.Join(", ", errors) });
+                }
+
+                var layoutId = await _layoutService.SaveLayoutAsync(request);
+                return Json(new { success = true, message = "Layout đã được lưu thành công!", layoutId = layoutId });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Lỗi: {ex.Message}" });
+            }
+        }
+
+        // GET: BanAn/LoadLayout
+        [HttpGet]
+        public async Task<IActionResult> LoadLayout(string layoutName)
+        {
+            try
+            {
+                var layout = await _layoutService.GetLayoutAsync(layoutName);
+                if (layout == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy layout" });
+                }
+
+                return Json(new { success = true, layout = layout });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Lỗi: {ex.Message}" });
+            }
+        }
+
+        // GET: BanAn/GetLayoutList
+        [HttpGet]
+        public async Task<IActionResult> GetLayoutList()
+        {
+            try
+            {
+                var layouts = await _layoutService.GetLayoutListAsync();
+                return Json(new { success = true, layouts = layouts });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Lỗi: {ex.Message}" });
+            }
+        }
+
+        // POST: BanAn/DeleteLayout
+        [HttpPost]
+        public async Task<IActionResult> DeleteLayout(int layoutId)
+        {
+            try
+            {
+                var result = await _layoutService.DeleteLayoutAsync(layoutId);
+                if (result)
+                {
+                    return Json(new { success = true, message = "Layout đã được xóa thành công!" });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Không thể xóa layout" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Lỗi: {ex.Message}" });
             }
         }
     }

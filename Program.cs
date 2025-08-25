@@ -10,11 +10,13 @@ builder.Services.AddScoped<BTL.Web.Data.DatabaseContext>();
 builder.Services.AddScoped<BTL.Web.Repositories.ILoaiBanRepository, BTL.Web.Repositories.LoaiBanRepository>();
 builder.Services.AddScoped<BTL.Web.Repositories.IBanAnRepository, BTL.Web.Repositories.BanAnRepository>();
 builder.Services.AddScoped<BTL.Web.Repositories.IMonRepository, BTL.Web.Repositories.MonRepository>();
+builder.Services.AddScoped<BTL.Web.Repositories.ILayoutRepository, BTL.Web.Repositories.LayoutRepository>();
 
 // Register services
 builder.Services.AddScoped<BTL.Web.Services.ILoaiBanService, BTL.Web.Services.LoaiBanService>();
 builder.Services.AddScoped<BTL.Web.Services.IMonService, BTL.Web.Services.MonService>();
 builder.Services.AddScoped<BTL.Web.Services.IBanAnService, BTL.Web.Services.BanAnService>();
+builder.Services.AddScoped<BTL.Web.Services.ILayoutService, BTL.Web.Services.LayoutService>();
 
 var app = builder.Build();
 

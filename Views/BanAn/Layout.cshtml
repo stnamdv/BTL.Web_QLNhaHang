@@ -1,0 +1,1007 @@
+@model IEnumerable<BTL.Web.Models.BanAnWithLoaiBan>
+
+@{
+    ViewData["Title"] = "Layout Nhà Hàng";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar với danh sách bàn -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-ul"></i> Danh Sách Bàn
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" class="form-control" id="searchTable" placeholder="Tìm bàn...">
+                        </div>
+                    </div>
+
+                    <div id="tableList" class="d-flex flex-column gap-2">
+                        @{
+                            var groupedTables = Model.GroupBy(x => x.loai_ban_id).OrderBy(g => g.Key);
+                        }
+                        @foreach (var group in groupedTables)
+                        {
+                            <div class="table-type-group" data-type="@group.Key">
+                                <div class="table-type-header d-flex align-items-center p-2 bg-light border rounded mb-2">
+                                    <i class="bi bi-collection me-2 text-primary"></i>
+                                    <span class="fw-bold">Loại @group.Key (@group.Count() bàn)</span>
+                                </div>
+                                <div class="table-items-container">
+                                    @foreach (var item in group.OrderBy(x => x.ban_id))
+                                    {
+                                        <div class="table-item" draggable="true" data-table-id="@item.ban_id"
+                                            data-table-name="@item.so_hieu" data-table-capacity="@item.suc_chua"
+                                            data-table-type="@item.loai_ban_id">
+                                            <div class="d-flex align-items-center p-2 border rounded bg-light cursor-grab">
+                                                <div class="table-icon me-2">
+                                                    <i class="bi bi-door-open text-primary"></i>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <div class="fw-medium">@item.so_hieu</div>
+                                                    <small class="text-muted">@item.suc_chua người</small>
+                                                </div>
+                                                <div class="table-capacity-badge">
+                                                    <span class="badge bg-success">@item.suc_chua</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Layout nhà hàng -->
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-grid-3x3-gap"></i> Layout Nhà Hàng
+                    </h5>
+                    <div class="d-flex gap-2">
+                        <div class="dropdown">
+                            <button class="btn btn-light btn-sm dropdown-toggle" type="button" id="layoutDropdown" data-bs-toggle="dropdown">
+                                <i class="bi bi-folder"></i> Layout
+                            </button>
+                            <ul class="dropdown-menu" id="layoutList">
+                                <li><a class="dropdown-item" href="#" id="newLayout">Tạo Layout Mới</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <!-- Layout list will be populated here -->
+                            </ul>
+                        </div>
+                        <button class="btn btn-light btn-sm" id="saveLayout">
+                            <i class="bi bi-save"></i> Lưu Layout
+                        </button>
+                        <button class="btn btn-light btn-sm" id="resetLayout">
+                            <i class="bi bi-arrow-clockwise"></i> Reset
+                        </button>
+                        <button class="btn btn-light btn-sm" id="toggleGrid">
+                            <i class="bi bi-grid"></i> Hiện Grid
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Controls -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="d-flex gap-2 align-items-center">
+                                <label class="form-label mb-0">Kích thước Grid:</label>
+                                <select class="form-select form-select-sm" id="gridSize" style="width: auto;">
+                                    <option value="8">8x8</option>
+                                    <option value="10" selected>10x10</option>
+                                    <option value="12">12x12</option>
+                                    <option value="15">15x15</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex gap-2 align-items-center">
+                                <label class="form-label mb-0">Tỷ lệ:</label>
+                                <input type="range" class="form-range" id="zoomLevel" min="0.5" max="2" step="0.1"
+                                    value="1" style="width: 150px;">
+                                <span id="zoomValue" class="badge bg-secondary">100%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Restaurant Layout -->
+                    <div class="restaurant-layout-container">
+                        <div id="restaurantLayout" class="restaurant-layout">
+                            <!-- Grid sẽ được tạo bằng JavaScript -->
+                        </div>
+                    </div>
+
+                                         <!-- Legend -->
+                     <div class="mt-3">
+                         <h6>Chú thích:</h6>
+                         <div class="d-flex flex-wrap gap-3">
+                             @if (ViewBag.LoaiBans != null)
+                             {
+                                 var loaiBans = (List<BTL.Web.Models.LoaiBan>)ViewBag.LoaiBans;
+                                 var colors = new[] { "bg-primary", "bg-success", "bg-warning", "bg-danger", "bg-info", "bg-secondary" };
+                                 
+                                 @for (int i = 0; i < loaiBans.Count; i++)
+                                 {
+                                     var loaiBan = loaiBans[i];
+                                     var colorClass = i < colors.Length ? colors[i] : "bg-secondary";
+                                     
+                                     <div class="d-flex align-items-center">
+                                         <div class="table-legend-item @colorClass me-2"></div>
+                                         <small>Loại @loaiBan.loai_ban_id (@loaiBan.suc_chua người)</small>
+                                     </div>
+                                 }
+                             }
+                         </div>
+                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal thông tin bàn -->
+<div class="modal fade" id="tableInfoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thông tin bàn</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="tableInfoContent">
+                    <!-- Nội dung sẽ được điền bằng JavaScript -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-danger" id="removeTable">Xóa khỏi layout</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal lưu layout -->
+<div class="modal fade" id="saveLayoutModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Lưu Layout</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="layoutName" class="form-label">Tên Layout:</label>
+                    <input type="text" class="form-control" id="layoutName" placeholder="Nhập tên layout...">
+                </div>
+                <div class="mb-3">
+                    <label for="layoutGridSize" class="form-label">Kích thước Grid:</label>
+                    <select class="form-select" id="layoutGridSize">
+                        <option value="8">8x8</option>
+                        <option value="10" selected>10x10</option>
+                        <option value="12">12x12</option>
+                        <option value="15">15x15</option>
+                    </select>
+                </div>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Thông tin:</strong> Layout sẽ được lưu với <span id="tableCount">0</span> bàn đã đặt.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" id="confirmSaveLayout">Lưu Layout</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Chặn text selection cho toàn bộ trang nhưng cho phép drag and drop */
+    html, body {
+        -webkit-user-select: none; /* Safari/Chrome iOS */
+        -moz-user-select: none;    /* Firefox cũ */
+        -ms-user-select: none;     /* Edge/IE cũ */
+        user-select: none;         /* Chuẩn hiện đại */
+    }
+
+    /* Cho phép drag and drop trong grid và các phần tử có thể kéo thả */
+    .restaurant-layout,
+    .grid-cell,
+    .table-placed,
+    .table-item {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        /* Đảm bảo các thuộc tính drag and drop hoạt động */
+        -webkit-user-drag: element;
+        -khtml-user-drag: element;
+        -moz-user-drag: element;
+        -o-user-drag: element;
+        user-drag: element;
+        /* Đảm bảo pointer events hoạt động */
+        pointer-events: auto;
+    }
+
+    /* Cho phép text selection trong input và textarea */
+    input, textarea, [contenteditable="true"] {
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        user-select: text;
+    }
+
+    .restaurant-layout-container {
+        overflow: auto;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        background: #f8f9fa;
+    }
+
+    .restaurant-layout {
+        position: relative;
+        min-height: 600px;
+        padding: 20px;
+        transform-origin: top left;
+    }
+
+    .grid-cell {
+        width: 60px;
+        height: 60px;
+        border: 1px solid #e9ecef;
+        background: white;
+        position: relative;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .grid-cell:hover {
+        background: #e3f2fd;
+        border-color: #2196f3;
+    }
+
+    .grid-cell.show-grid {
+        border: 1px solid #dee2e6;
+    }
+
+    .grid-cell.hide-grid {
+        border: none;
+    }
+
+    .table-placed {
+        position: absolute;
+        width: 50px;
+        height: 50px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: move;
+        font-size: 12px;
+        font-weight: bold;
+        color: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        transition: all 0.2s;
+        z-index: 10;
+    }
+
+    .table-placed:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .table-placed.selected {
+        border: 3px solid #ffc107;
+        transform: scale(1.05);
+    }
+
+    .table-item {
+        cursor: grab;
+        transition: all 0.2s;
+    }
+
+    .table-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .table-item:active {
+        cursor: grabbing;
+    }
+
+    .table-item.dragging {
+        opacity: 0.5;
+        transform: rotate(5deg);
+    }
+
+    .table-legend-item {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+    }
+
+    .cursor-grab {
+        cursor: grab;
+    }
+
+    .cursor-grabbing {
+        cursor: grabbing;
+    }
+
+    .drop-zone {
+        background: #e8f5e8;
+        border: 2px dashed #28a745;
+    }
+
+    .drop-zone.drag-over {
+        background: #d4edda;
+        border-color: #155724;
+    }
+
+    .table-type-group {
+        margin-bottom: 1rem;
+    }
+
+    .table-type-header {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-left: 4px solid #007bff;
+    }
+
+    .table-items-container {
+        padding-left: 1rem;
+    }
+
+    .table-item.hidden {
+        display: none;
+    }
+
+         .table-placed.dragging {
+         opacity: 0.6;
+         transform: scale(0.95) rotate(2deg);
+         z-index: 1000;
+         box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+     }
+
+     .table-placed.drop-zone {
+         border: 3px dashed #ffc107;
+         background-color: rgba(255, 193, 7, 0.15);
+         transform: scale(1.05);
+     }
+
+     .grid-cell.drop-zone {
+         background: #e8f5e8;
+         border: 2px dashed #28a745;
+     }
+
+     .grid-cell.drop-zone.drag-over {
+         background: #d4edda;
+         border-color: #155724;
+         transform: scale(1.08);
+         box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+     }
+
+     .table-item.dragging {
+         opacity: 0.6;
+         transform: rotate(3deg) scale(0.95);
+         z-index: 1000;
+     }
+
+     /* Cải thiện trải nghiệm drag and drop */
+     .table-placed {
+         -webkit-touch-callout: none;
+         -webkit-tap-highlight-color: transparent;
+         touch-action: manipulation;
+     }
+
+     .grid-cell {
+         -webkit-touch-callout: none;
+         -webkit-tap-highlight-color: transparent;
+         touch-action: manipulation;
+     }
+
+     .table-item {
+         -webkit-touch-callout: none;
+         -webkit-tap-highlight-color: transparent;
+         touch-action: manipulation;
+     }
+
+     /* Đảm bảo cursor hiển thị đúng khi drag */
+     .table-item:active,
+     .table-placed:active {
+         cursor: grabbing !important;
+     }
+
+     /* Ngăn chặn text selection trong quá trình drag */
+     .dragging * {
+         -webkit-user-select: none !important;
+         -moz-user-select: none !important;
+         -ms-user-select: none !important;
+         user-select: none !important;
+     }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            let currentGridSize = 10;
+            let showGrid = true;
+            let zoomLevel = 1;
+            let selectedTable = null;
+            let placedTables = [];
+
+            // Khởi tạo layout
+            initializeLayout();
+
+            // Load layout list
+            loadLayoutList();
+
+            // Load layout hiện tại nếu có
+            @if (ViewBag.CurrentLayout != null)
+            {
+                <text>
+                setTimeout(function() {
+                    applyLayout(@Html.Raw(Json.Serialize(ViewBag.CurrentLayout)));
+                }, 500);
+                </text>
+            }
+
+            // Ngăn chặn text selection trên toàn bộ trang
+            $(document).on('selectstart', function(e) {
+                if (!$(e.target).is('input, textarea, [contenteditable="true"]')) {
+                    e.preventDefault();
+                }
+            });
+
+            // Event listeners
+            $('#gridSize').change(function () {
+                currentGridSize = parseInt($(this).val());
+                initializeLayout();
+            });
+
+            $('#toggleGrid').click(function () {
+                showGrid = !showGrid;
+                $('.grid-cell').toggleClass('show-grid hide-grid', showGrid);
+                $(this).find('i').toggleClass('bi-grid bi-grid-3x3-gap');
+            });
+
+            $('#zoomLevel').on('input', function () {
+                zoomLevel = parseFloat($(this).val());
+                $('#zoomValue').text(Math.round(zoomLevel * 100) + '%');
+                $('#restaurantLayout').css('transform', `scale(${zoomLevel})`);
+            });
+
+            $('#saveLayout').click(function () {
+                showSaveLayoutModal();
+            });
+
+            $('#confirmSaveLayout').click(function () {
+                saveLayout();
+            });
+
+            $('#newLayout').click(function () {
+                resetLayout();
+                currentLayoutName = null; // Xóa tên layout hiện tại
+                $('#saveLayoutModal').modal('hide');
+            });
+
+            $('#resetLayout').click(function () {
+                if (confirm('Bạn có chắc muốn reset layout?')) {
+                    resetLayout();
+                }
+            });
+
+            // Search functionality
+            $('#searchTable').on('input', function () {
+                const searchTerm = $(this).val().toLowerCase();
+                $('.table-type-group').each(function () {
+                    const group = $(this);
+                    const visibleItems = group.find('.table-item').filter(function () {
+                        const tableName = $(this).data('table-name').toLowerCase();
+                        const tableType = $(this).data('table-type').toString();
+                        return tableName.includes(searchTerm) || tableType.includes(searchTerm);
+                    });
+
+                    if (visibleItems.length > 0) {
+                        group.show();
+                        visibleItems.show();
+                        group.find('.table-item').not(visibleItems).hide();
+                    } else {
+                        group.hide();
+                    }
+                });
+            });
+
+            // Drag and drop functionality
+            $('.table-item').on('dragstart', function (e) {
+                $(this).addClass('dragging');
+                e.originalEvent.dataTransfer.setData('text/plain', JSON.stringify({
+                    id: $(this).data('table-id'),
+                    name: $(this).data('table-name'),
+                    capacity: $(this).data('table-capacity'),
+                    type: $(this).data('table-type')
+                }));
+            });
+
+            $('.table-item').on('dragend', function () {
+                $(this).removeClass('dragging');
+            });
+
+                                      // Unified drag and drop system
+             let draggedElement = null;
+             let dragSource = null; // 'sidebar' or 'grid'
+
+             // Drag start handlers
+             $('.table-item').on('dragstart', function (e) {
+                 draggedElement = $(this);
+                 dragSource = 'sidebar';
+                 $(this).addClass('dragging');
+                 e.originalEvent.dataTransfer.setData('text/plain', JSON.stringify({
+                     id: $(this).data('table-id'),
+                     name: $(this).data('table-name'),
+                     capacity: $(this).data('table-capacity'),
+                     type: $(this).data('table-type')
+                 }));
+                 e.originalEvent.dataTransfer.effectAllowed = 'move';
+             });
+
+             $(document).on('dragstart', '.table-placed', function (e) {
+                 draggedElement = $(this);
+                 dragSource = 'grid';
+                 $(this).addClass('dragging');
+                 const tableInfo = $(this).data('table-info');
+                 e.originalEvent.dataTransfer.setData('text/plain', JSON.stringify(tableInfo));
+                 e.originalEvent.dataTransfer.effectAllowed = 'move';
+             });
+
+             // Drag end handlers
+             $('.table-item').on('dragend', function () {
+                 $(this).removeClass('dragging');
+                 draggedElement = null;
+                 dragSource = null;
+             });
+
+             $(document).on('dragend', '.table-placed', function () {
+                 $(this).removeClass('dragging');
+                 draggedElement = null;
+                 dragSource = null;
+             });
+
+             // Unified drop zone handlers
+             $(document).on('dragover', '.grid-cell, .table-placed:not(.dragging)', function (e) {
+                 e.preventDefault();
+                 e.originalEvent.dataTransfer.dropEffect = 'move';
+                 
+                 // Only show drop zone if we're actually dragging something
+                 if (draggedElement) {
+                     $(this).addClass('drop-zone drag-over');
+                 }
+             });
+
+             $(document).on('dragleave', '.grid-cell, .table-placed:not(.dragging)', function (e) {
+                 // Only remove drop zone if we're leaving the element completely
+                 const rect = this.getBoundingClientRect();
+                 const x = e.clientX;
+                 const y = e.clientY;
+                 
+                 if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+                     $(this).removeClass('drop-zone drag-over');
+                 }
+             });
+
+             // Unified drop handler
+             $(document).on('drop', '.grid-cell, .table-placed:not(.dragging)', function (e) {
+                 e.preventDefault();
+                 $(this).removeClass('drop-zone drag-over');
+
+                 // Clear all drop zones
+                 $('.drop-zone').removeClass('drop-zone drag-over');
+
+                 try {
+                     const tableData = JSON.parse(e.originalEvent.dataTransfer.getData('text/plain'));
+                     const dropTarget = $(this);
+                     
+                     if (dropTarget.hasClass('grid-cell')) {
+                         // Dropping on grid cell
+                         handleGridCellDrop(tableData, dropTarget);
+                     } else if (dropTarget.hasClass('table-placed')) {
+                         // Dropping on another table (swap)
+                         handleTableSwap(tableData, dropTarget);
+                     }
+                 } catch (error) {
+                     console.error('Error processing drop:', error);
+                 }
+             });
+
+             // Clear drop zones when dropping outside valid areas
+             $(document).on('drop', function (e) {
+                 if (!$(e.target).hasClass('grid-cell') && !$(e.target).hasClass('table-placed')) {
+                     $('.drop-zone').removeClass('drop-zone drag-over');
+                 }
+             });
+
+             function handleGridCellDrop(tableData, cell) {
+                 const cellOffset = cell.offset();
+                 const layoutOffset = $('#restaurantLayout').offset();
+                 const x = cellOffset.left - layoutOffset.left + 5;
+                 const y = cellOffset.top - layoutOffset.top + 5;
+
+                 if (dragSource === 'sidebar') {
+                     // New table from sidebar
+                     placeTable(tableData, x, y);
+                 } else if (dragSource === 'grid') {
+                     // Moving existing table
+                     $('.table-placed.dragging').remove();
+                     placeTable(tableData, x, y);
+                 }
+             }
+
+             function handleTableSwap(draggedTableData, targetTable) {
+                 const targetTableData = targetTable.data('table-info');
+                 const targetPosition = {
+                     x: parseFloat(targetTable.css('left')),
+                     y: parseFloat(targetTable.css('top'))
+                 };
+
+                 const draggedTable = $('.table-placed.dragging');
+                 const draggedPosition = {
+                     x: parseFloat(draggedTable.css('left')),
+                     y: parseFloat(draggedTable.css('top'))
+                 };
+
+                 // Remove both tables
+                 draggedTable.remove();
+                 targetTable.remove();
+
+                 // Swap positions
+                 placeTable(draggedTableData, targetPosition.x, targetPosition.y);
+                 placeTable(targetTableData, draggedPosition.x, draggedPosition.y);
+             }
+
+            // Click on placed table
+            $(document).on('click', '.table-placed', function () {
+                $('.table-placed').removeClass('selected');
+                $(this).addClass('selected');
+                selectedTable = $(this);
+                showTableInfo($(this).data('table-info'));
+            });
+
+            // Remove table
+            $('#removeTable').click(function () {
+                if (selectedTable) {
+                    const tableData = selectedTable.data('table-info');
+                    selectedTable.remove();
+
+                    // Add table back to sidebar
+                    addTableBackToSidebar(tableData);
+
+                    selectedTable = null;
+                    $('#tableInfoModal').modal('hide');
+                }
+            });
+
+            function initializeLayout() {
+                const layout = $('#restaurantLayout');
+                layout.empty();
+
+                for (let row = 0; row < currentGridSize; row++) {
+                    for (let col = 0; col < currentGridSize; col++) {
+                        const cell = $('<div>')
+                            .addClass('grid-cell show-grid')
+                            .css({
+                                position: 'absolute',
+                                left: col * 65 + 'px',
+                                top: row * 65 + 'px'
+                            });
+                        layout.append(cell);
+                    }
+                }
+
+                layout.css('width', currentGridSize * 65 + 'px');
+                layout.css('height', currentGridSize * 65 + 'px');
+            }
+
+                         function placeTable(tableData, x, y) {
+                 // Remove any existing table with the same ID to prevent duplicates
+                 const existingTable = $(`.table-placed[data-table-id="${tableData.id}"]`);
+                 if (existingTable.length > 0) {
+                     existingTable.remove();
+                 }
+
+                 const tableElement = $('<div>')
+                     .addClass('table-placed')
+                     .attr('data-table-id', tableData.id)
+                     .css({
+                         left: x + 'px',
+                         top: y + 'px',
+                         backgroundColor: getTableColor(tableData.type)
+                     })
+                     .text(tableData.name)
+                     .attr('title', `${tableData.name} - ${tableData.capacity} người`)
+                     .data('table-info', tableData);
+
+                 $('#restaurantLayout').append(tableElement);
+                 
+                 // Add animation effect
+                 tableElement.hide().fadeIn(300);
+                 
+                 // Update placedTables array
+                 const existingIndex = placedTables.findIndex(t => t.data.id === tableData.id);
+                 if (existingIndex !== -1) {
+                     placedTables[existingIndex] = {
+                         element: tableElement,
+                         data: tableData,
+                         position: { x, y }
+                     };
+                 } else {
+                     placedTables.push({
+                         element: tableElement,
+                         data: tableData,
+                         position: { x, y }
+                     });
+                 }
+                 
+                 // Ẩn bàn khỏi sidebar
+                 $(`.table-item[data-table-id="${tableData.id}"]`).hide();
+                 updateTableTypeCounts();
+             }
+
+                                 function getTableColor(type) {
+                         const colors = {
+                             1: '#007bff', // Primary
+                             2: '#28a745', // Success
+                             3: '#ffc107', // Warning
+                             4: '#dc3545', // Danger
+                             5: '#17a2b8', // Info
+                             6: '#6c757d'  // Secondary
+                         };
+                         return colors[type] || '#6c757d';
+                     }
+
+            function showTableInfo(tableData) {
+                const content = `
+                                                    <div class="row">
+                                                        <div class="col-6">
+                                                            <strong>Số hiệu:</strong><br>
+                                                            <strong>Loại bàn:</strong><br>
+                                                            <strong>Sức chứa:</strong>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            ${tableData.name}<br>
+                                                            Loại ${tableData.type}<br>
+                                                            ${tableData.capacity} người
+                                                        </div>
+                                                    </div>
+                                                `;
+                $('#tableInfoContent').html(content);
+                $('#tableInfoModal').modal('show');
+            }
+
+            let currentLayoutName = null; // Biến để lưu tên layout hiện tại
+
+            function showSaveLayoutModal() {
+                $('#tableCount').text(placedTables.length);
+                $('#layoutGridSize').val(currentGridSize);
+                
+                // Nếu đang edit layout hiện tại, hiển thị tên layout
+                if (currentLayoutName) {
+                    $('#layoutName').val(currentLayoutName);
+                    $('#layoutName').prop('readonly', true);
+                    $('#confirmSaveLayout').text('Cập nhật Layout');
+                } else {
+                    $('#layoutName').val('');
+                    $('#layoutName').prop('readonly', false);
+                    $('#confirmSaveLayout').text('Lưu Layout');
+                }
+                
+                $('#saveLayoutModal').modal('show');
+            }
+
+            function saveLayout() {
+                const layoutName = $('#layoutName').val().trim();
+                if (!layoutName) {
+                    alert('Vui lòng nhập tên layout!');
+                    return;
+                }
+
+                const layoutData = {
+                    layout_name: layoutName,
+                    grid_size: parseInt($('#layoutGridSize').val()),
+                    tables: placedTables.map(table => ({
+                        id: table.data.id,
+                        name: table.data.name,
+                        capacity: table.data.capacity,
+                        type: table.data.type,
+                        position: table.position
+                    }))
+                };
+
+                // Gửi dữ liệu lên server
+                $.ajax({
+                    url: '/BanAn/SaveLayout',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(layoutData),
+                    success: function (response) {
+                        if (response.success) {
+                            // Cập nhật tên layout hiện tại nếu đây là layout mới
+                            if (!currentLayoutName) {
+                                currentLayoutName = layoutName;
+                            }
+                            
+                            const message = currentLayoutName === layoutName ? 
+                                'Layout đã được cập nhật thành công!' : 
+                                'Layout đã được lưu thành công!';
+                            
+                            alert(message);
+                            $('#saveLayoutModal').modal('hide');
+                            loadLayoutList();
+                        } else {
+                            alert('Lỗi: ' + response.message);
+                        }
+                    },
+                    error: function () {
+                        alert('Có lỗi xảy ra khi lưu layout!');
+                    }
+                });
+            }
+
+            function loadLayoutList() {
+                $.ajax({
+                    url: '/BanAn/GetLayoutList',
+                    type: 'GET',
+                    success: function (response) {
+                        if (response.success) {
+                            updateLayoutDropdown(response.layouts);
+                        }
+                    },
+                    error: function () {
+                        console.error('Lỗi khi tải danh sách layout');
+                    }
+                });
+            }
+
+            function updateLayoutDropdown(layouts) {
+                const layoutList = $('#layoutList');
+                // Giữ lại "Tạo Layout Mới" và divider
+                layoutList.find('li:not(:first-child):not(:nth-child(2))').remove();
+                
+                layouts.forEach(function(layout) {
+                    const item = $(`
+                        <li>
+                            <a class="dropdown-item d-flex justify-content-between align-items-center" href="#" data-layout-name="${layout.layout_name}">
+                                <span>${layout.layout_name}</span>
+                                <span class="badge bg-primary rounded-pill">${layout.table_count}</span>
+                            </a>
+                        </li>
+                    `);
+                    
+                    item.find('a').click(function(e) {
+                        e.preventDefault();
+                        loadLayout(layout.layout_name);
+                    });
+                    
+                    layoutList.append(item);
+                });
+            }
+
+            function loadLayout(layoutName) {
+                $.ajax({
+                    url: '/BanAn/LoadLayout',
+                    type: 'GET',
+                    data: { layoutName: layoutName },
+                    success: function (response) {
+                        if (response.success) {
+                            applyLayout(response.layout);
+                        } else {
+                            alert('Lỗi: ' + response.message);
+                        }
+                    },
+                    error: function () {
+                        alert('Có lỗi xảy ra khi tải layout!');
+                    }
+                });
+            }
+
+            function applyLayout(layout) {
+                // Reset layout hiện tại
+                resetLayout();
+                
+                // Lưu tên layout hiện tại
+                currentLayoutName = layout.layout_name;
+                
+                // Cập nhật grid size
+                currentGridSize = layout.grid_size;
+                $('#gridSize').val(currentGridSize);
+                initializeLayout();
+                
+                // Đặt các bàn theo layout
+                layout.tables.forEach(function(tableData) {
+                    placeTable({
+                        id: tableData.id,
+                        name: tableData.name,
+                        capacity: tableData.capacity,
+                        type: tableData.type
+                    }, tableData.position.x, tableData.position.y);
+                });
+                
+                // Ẩn các bàn đã được đặt khỏi sidebar
+                hidePlacedTablesFromSidebar();
+                
+                alert(`Đã tải layout "${layout.layout_name}" thành công!`);
+            }
+
+            function hidePlacedTablesFromSidebar() {
+                // Ẩn tất cả bàn trong sidebar trước
+                $('.table-item').show();
+                
+                // Ẩn các bàn đã được đặt
+                placedTables.forEach(function(table) {
+                    $(`.table-item[data-table-id="${table.data.id}"]`).hide();
+                });
+                
+                // Cập nhật số lượng bàn trong mỗi loại
+                updateTableTypeCounts();
+            }
+
+            function resetLayout() {
+                $('.table-placed').remove();
+                placedTables = [];
+                selectedTable = null;
+
+                // Restore all tables to sidebar
+                $('.table-item').show();
+                updateTableTypeCounts();
+            }
+
+
+
+            function updateTableTypeCounts() {
+                $('.table-type-group').each(function () {
+                    const group = $(this);
+                    const tableType = group.data('type');
+                    const visibleTables = group.find('.table-item:visible').length;
+
+                    if (visibleTables === 0) {
+                        // Hide the entire group if no tables left
+                        group.hide();
+                    } else {
+                        // Update the count in header
+                        group.find('.table-type-header span').text(`Loại ${tableType} (${visibleTables} bàn)`);
+                    }
+                });
+            }
+
+            function addTableBackToSidebar(tableData) {
+                // Show the table item back in sidebar
+                $(`.table-item[data-table-id="${tableData.id}"]`).show();
+
+                // Update counts
+                updateTableTypeCounts();
+            }
+
+            function resetLayout() {
+                $('.table-placed').remove();
+                placedTables = [];
+
+                // Restore all tables to sidebar
+                $('.table-item').show();
+                updateTableTypeCounts();
+                
+                selectedTable = null;
+                currentLayoutName = null; // Xóa tên layout hiện tại
+            }
+        });
+    </script>
+}

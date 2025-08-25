@@ -26,9 +26,19 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="BanAn" asp-action="Index">Bàn
-                                Ăn</a>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" role="button"
+                                data-bs-toggle="dropdown">
+                                Bàn Ăn
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" asp-controller="BanAn" asp-action="Index">
+                                        <i class="bi bi-list-ul"></i> Danh sách
+                                    </a></li>
+                                <li><a class="dropdown-item" asp-controller="BanAn" asp-action="Layout">
+                                        <i class="bi bi-grid-3x3-gap"></i> Layout nhà hàng
+                                    </a></li>
+                            </ul>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="LoaiBan" asp-action="Index">Loại
