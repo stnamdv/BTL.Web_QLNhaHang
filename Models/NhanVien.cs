@@ -3,10 +3,22 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BTL.Web.Models
 {
-    public enum TrangThaiNv
+    public static class TrangThaiNv
     {
-        ACTIVE,
-        INACTIVE
+        public const string ACTIVE = "ACTIVE";
+        public const string INACTIVE = "INACTIVE";
+
+        public static readonly string[] All = { ACTIVE, INACTIVE };
+
+        public static string GetDisplayName(string trangThai)
+        {
+            return trangThai switch
+            {
+                ACTIVE => "Đang hoạt động",
+                INACTIVE => "Không hoạt động",
+                _ => trangThai
+            };
+        }
     }
 
     public class NhanVien
@@ -14,19 +26,20 @@ namespace BTL.Web.Models
         [Key]
         public int nv_id { get; set; }
 
-        [Required]
-        [StringLength(120)]
+        [Required(ErrorMessage = "Họ tên không được để trống")]
+        [StringLength(120, ErrorMessage = "Họ tên không được vượt quá 120 ký tự")]
         public string ho_ten { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Loại nhân viên không được để trống")]
         [StringLength(20)]
         public string loai_nv { get; set; } = string.Empty;
 
+        [Display(Name = "Ngày vào làm")]
         public DateTime? ngay_vao_lam { get; set; }
 
         [Required]
         [StringLength(20)]
-        public TrangThaiNv trang_thai { get; set; } = TrangThaiNv.ACTIVE;
+        public string trang_thai { get; set; } = TrangThaiNv.ACTIVE;
 
         // Navigation properties
         [ForeignKey("loai_nv")]

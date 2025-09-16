@@ -1,0 +1,143 @@
+@model IEnumerable<dynamic>
+
+@{
+    ViewData["Title"] = "Thống kê nhân viên theo loại";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">@ViewData["Title"]</h3>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["Error"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (Model != null && Model.Any())
+                    {
+                        <div class="row mb-4">
+                            @foreach (var stat in Model)
+                            {
+                                <div class="col-md-3 mb-3">
+                                    <div class="card bg-primary text-white">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between">
+                                                <div>
+                                                    <h6 class="card-title">@BTL.Web.Models.LoaiNv.GetDisplayName(stat.loai_nv)</h6>
+                                                    <h4 class="mb-0">@stat.so_luong_nv</h4>
+                                                    <small>Tổng nhân viên</small>
+                                                </div>
+                                                <div class="align-self-center">
+                                                    <i class="fas fa-users fa-2x"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Loại nhân viên</th>
+                                        <th>Lương cơ bản</th>
+                                        <th>Tổng số nhân viên</th>
+                                        <th>Đang hoạt động</th>
+                                        <th>Không hoạt động</th>
+                                        <th>Tỷ lệ hoạt động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var stat in Model)
+                                    {
+                                        var tyLeActive = stat.so_luong_nv > 0 ? (double)stat.so_luong_active / stat.so_luong_nv * 100 : 0;
+                                        
+                                        <tr>
+                                            <td>
+                                                <span class="badge bg-info fs-6">@BTL.Web.Models.LoaiNv.GetDisplayName(stat.loai_nv)</span>
+                                            </td>
+                                            <td>
+                                                <span class="text-success fw-bold">@(((decimal)stat.luong_co_ban).ToString("N0")) VNĐ</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary fs-6">@stat.so_luong_nv</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-success fs-6">@stat.so_luong_active</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-danger fs-6">@stat.so_luong_inactive</span>
+                                            </td>
+                                            <td>
+                                                <div class="progress" style="height: 20px;">
+                                                    <div class="progress-bar bg-success" role="progressbar" 
+                                                         style="width: @tyLeActive.ToString("F1")%" 
+                                                         aria-valuenow="@tyLeActive" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="100">
+                                                        @tyLeActive.ToString("F1")%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Summary Cards -->
+                        <div class="row mt-4">
+                            <div class="col-md-4">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body text-center">
+                                        <h3 class="card-title">@Model.Sum(s => (int)s.so_luong_active)</h3>
+                                        <p class="card-text">Tổng nhân viên đang hoạt động</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-danger text-white">
+                                    <div class="card-body text-center">
+                                        <h3 class="card-title">@Model.Sum(s => (int)s.so_luong_inactive)</h3>
+                                        <p class="card-text">Tổng nhân viên không hoạt động</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body text-center">
+                                        <h3 class="card-title">@Model.Sum(s => (int)s.so_luong_nv)</h3>
+                                        <p class="card-text">Tổng số nhân viên</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Không có dữ liệu thống kê</h5>
+                            <p class="text-muted">Chưa có nhân viên nào trong hệ thống.</p>
+                            <a asp-action="Create" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Thêm nhân viên
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
