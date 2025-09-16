@@ -1,0 +1,66 @@
+@model BTL.Web.Models.LoaiNhanVien
+
+@{
+    ViewData["Title"] = "Xóa loại nhân viên";
+}
+
+<h1>Xóa loại nhân viên</h1>
+
+@if (ViewBag.DeleteCheck != null)
+{
+    var deleteCheck = (BTL.Web.Models.LoaiNhanVienDeleteCheck)ViewBag.DeleteCheck;
+    <div class="alert alert-warning" role="alert">
+        <i class="bi bi-exclamation-triangle"></i>
+        <strong>Cảnh báo:</strong>
+        @if (deleteCheck.employee_count > 0)
+        {
+            <span>Có @deleteCheck.employee_count nhân viên đang sử dụng loại này.</span>
+        }
+        @if (deleteCheck.active_employee_count > 0)
+        {
+            <span>Có @deleteCheck.active_employee_count nhân viên đang hoạt động.</span>
+        }
+    </div>
+}
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Thông tin loại nhân viên sẽ xóa</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Loại nhân viên:</dt>
+            <dd class="col-sm-9">
+                @switch (Model.loai_nv)
+                {
+                    case "BEP":
+                        <span class="badge bg-warning">Đầu bếp</span>
+                        break;
+                    case "PHUC_VU":
+                        <span class="badge bg-info">Phục vụ</span>
+                        break;
+                    case "DICH_VU":
+                        <span class="badge bg-success">Dịch vụ</span>
+                        break;
+                    case "THU_NGAN":
+                        <span class="badge bg-primary">Thu ngân</span>
+                        break;
+                    default:
+                        <span class="badge bg-secondary">@Model.loai_nv</span>
+                        break;
+                }
+            </dd>
+
+            <dt class="col-sm-3">Lương cơ bản:</dt>
+            <dd class="col-sm-9">@Model.luong_co_ban.ToString("N0") VNĐ</dd>
+        </dl>
+    </div>
+</div>
+
+<div class="mt-3">
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="loai_nv" />
+        <input type="submit" value="Xóa" class="btn btn-danger" />
+        <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+    </form>
+</div>

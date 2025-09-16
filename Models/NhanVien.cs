@@ -20,7 +20,7 @@ namespace BTL.Web.Models
 
         [Required]
         [StringLength(20)]
-        public LoaiNv loai_nv { get; set; }
+        public string loai_nv { get; set; } = string.Empty;
 
         public DateTime? ngay_vao_lam { get; set; }
 

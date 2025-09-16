@@ -1,0 +1,70 @@
+@model IEnumerable<BTL.Web.Models.LoaiNhanVien>
+
+@{
+    ViewData["Title"] = "Danh sách loại nhân viên";
+}
+
+<h1>Danh sách loại nhân viên</h1>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Message"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Tạo mới</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Loại nhân viên</th>
+            <th>Lương cơ bản</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @switch (item.loai_nv)
+                    {
+                        case "BEP":
+                            <span class="badge bg-warning">Đầu bếp</span>
+                            break;
+                        case "PHUC_VU":
+                            <span class="badge bg-info">Phục vụ</span>
+                            break;
+                        case "DICH_VU":
+                            <span class="badge bg-success">Dịch vụ</span>
+                            break;
+                        case "THU_NGAN":
+                            <span class="badge bg-primary">Thu ngân</span>
+                            break;
+                        default:
+                            <span class="badge bg-secondary">@item.loai_nv</span>
+                            break;
+                    }
+                </td>
+                <td>@item.luong_co_ban.ToString("N0") VNĐ</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.loai_nv" class="btn btn-sm btn-warning">Sửa</a> |
+                    <a asp-action="Details" asp-route-id="@item.loai_nv" class="btn btn-sm btn-info">Chi tiết</a> |
+                    <a asp-action="Delete" asp-route-id="@item.loai_nv" class="btn btn-sm btn-danger">Xóa</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

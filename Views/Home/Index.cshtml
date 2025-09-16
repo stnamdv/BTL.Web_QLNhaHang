@@ -7,28 +7,46 @@
     <p>Chào mừng đến với hệ thống quản lý nhà hàng</p>
 
     <div class="row mt-4">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Quản lý loại bàn</h5>
+                    <h5 class="card-title">
+                        <i class="bi bi-table"></i> Quản lý loại bàn
+                    </h5>
                     <p class="card-text">Thêm, sửa, xóa các loại bàn trong nhà hàng</p>
                     <a asp-controller="LoaiBan" asp-action="Index" class="btn btn-primary">Quản lý loại bàn</a>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Quản lý bàn ăn</h5>
+                    <h5 class="card-title">
+                        <i class="bi bi-grid-3x3-gap"></i> Quản lý bàn ăn
+                    </h5>
                     <p class="card-text">Quản lý các bàn ăn theo loại</p>
                     <a asp-controller="BanAn" asp-action="Index" class="btn btn-primary">Quản lý bàn ăn</a>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Quản lý món ăn</h5>
+                    <h5 class="card-title">
+                        <i class="bi bi-people"></i> Quản lý loại nhân viên
+                    </h5>
+                    <p class="card-text">Thêm, sửa, xóa các loại nhân viên và lương cơ bản</p>
+                    <a asp-controller="LoaiNhanVien" asp-action="Index" class="btn btn-primary">Quản lý loại nhân
+                        viên</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-egg-fried"></i> Quản lý món ăn
+                    </h5>
                     <p class="card-text">Thêm, sửa, xóa các món ăn trong thực đơn</p>
                     <a asp-controller="MonAn" asp-action="Index" class="btn btn-primary">Quản lý món ăn</a>
                 </div>

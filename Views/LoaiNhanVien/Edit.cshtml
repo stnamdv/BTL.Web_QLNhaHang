@@ -1,0 +1,94 @@
+@model BTL.Web.Models.LoaiNhanVien
+
+@{
+    ViewData["Title"] = "Sửa loại nhân viên";
+}
+
+<h1>Sửa loại nhân viên</h1>
+
+@if (ViewBag.UpdateCheck != null)
+{
+    var updateCheck = (BTL.Web.Models.LoaiNhanVienUpdateCheck)ViewBag.UpdateCheck;
+    <div class="alert alert-info" role="alert">
+        <i class="bi bi-info-circle"></i>
+        <strong>Thông tin:</strong>
+        @if (updateCheck.employee_count > 0)
+        {
+            <span>Có @updateCheck.employee_count nhân viên thuộc loại này.</span>
+        }
+        else
+        {
+            <span>Chưa có nhân viên nào thuộc loại này.</span>
+        }
+        @if (updateCheck.active_employee_count > 0)
+        {
+            <span>Có @updateCheck.active_employee_count nhân viên đang hoạt động.</span>
+        }
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="loai_nv" />
+
+            <div class="form-group">
+                <label class="control-label">Loại nhân viên</label>
+                <div class="form-control-plaintext">
+                    @if (ViewBag.LoaiNvDisplayName != null)
+                    {
+                        @switch (Model.loai_nv)
+                        {
+                            case "BEP":
+                                <span class="badge bg-warning">Đầu bếp</span>
+                                break;
+                            case "PHUC_VU":
+                                <span class="badge bg-info">Phục vụ</span>
+                                break;
+                            case "DICH_VU":
+                                <span class="badge bg-success">Dịch vụ</span>
+                                break;
+                            case "THU_NGAN":
+                                <span class="badge bg-primary">Thu ngân</span>
+                                break;
+                            default:
+                                <span class="badge bg-secondary">@Model.loai_nv</span>
+                                break;
+                        }
+                    }
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="luong_co_ban" class="control-label">Lương cơ bản (VNĐ)</label>
+                <input asp-for="luong_co_ban" class="form-control" type="number" step="1000" min="0"
+                    id="luong_co_ban" />
+                <span asp-validation-for="luong_co_ban" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mt-3">
+                <input type="submit" value="Lưu" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const luongInput = document.getElementById('luong_co_ban');
+            if (luongInput && luongInput.value) {
+                // Remove decimal places if they are .00
+                const value = parseFloat(luongInput.value);
+                if (value % 1 === 0) {
+                    luongInput.value = Math.floor(value).toString();
+                }
+            }
+        });
+    </script>
+}

@@ -1,0 +1,45 @@
+@model BTL.Web.Models.LoaiNhanVien
+
+@{
+    ViewData["Title"] = "Tạo loại nhân viên mới";
+}
+
+<h1>Tạo loại nhân viên mới</h1>
+
+<div class="alert alert-info" role="alert">
+    <i class="bi bi-info-circle"></i>
+    <strong>Lưu ý:</strong> Mỗi loại nhân viên chỉ có thể tạo một lần. Hãy chọn loại nhân viên chưa tồn tại.
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="loai_nv" class="control-label">Loại nhân viên</label>
+                <select asp-for="loai_nv" class="form-control" asp-items="@(new SelectList(ViewBag.LoaiNvOptions, "Value", "Text"))">
+                    <option value="">-- Chọn loại nhân viên --</option>
+                </select>
+                <span asp-validation-for="loai_nv" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="luong_co_ban" class="control-label">Lương cơ bản (VNĐ)</label>
+                <input asp-for="luong_co_ban" class="form-control" type="number" step="1000" min="0" />
+                <span asp-validation-for="luong_co_ban" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mt-3">
+                <input type="submit" value="Tạo" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
