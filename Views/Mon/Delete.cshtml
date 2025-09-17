@@ -1,0 +1,126 @@
+@model BTL.Web.Models.Mon
+
+@{
+    ViewData["Title"] = "Xóa món ăn";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title text-danger">
+                        <i class="fas fa-exclamation-triangle"></i> @ViewData["Title"]
+                    </h3>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Error"] != null)
+                    {
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    @TempData["Error"]
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                    }
+
+                    <div class="alert alert-warning">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-exclamation-triangle"></i> Cảnh báo!
+                        </h5>
+                        <p>Bạn có chắc chắn muốn xóa món ăn này không? Hành động này không thể hoàn tác.</p>
+                        <hr>
+                        <p class="mb-0">Món ăn sẽ bị xóa vĩnh viễn khỏi hệ thống.</p>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-info-circle"></i> Thông tin món ăn sẽ bị xóa
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <dl class="row">
+                                        <dt class="col-sm-3">Mã món:</dt>
+                                        <dd class="col-sm-9">
+                                            <span class="badge bg-secondary fs-6">@Model.ma_mon</span>
+                                        </dd>
+
+                                        <dt class="col-sm-3">Tên món:</dt>
+                                        <dd class="col-sm-9">
+                                            <strong>@Model.ten_mon</strong>
+                                        </dd>
+
+                                        <dt class="col-sm-3">Loại món:</dt>
+                                        <dd class="col-sm-9">
+                                            @{
+                                                        var loaiMonText = Model.loai_mon switch
+                                                        {
+                                                                    BTL.Web.Models.LoaiMon.KHAI_VI => "Khai vị",
+                                                                    BTL.Web.Models.LoaiMon.MON_CHINH => "Món chính",
+                                                                    BTL.Web.Models.LoaiMon.TRANG_MIENG => "Tráng miệng",
+                                                                    _ => Model.loai_mon.ToString()
+                                                        };
+                                            }
+                                            <span class="badge bg-info fs-6">@loaiMonText</span>
+                                        </dd>
+
+                                        <dt class="col-sm-3">Giá:</dt>
+                                        <dd class="col-sm-9">
+                                            <strong class="text-success fs-5">@Model.gia.ToString("N0") ₫</strong>
+                                        </dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="card border-danger">
+                                <div class="card-header bg-danger text-white">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-exclamation-triangle"></i> Lưu ý quan trọng
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2">
+                                            <i class="fas fa-times text-danger"></i>
+                                            Món ăn sẽ bị xóa vĩnh viễn
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-times text-danger"></i>
+                                            Công thức sẽ bị xóa theo
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-exclamation-triangle text-warning"></i>
+                                            Không thể xóa nếu món đang được sử dụng
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-end">
+                                <form asp-action="Delete" method="post" class="d-inline">
+                                    <input type="hidden" asp-for="mon_id" />
+                                    <button type="submit" class="btn btn-danger me-2" onclick="return confirm('Bạn có chắc chắn muốn xóa món ăn này?')">
+                                        <i class="fas fa-trash"></i> Xác nhận xóa
+                                    </button>
+                                </form>
+                                <a asp-action="Index" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Hủy
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

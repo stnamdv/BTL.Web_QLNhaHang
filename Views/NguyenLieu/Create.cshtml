@@ -1,0 +1,180 @@
+@model BTL.Web.Models.NguyenLieu
+
+@{
+    ViewData["Title"] = "Thêm nguyên liệu mới";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">@ViewData["Title"]</h3>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post" id="createForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">
+                                            <i class="fas fa-info-circle"></i> Thông tin nguyên liệu
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label asp-for="ten" class="form-label">Tên nguyên liệu <span class="text-danger">*</span></label>
+                                            <input asp-for="ten" class="form-control" required />
+                                            <span asp-validation-for="ten" class="text-danger"></span>
+                                            <div class="form-text">Tên nguyên liệu phải rõ ràng và không trùng lặp</div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label asp-for="don_vi" class="form-label">Đơn vị <span class="text-danger">*</span></label>
+                                            <div class="input-group">
+                                                <input asp-for="don_vi" class="form-control" list="donViList" required />
+                                                <datalist id="donViList">
+                                                    @foreach (var donVi in ViewBag.DonViOptions as List<SelectListItem>)
+                                                    {
+                                                        <option value="@donVi.Value">
+                                                    }
+                                                </datalist>
+                                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="tooltip" 
+                                                        title="Các đơn vị phổ biến: kg, g, l, ml, cái, hộp, gói...">
+                                                    <i class="fas fa-info"></i>
+                                                </button>
+                                            </div>
+                                            <span asp-validation-for="don_vi" class="text-danger"></span>
+                                            <div class="form-text">Ví dụ: kg, g, l, ml, cái, hộp, gói...</div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label asp-for="nguon_goc" class="form-label">Nguồn gốc <span class="text-danger">*</span></label>
+                                            <textarea asp-for="nguon_goc" class="form-control" rows="4" required 
+                                                      placeholder="Mô tả chi tiết nguồn gốc nguyên liệu..."></textarea>
+                                            <span asp-validation-for="nguon_goc" class="text-danger"></span>
+                                            <div class="form-text">
+                                                <strong>Yêu cầu:</strong> Thông tin nguồn gốc phải rõ ràng, chi tiết (ít nhất 10 ký tự) 
+                                                để đảm bảo tính minh bạch và an toàn thực phẩm.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="card border-info">
+                                    <div class="card-header bg-info text-white">
+                                        <h5 class="card-title mb-0">
+                                            <i class="fas fa-lightbulb"></i> Hướng dẫn
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <h6 class="text-primary">Tên nguyên liệu:</h6>
+                                        <ul class="small">
+                                            <li>Phải rõ ràng, dễ hiểu</li>
+                                            <li>Không được trùng lặp</li>
+                                            <li>Tối đa 160 ký tự</li>
+                                        </ul>
+
+                                        <h6 class="text-primary">Đơn vị:</h6>
+                                        <ul class="small">
+                                            <li>Chọn đơn vị phù hợp</li>
+                                            <li>Ví dụ: kg, g, l, ml</li>
+                                            <li>Tối đa 20 ký tự</li>
+                                        </ul>
+
+                                        <h6 class="text-primary">Nguồn gốc:</h6>
+                                        <ul class="small">
+                                            <li>Mô tả chi tiết nguồn gốc</li>
+                                            <li>Bao gồm nhà cung cấp, xuất xứ</li>
+                                            <li>Đảm bảo tính minh bạch</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="card border-warning mt-3">
+                                    <div class="card-header bg-warning text-dark">
+                                        <h5 class="card-title mb-0">
+                                            <i class="fas fa-exclamation-triangle"></i> Lưu ý quan trọng
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="small mb-0">
+                                            Thông tin nguồn gốc là bắt buộc và phải rõ ràng để đảm bảo 
+                                            tính minh bạch và an toàn thực phẩm theo quy định.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-end">
+                                    <button type="submit" class="btn btn-primary me-2">
+                                        <i class="fas fa-save"></i> Lưu
+                                    </button>
+                                    <a asp-action="Index" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> Hủy
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Initialize tooltips
+            $('[data-bs-toggle="tooltip"]').tooltip();
+
+            // Validate nguồn gốc real-time
+            $('#nguon_goc').on('input', function() {
+                const nguonGoc = $(this).val().trim();
+                const minLength = 10;
+                
+                if (nguonGoc.length > 0 && nguonGoc.length < minLength) {
+                    $(this).addClass('is-invalid');
+                    if (!$(this).next('.invalid-feedback').length) {
+                        $(this).after(`<div class="invalid-feedback">Nguồn gốc phải có ít nhất ${minLength} ký tự</div>`);
+                    }
+                } else {
+                    $(this).removeClass('is-invalid');
+                    $(this).next('.invalid-feedback').remove();
+                }
+            });
+
+            // Validate form trước khi submit
+            $('#createForm').submit(function(e) {
+                const ten = $('#ten').val().trim();
+                const donVi = $('#don_vi').val().trim();
+                const nguonGoc = $('#nguon_goc').val().trim();
+                
+                if (!ten || !donVi || !nguonGoc) {
+                    e.preventDefault();
+                    alert('Vui lòng điền đầy đủ thông tin bắt buộc');
+                    return false;
+                }
+                
+                if (nguonGoc.length < 10) {
+                    e.preventDefault();
+                    alert('Thông tin nguồn gốc phải có ít nhất 10 ký tự');
+                    return false;
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,261 @@
+@model BTL.Web.Models.Mon
+
+@{
+    ViewData["Title"] = "Thêm món ăn mới";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">@ViewData["Title"]</h3>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post" id="createForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="row">
+                            <!-- Thông tin cơ bản -->
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">
+                                            <i class="fas fa-info-circle"></i> Thông tin cơ bản
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label asp-for="loai_mon" class="form-label">Loại món <span class="text-danger">*</span></label>
+                                            <select asp-for="loai_mon" class="form-select" id="loaiMon" required>
+                                                <option value="">-- Chọn loại món --</option>
+                                                @foreach (var option in ViewBag.LoaiMonOptions as List<SelectListItem>)
+                                                {
+                                                    <option value="@option.Value">@option.Text</option>
+                                                }
+                                            </select>
+                                            <span asp-validation-for="loai_mon" class="text-danger"></span>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label asp-for="ma_mon" class="form-label">Mã món <span class="text-danger">*</span></label>
+                                            <div class="input-group">
+                                                <input asp-for="ma_mon" class="form-control" id="maMon" required />
+                                                <button type="button" class="btn btn-outline-secondary" id="generateMaMon">
+                                                    <i class="fas fa-magic"></i> Tự động
+                                                </button>
+                                            </div>
+                                            <span asp-validation-for="ma_mon" class="text-danger"></span>
+                                            <div class="form-text">Mã món sẽ tự động bắt đầu theo loại: KV- (khai vị), MC- (món chính), TM- (tráng miệng)</div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label asp-for="ten_mon" class="form-label">Tên món <span class="text-danger">*</span></label>
+                                            <input asp-for="ten_mon" class="form-control" required />
+                                            <span asp-validation-for="ten_mon" class="text-danger"></span>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label asp-for="gia" class="form-label">Giá (₫) <span class="text-danger">*</span></label>
+                                            <input asp-for="gia" class="form-control" type="number" step="1000" min="0" required />
+                                            <span asp-validation-for="gia" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Công thức -->
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">
+                                            <i class="fas fa-list"></i> Công thức
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <button type="button" class="btn btn-primary btn-sm" id="addCongThuc">
+                                                <i class="fas fa-plus"></i> Thêm nguyên liệu
+                                            </button>
+                                        </div>
+
+                                        <div id="congThucList">
+                                            <!-- Công thức sẽ được thêm động ở đây -->
+                                        </div>
+
+                                        <input type="hidden" id="congThucJson" name="congThucJson" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-end">
+                                    <button type="submit" class="btn btn-primary me-2">
+                                        <i class="fas fa-save"></i> Lưu
+                                    </button>
+                                    <a asp-action="Index" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> Hủy
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        let congThucCount = 0;
+        const nguyenLieus = @Html.Raw(Json.Serialize(ViewBag.NguyenLieus));
+
+        $(document).ready(function() {
+            // Tự động tạo mã món khi chọn loại món
+            $('#loaiMon').change(function() {
+                const loaiMon = $(this).val();
+                if (loaiMon) {
+                    generateMaMon(loaiMon);
+                }
+            });
+
+            // Nút tạo mã món tự động
+            $('#generateMaMon').click(function() {
+                const loaiMon = $('#loaiMon').val();
+                if (loaiMon) {
+                    generateMaMon(loaiMon);
+                } else {
+                    alert('Vui lòng chọn loại món trước');
+                }
+            });
+
+            // Thêm công thức
+            $('#addCongThuc').click(function() {
+                addCongThucRow();
+            });
+
+            // Thêm một dòng công thức ban đầu
+            addCongThucRow();
+        });
+
+        function generateMaMon(loaiMon) {
+            $.post('@Url.Action("GenerateMaMon", "Mon")', { loaiMon: loaiMon })
+                .done(function(data) {
+                    if (data.success) {
+                        $('#maMon').val(data.maMon);
+                    } else {
+                        alert('Lỗi: ' + data.message);
+                    }
+                })
+                .fail(function() {
+                    alert('Có lỗi xảy ra khi tạo mã món');
+                });
+        }
+
+        function addCongThucRow() {
+            const rowId = 'congThuc_' + congThucCount;
+            const rowHtml = `
+                <div class="row mb-2" id="${rowId}">
+                    <div class="col-md-5">
+                        <select class="form-select nguyen-lieu-select" data-row="${congThucCount}">
+                            <option value="">-- Chọn nguyên liệu --</option>
+                            ${nguyenLieus.map(nl => `<option value="${nl.nl_id}">${nl.ten} (${nl.don_vi})</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="number" class="form-control dinh-luong-input" data-row="${congThucCount}" 
+                               step="0.001" min="0.001" placeholder="Định lượng">
+                    </div>
+                    <div class="col-md-2">
+                        <span class="don-vi-display text-muted"></span>
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-sm btn-danger" onclick="removeCongThucRow('${rowId}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            $('#congThucList').append(rowHtml);
+            congThucCount++;
+            updateCongThucJson();
+        }
+
+        function removeCongThucRow(rowId) {
+            $('#' + rowId).remove();
+            updateCongThucJson();
+        }
+
+        // Cập nhật đơn vị khi chọn nguyên liệu
+        $(document).on('change', '.nguyen-lieu-select', function() {
+            const row = $(this).data('row');
+            const selectedOption = $(this).find('option:selected');
+            const donVi = selectedOption.text().match(/\(([^)]+)\)$/);
+            
+            if (donVi) {
+                $(`.don-vi-display`).eq(row).text(donVi[1]);
+            } else {
+                $(`.don-vi-display`).eq(row).text('');
+            }
+            
+            updateCongThucJson();
+        });
+
+        // Cập nhật JSON khi thay đổi định lượng
+        $(document).on('input', '.dinh-luong-input', function() {
+            updateCongThucJson();
+        });
+
+        function updateCongThucJson() {
+            const congThucs = [];
+            
+            $('.nguyen-lieu-select').each(function() {
+                const nlId = $(this).val();
+                const row = $(this).data('row');
+                const dinhLuong = $(`.dinh-luong-input[data-row="${row}"]`).val();
+                
+                if (nlId && dinhLuong && parseFloat(dinhLuong) > 0) {
+                    congThucs.push({
+                        nl_id: parseInt(nlId),
+                        dinh_luong: parseFloat(dinhLuong)
+                    });
+                }
+            });
+            
+            $('#congThucJson').val(JSON.stringify(congThucs));
+        }
+
+        // Validate form trước khi submit
+        $('#createForm').submit(function(e) {
+            const loaiMon = $('#loaiMon').val();
+            const maMon = $('#maMon').val();
+            
+            if (!loaiMon || !maMon) {
+                e.preventDefault();
+                alert('Vui lòng chọn loại món và nhập mã món');
+                return false;
+            }
+            
+            // Validate mã món format
+            const expectedPrefix = loaiMon === 'KHAI_VI' ? 'KV-' : 
+                                  loaiMon === 'MON_CHINH' ? 'MC-' : 'TM-';
+            
+            if (!maMon.startsWith(expectedPrefix)) {
+                e.preventDefault();
+                alert(`Mã món phải bắt đầu bằng "${expectedPrefix}" cho loại món này`);
+                return false;
+            }
+            
+            updateCongThucJson();
+        });
+    </script>
+}

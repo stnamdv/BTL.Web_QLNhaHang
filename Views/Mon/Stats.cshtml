@@ -1,0 +1,207 @@
+@model IEnumerable<dynamic>
+
+@{
+    ViewData["Title"] = "Thống kê món ăn";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-bar"></i> @ViewData["Title"]
+                    </h3>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["Error"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (Model.Any())
+                    {
+                        <div class="row">
+                            @foreach (var stat in Model)
+                            {
+                                <div class="col-md-4 mb-4">
+                                    <div class="card border-primary">
+                                        <div class="card-header bg-primary text-white">
+                                            <h5 class="card-title mb-0">
+                                                @{
+                                                    var loaiMonText = stat.loai_mon switch
+                                                    {
+                                                        "KHAI_VI" => "Khai vị",
+                                                        "MON_CHINH" => "Món chính",
+                                                        "TRANG_MIENG" => "Tráng miệng",
+                                                        _ => stat.loai_mon.ToString()
+                                                    };
+                                                }
+                                                <i class="fas fa-utensils"></i> @loaiMonText
+                                            </h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row text-center">
+                                                <div class="col-6">
+                                                    <h3 class="text-primary">@stat.so_luong</h3>
+                                                    <small class="text-muted">Số món</small>
+                                                </div>
+                                                <div class="col-6">
+                                                    <h3 class="text-success">@(((decimal)stat.gia_trung_binh).ToString("N0")) ₫</h3>
+                                                    <small class="text-muted">Giá TB</small>
+                                                </div>
+                                            </div>
+                                            <hr>
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <small class="text-muted">Giá thấp nhất:</small>
+                                                    <br>
+                                                    <strong class="text-info">@(((decimal)stat.gia_thap_nhat).ToString("N0")) ₫</strong>
+                                                </div>
+                                                <div class="col-6">
+                                                    <small class="text-muted">Giá cao nhất:</small>
+                                                    <br>
+                                                    <strong class="text-warning">@(((decimal)stat.gia_cao_nhat).ToString("N0")) ₫</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Tổng kết -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card border-success">
+                                    <div class="card-header bg-success text-white">
+                                        <h5 class="card-title mb-0">
+                                            <i class="fas fa-chart-pie"></i> Tổng kết
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row text-center">
+                                            <div class="col-md-3">
+                                                <h4 class="text-primary">@Model.Sum(s => (int)s.so_luong)</h4>
+                                                <small class="text-muted">Tổng số món</small>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <h4 class="text-success">@(((decimal)Model.Average(s => (decimal)s.gia_trung_binh)).ToString("N0")) ₫</h4>
+                                                <small class="text-muted">Giá trung bình chung</small>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <h4 class="text-info">@(((decimal)Model.Min(s => (decimal)s.gia_thap_nhat)).ToString("N0")) ₫</h4>
+                                                <small class="text-muted">Giá thấp nhất</small>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <h4 class="text-warning">@(((decimal)Model.Max(s => (decimal)s.gia_cao_nhat)).ToString("N0")) ₫</h4>
+                                                <small class="text-muted">Giá cao nhất</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Biểu đồ -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">
+                                            <i class="fas fa-chart-bar"></i> Biểu đồ phân bố giá theo loại món
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas id="priceChart" width="400" height="200"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Không có dữ liệu thống kê</h5>
+                            <p class="text-muted">Hãy thêm món ăn để xem thống kê!</p>
+                            <a asp-action="Create" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Thêm món ăn
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        @if (Model.Any())
+        {
+            <text>
+            const statsData = @Html.Raw(Json.Serialize(Model));
+            
+            const ctx = document.getElementById('priceChart').getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: statsData.map(s => {
+                        switch(s.loai_mon) {
+                            case 'KHAI_VI': return 'Khai vị';
+                            case 'MON_CHINH': return 'Món chính';
+                            case 'TRANG_MIENG': return 'Tráng miệng';
+                            default: return s.loai_mon;
+                        }
+                    }),
+                    datasets: [{
+                        label: 'Giá trung bình (₫)',
+                        data: statsData.map(s => s.gia_trung_binh),
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(255, 99, 132, 0.8)',
+                            'rgba(255, 205, 86, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(255, 205, 86, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString() + ' ₫';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Giá TB: ' + context.parsed.y.toLocaleString() + ' ₫';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            </text>
+        }
+    </script>
+}
