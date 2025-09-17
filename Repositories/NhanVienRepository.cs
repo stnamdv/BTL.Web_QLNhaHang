@@ -2,6 +2,7 @@ using BTL.Web.Data;
 using BTL.Web.Models;
 using Dapper;
 using Microsoft.Data.SqlClient;
+using System.Data;
 
 namespace BTL.Web.Repositories
 {
@@ -20,6 +21,25 @@ namespace BTL.Web.Repositories
             return await connection.QueryAsync<NhanVienWithLoaiNhanVien>("EXEC sp_NhanVien_GetAll");
         }
 
+        public async Task<PagedResult<NhanVienWithLoaiNhanVien>> GetAllPagedAsync(int pageNumber, int pageSize)
+        {
+            using var connection = _context.CreateConnection();
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@page_number", pageNumber);
+            parameters.Add("@page_size", pageSize);
+            parameters.Add("@total_count", dbType: System.Data.DbType.Int32, direction: System.Data.ParameterDirection.Output);
+
+            var items = await connection.QueryAsync<NhanVienWithLoaiNhanVien>(
+                "sp_NhanVien_GetAllPaged",
+                parameters,
+                commandType: System.Data.CommandType.StoredProcedure);
+
+            var totalItems = parameters.Get<int>("@total_count");
+
+            return new PagedResult<NhanVienWithLoaiNhanVien>(items, totalItems, pageNumber, pageSize);
+        }
+
         public async Task<NhanVien?> GetByIdAsync(int id)
         {
             using var connection = _context.CreateConnection();
@@ -34,6 +54,26 @@ namespace BTL.Web.Repositories
             return await connection.QueryAsync<NhanVienWithLoaiNhanVien>(
                 "EXEC sp_NhanVien_GetByLoaiNv @loai_nv",
                 new { loai_nv = loaiNv });
+        }
+
+        public async Task<PagedResult<NhanVienWithLoaiNhanVien>> GetByLoaiNvPagedAsync(string loaiNv, int pageNumber, int pageSize)
+        {
+            using var connection = _context.CreateConnection();
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@loai_nv", loaiNv);
+            parameters.Add("@page_number", pageNumber);
+            parameters.Add("@page_size", pageSize);
+            parameters.Add("@total_count", dbType: System.Data.DbType.Int32, direction: System.Data.ParameterDirection.Output);
+
+            var items = await connection.QueryAsync<NhanVienWithLoaiNhanVien>(
+                "sp_NhanVien_GetByLoaiNvPaged",
+                parameters,
+                commandType: System.Data.CommandType.StoredProcedure);
+
+            var totalItems = parameters.Get<int>("@total_count");
+
+            return new PagedResult<NhanVienWithLoaiNhanVien>(items, totalItems, pageNumber, pageSize);
         }
 
         public async Task<NhanVien> CreateAsync(NhanVien nhanVien)
@@ -57,7 +97,7 @@ namespace BTL.Web.Repositories
             using var connection = _context.CreateConnection();
             var sql = "EXEC sp_NhanVien_Update @nv_id, @ho_ten, @loai_nv, @ngay_vao_lam, @trang_thai";
 
-            await connection.ExecuteAsync(sql, new
+            var result = await connection.QuerySingleAsync<dynamic>(sql, new
             {
                 nv_id = nhanVien.nv_id,
                 ho_ten = nhanVien.ho_ten,
@@ -65,15 +105,27 @@ namespace BTL.Web.Repositories
                 ngay_vao_lam = nhanVien.ngay_vao_lam,
                 trang_thai = nhanVien.trang_thai
             });
+
+            var rowsAffected = (int)result.rows_affected;
+            Console.WriteLine($"Update rows affected: {rowsAffected}");
+
+            if (rowsAffected == 0)
+            {
+                throw new InvalidOperationException("Không thể cập nhật nhân viên. Có thể nhân viên không tồn tại.");
+            }
+
             return nhanVien;
         }
 
         public async Task<bool> DeleteAsync(int id)
         {
             using var connection = _context.CreateConnection();
-            var rowsAffected = await connection.ExecuteAsync(
+            var result = await connection.QuerySingleAsync<dynamic>(
                 "EXEC sp_NhanVien_Delete @nv_id",
                 new { nv_id = id });
+
+            var rowsAffected = (int)result.rows_affected;
+            Console.WriteLine($"Rows affected: {rowsAffected}");
             return rowsAffected > 0;
         }
 
@@ -91,6 +143,7 @@ namespace BTL.Web.Repositories
             var nhanVien = new NhanVien
             {
                 nv_id = result.nv_id,
+                ma_nv = result.ma_nv,
                 ho_ten = result.ho_ten,
                 loai_nv = result.loai_nv,
                 ngay_vao_lam = result.ngay_vao_lam,
@@ -121,6 +174,11 @@ namespace BTL.Web.Repositories
                 "EXEC sp_NhanVien_CanDelete @nv_id",
                 new { nv_id = id });
 
+            if (result == null)
+            {
+                return (false, "Không thể kiểm tra quyền xóa nhân viên");
+            }
+
             return (result.can_delete, result.message);
         }
 
@@ -128,6 +186,25 @@ namespace BTL.Web.Repositories
         {
             using var connection = _context.CreateConnection();
             return await connection.QueryAsync<NhanVienWithLoaiNhanVien>("EXEC sp_NhanVien_GetActive");
+        }
+
+        public async Task<PagedResult<NhanVienWithLoaiNhanVien>> GetActivePagedAsync(int pageNumber, int pageSize)
+        {
+            using var connection = _context.CreateConnection();
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@page_number", pageNumber);
+            parameters.Add("@page_size", pageSize);
+            parameters.Add("@total_count", dbType: System.Data.DbType.Int32, direction: System.Data.ParameterDirection.Output);
+
+            var items = await connection.QueryAsync<NhanVienWithLoaiNhanVien>(
+                "sp_NhanVien_GetActivePaged",
+                parameters,
+                commandType: System.Data.CommandType.StoredProcedure);
+
+            var totalItems = parameters.Get<int>("@total_count");
+
+            return new PagedResult<NhanVienWithLoaiNhanVien>(items, totalItems, pageNumber, pageSize);
         }
 
         public async Task<IEnumerable<NhanVienWithLoaiNhanVien>> SearchByNameAsync(string searchTerm)
@@ -138,10 +215,86 @@ namespace BTL.Web.Repositories
                 new { search_term = searchTerm });
         }
 
+        public async Task<PagedResult<NhanVienWithLoaiNhanVien>> SearchByNamePagedAsync(string searchTerm, int pageNumber, int pageSize)
+        {
+            using var connection = _context.CreateConnection();
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@search_term", searchTerm);
+            parameters.Add("@page_number", pageNumber);
+            parameters.Add("@page_size", pageSize);
+            parameters.Add("@total_count", dbType: System.Data.DbType.Int32, direction: System.Data.ParameterDirection.Output);
+
+            var items = await connection.QueryAsync<NhanVienWithLoaiNhanVien>(
+                "sp_NhanVien_SearchByNamePaged",
+                parameters,
+                commandType: System.Data.CommandType.StoredProcedure);
+
+            var totalItems = parameters.Get<int>("@total_count");
+
+            return new PagedResult<NhanVienWithLoaiNhanVien>(items, totalItems, pageNumber, pageSize);
+        }
+
         public async Task<IEnumerable<dynamic>> GetStatsByLoaiAsync()
         {
             using var connection = _context.CreateConnection();
             return await connection.QueryAsync("EXEC sp_NhanVien_GetStatsByLoai");
+        }
+
+        public async Task<NhanVienBulkResult> BulkUpsertAsync(IEnumerable<NhanVienExcelData> nhanVienData)
+        {
+            using var connection = _context.CreateConnection();
+
+            // Tạo DataTable từ IEnumerable
+            var dataTable = new System.Data.DataTable();
+            dataTable.Columns.Add("ma_nv", typeof(string));
+            dataTable.Columns.Add("ho_ten", typeof(string));
+            dataTable.Columns.Add("loai_nv", typeof(string));
+            dataTable.Columns.Add("ngay_vao_lam", typeof(DateTime));
+            dataTable.Columns.Add("trang_thai", typeof(string));
+
+            foreach (var item in nhanVienData)
+            {
+                var ngayVaoLam = item.GetNgayVaoLamAsDateTime();
+                dataTable.Rows.Add(
+                    string.IsNullOrWhiteSpace(item.MaNhanVien) ? DBNull.Value : item.MaNhanVien,
+                    item.HoTen,
+                    item.GetLoaiNvFromBoPhan(),
+                    ngayVaoLam.HasValue ? (object)ngayVaoLam.Value : DBNull.Value,
+                    item.GetTrangThaiFromDisplay()
+                );
+            }
+
+            // Sử dụng SqlCommand trực tiếp cho table-valued parameter
+            using var command = new SqlCommand("EXEC sp_NhanVien_BulkUpsert @NhanVienData", (SqlConnection)connection);
+            var parameter = new SqlParameter("@NhanVienData", SqlDbType.Structured)
+            {
+                TypeName = "dbo.NhanVienBulkType",
+                Value = dataTable
+            };
+            command.Parameters.Add(parameter);
+
+            await connection.OpenAsync();
+            using var reader = await command.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
+            {
+                return new NhanVienBulkResult
+                {
+                    InsertedCount = reader.GetInt32("inserted_count"),
+                    UpdatedCount = reader.GetInt32("updated_count"),
+                    ErrorCount = reader.GetInt32("error_count"),
+                    ErrorMessages = reader.GetString("error_messages")
+                };
+            }
+
+            return new NhanVienBulkResult
+            {
+                InsertedCount = 0,
+                UpdatedCount = 0,
+                ErrorCount = 1,
+                ErrorMessages = "Không thể thực hiện bulk upsert"
+            };
         }
     }
 }

@@ -26,6 +26,8 @@ namespace BTL.Web.Models
         [Key]
         public int nv_id { get; set; }
 
+        public string? ma_nv { get; set; } = string.Empty;
+
         [Required(ErrorMessage = "Họ tên không được để trống")]
         [StringLength(120, ErrorMessage = "Họ tên không được vượt quá 120 ký tự")]
         public string ho_ten { get; set; } = string.Empty;
@@ -43,6 +45,6 @@ namespace BTL.Web.Models
 
         // Navigation properties
         [ForeignKey("loai_nv")]
-        public virtual LoaiNhanVien LoaiNhanVien { get; set; } = null!;
+        public virtual LoaiNhanVien? LoaiNhanVien { get; set; }
     }
 }

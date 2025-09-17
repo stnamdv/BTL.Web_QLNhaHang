@@ -1,0 +1,132 @@
+@{
+    ViewData["Title"] = "Upload Danh Sách Nhân Viên";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-upload"></i>
+                        Upload Danh Sách Nhân Viên
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5><i class="icon fas fa-info"></i> Hướng dẫn upload file Excel</h5>
+                        <p>File Excel phải có cấu trúc như sau:</p>
+                        <ul>
+                            <li><strong>STT:</strong> Số thứ tự</li>
+                            <li><strong>Mã nhân viên:</strong> Để trống nếu thêm mới, điền mã nếu cập nhật</li>
+                            <li><strong>Họ tên:</strong> Tên đầy đủ của nhân viên (bắt buộc)</li>
+                            <li><strong>Bộ phận:</strong> Đầu bếp, Phục vụ, Dịch vụ, Thu ngân (bắt buộc)</li>
+                            <li><strong>Ngày vào làm:</strong> Định dạng yyyy-MM-dd (ví dụ: 2021-05-22)</li>
+                            <li><strong>Trạng thái:</strong> Đang làm việc hoặc Đã nghỉ (bắt buộc)</li>
+                        </ul>
+                    </div>
+
+                    <form asp-action="Upload" method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        
+                        <div class="form-group">
+                            <label for="file" class="control-label">Chọn file Excel (.xlsx)</label>
+                            <div class="input-group">
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="file" name="file" accept=".xlsx" required>
+                                    <label class="custom-file-label" for="file">Chọn file...</label>
+                                </div>
+                                <div class="input-group-append">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-file-excel"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <small class="form-text text-muted">
+                                Chỉ chấp nhận file Excel (.xlsx) với dung lượng tối đa 10MB
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload"></i>
+                                Upload File
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i>
+                                Quay lại
+                            </a>
+                        </div>
+                    </form>
+
+                    <div class="mt-4">
+                        <h5>Ví dụ cấu trúc file Excel:</h5>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>STT</th>
+                                        <th>Mã nhân viên</th>
+                                        <th>Họ tên</th>
+                                        <th>Bộ phận</th>
+                                        <th>Ngày vào làm</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td></td>
+                                        <td>Nguyễn Văn A</td>
+                                        <td>Đầu bếp</td>
+                                        <td>2021-05-22</td>
+                                        <td>Đang làm việc</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>NV001</td>
+                                        <td>Trần Thị B</td>
+                                        <td>Phục vụ</td>
+                                        <td>2021-06-15</td>
+                                        <td>Đang làm việc</td>
+                                    </tr>
+                                    <tr>
+                                        <td>3</td>
+                                        <td></td>
+                                        <td>Lê Văn C</td>
+                                        <td>Thu ngân</td>
+                                        <td>2021-07-01</td>
+                                        <td>Đã nghỉ</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+        <script>
+            // Update file input label when file is selected
+            document.getElementById('file').addEventListener('change', function(e) {
+                var fileName = e.target.files[0]?.name || 'Chọn file...';
+                document.querySelector('.custom-file-label').textContent = fileName;
+            });
+
+            // File size validation
+            document.getElementById('file').addEventListener('change', function(e) {
+                var file = e.target.files[0];
+                if (file) {
+                    var maxSize = 10 * 1024 * 1024; // 10MB
+                    if (file.size > maxSize) {
+                        alert('File quá lớn! Vui lòng chọn file nhỏ hơn 10MB.');
+                        e.target.value = '';
+                        document.querySelector('.custom-file-label').textContent = 'Chọn file...';
+                    }
+                }
+            });
+        </script>
+}

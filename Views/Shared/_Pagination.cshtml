@@ -1,0 +1,186 @@
+@{
+    var currentPage = ViewBag.CurrentPage as int? ?? 1;
+    var totalPages = ViewBag.TotalPages as int? ?? 1;
+    var totalItems = ViewBag.TotalItems as int? ?? 0;
+    var pageSize = ViewBag.PageSize as int? ?? 10;
+    var searchTerm = ViewBag.SearchTerm as string;
+    var loaiNv = ViewBag.LoaiNv as string;
+    var isActive = ViewBag.IsActive as bool? ?? false;
+    var isSearch = ViewBag.IsSearch as bool? ?? false;
+}
+
+@if (totalPages > 1)
+{
+            <nav aria-label="Phân trang">
+                <div class="d-flex justify-content-between align-items-center">
+                    <!-- Thông tin phân trang -->
+                    <div class="text-muted">
+                        Hiển thị @((currentPage - 1) * pageSize + 1) - @(Math.Min(currentPage * pageSize, totalItems)) 
+                        trong tổng số @totalItems bản ghi
+                    </div>
+
+                    <!-- Điều hướng phân trang -->
+                    <ul class="pagination pagination-sm mb-0">
+                        <!-- Nút Trang đầu -->
+                        @if (currentPage > 1)
+                        {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@GetPaginationUrl(1)" aria-label="Trang đầu">
+                                            <span aria-hidden="true">&laquo;&laquo;</span>
+                                        </a>
+                                    </li>
+                        }
+
+                        <!-- Nút Trang trước -->
+                        @if (currentPage > 1)
+                        {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@GetPaginationUrl(currentPage - 1)" aria-label="Trang trước">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                        }
+
+                        <!-- Các số trang -->
+                        @{
+                                    var startPage = Math.Max(1, currentPage - 2);
+                                    var endPage = Math.Min(totalPages, currentPage + 2);
+                        }
+
+                        @for (int i = startPage; i <= endPage; i++)
+                        {
+                                    <li class="page-item @(i == currentPage ? "active" : "")">
+                                        <a class="page-link" href="@GetPaginationUrl(i)">@i</a>
+                                    </li>
+                        }
+
+                        <!-- Nút Trang sau -->
+                        @if (currentPage < totalPages)
+                        {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@GetPaginationUrl(currentPage + 1)" aria-label="Trang sau">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                        }
+
+                        <!-- Nút Trang cuối -->
+                        @if (currentPage < totalPages)
+                        {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@GetPaginationUrl(totalPages)" aria-label="Trang cuối">
+                                            <span aria-hidden="true">&raquo;&raquo;</span>
+                                        </a>
+                                    </li>
+                        }
+                    </ul>
+
+                    <!-- Dropdown chọn kích thước trang -->
+                    <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0">Hiển thị:</label>
+                        <select class="form-select form-select-sm" style="width: auto;" onchange="changePageSize(this.value)">
+                            @if (pageSize == 5)
+                            {
+                                <option value="5" selected="selected">5</option>
+                            }
+                            else
+                            {
+                                <option value="5">5</option>
+                            }
+                            
+                            @if (pageSize == 10)
+                            {
+                                <option value="10" selected="selected">10</option>
+                            }
+                            else
+                            {
+                                <option value="10">10</option>
+                            }
+                            
+                            @if (pageSize == 20)
+                            {
+                                <option value="20" selected="selected">20</option>
+                            }
+                            else
+                            {
+                                <option value="20">20</option>
+                            }
+                            
+                            @if (pageSize == 50)
+                            {
+                                <option value="50" selected="selected">50</option>
+                            }
+                            else
+                            {
+                                <option value="50">50</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </nav>
+}
+
+@functions {
+    string GetPaginationUrl(int page)
+    {
+        var url = "";
+        var currentPageSize = ViewBag.PageSize as int? ?? 10;
+        var currentSearchTerm = ViewBag.SearchTerm as string;
+        var currentLoaiNv = ViewBag.LoaiNv as string;
+        var currentIsActive = ViewBag.IsActive as bool? ?? false;
+        var currentIsSearch = ViewBag.IsSearch as bool? ?? false;
+        
+        if (currentIsSearch && !string.IsNullOrEmpty(currentSearchTerm))
+        {
+            url = Url.Action("Search", "NhanVien", new { searchTerm = currentSearchTerm, page = page, pageSize = currentPageSize });
+        }
+        else if (!string.IsNullOrEmpty(currentLoaiNv))
+        {
+            url = Url.Action("GetByLoaiNv", "NhanVien", new { loaiNv = currentLoaiNv, page = page, pageSize = currentPageSize });
+        }
+        else if (currentIsActive)
+        {
+            url = Url.Action("GetActive", "NhanVien", new { page = page, pageSize = currentPageSize });
+        }
+        else
+        {
+            url = Url.Action("Index", "NhanVien", new { page = page, pageSize = currentPageSize });
+        }
+        
+        return url ?? "";
+    }
+}
+
+<script>
+function changePageSize(newPageSize) {
+    var url = "";
+    
+    @if (ViewBag.IsSearch as bool? == true && !string.IsNullOrEmpty(ViewBag.SearchTerm as string))
+    {
+                <text>
+                url = '@Url.Action("Search", "NhanVien", new { searchTerm = ViewBag.SearchTerm, page = 1, pageSize = "__PAGESIZE__" })';
+                </text>
+    }
+    else if (!string.IsNullOrEmpty(ViewBag.LoaiNv as string))
+    {
+                <text>
+                url = '@Url.Action("GetByLoaiNv", "NhanVien", new { loaiNv = ViewBag.LoaiNv, page = 1, pageSize = "__PAGESIZE__" })';
+                </text>
+    }
+    else if (ViewBag.IsActive as bool? == true)
+    {
+                <text>
+                url = '@Url.Action("GetActive", "NhanVien", new { page = 1, pageSize = "__PAGESIZE__" })';
+                </text>
+    }
+    else
+    {
+                <text>
+                url = '@Url.Action("Index", "NhanVien", new { page = 1, pageSize = "__PAGESIZE__" })';
+                </text>
+    }
+    
+    url = url.replace('__PAGESIZE__', newPageSize);
+    window.location.href = url;
+}
+</script>

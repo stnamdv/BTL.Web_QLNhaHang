@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using BTL.Web.Models;
 using BTL.Web.Services;
+using System.Text.Json;
 
 namespace BTL.Web.Controllers
 {
@@ -16,12 +17,23 @@ namespace BTL.Web.Controllers
         }
 
         // GET: NhanVien
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1, int pageSize = 10)
         {
             try
             {
-                var nhanViens = await _nhanVienService.GetAllAsync();
-                return View(nhanViens);
+                // Validate page parameters
+                if (page < 1) page = 1;
+                if (pageSize < 1 || pageSize > 100) pageSize = 10;
+
+                var pagedResult = await _nhanVienService.GetAllPagedAsync(page, pageSize);
+
+                // Pass pagination info to view
+                ViewBag.CurrentPage = page;
+                ViewBag.PageSize = pageSize;
+                ViewBag.TotalPages = pagedResult.TotalPages;
+                ViewBag.TotalItems = pagedResult.TotalItems;
+
+                return View(pagedResult.Items);
             }
             catch (Exception ex)
             {
@@ -133,6 +145,7 @@ namespace BTL.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("nv_id,ho_ten,loai_nv,ngay_vao_lam,trang_thai")] NhanVien nhanVien)
         {
+            Console.WriteLine(JsonSerializer.Serialize(nhanVien));
             if (id != nhanVien.nv_id)
             {
                 return NotFound();
@@ -231,15 +244,25 @@ namespace BTL.Web.Controllers
         }
 
         // GET: NhanVien/GetByLoaiNv/BEP
-        public async Task<IActionResult> GetByLoaiNv(string loaiNv)
+        public async Task<IActionResult> GetByLoaiNv(string loaiNv, int page = 1, int pageSize = 10)
         {
             try
             {
-                var nhanViens = await _nhanVienService.GetByLoaiNvAsync(loaiNv);
+                // Validate page parameters
+                if (page < 1) page = 1;
+                if (pageSize < 1 || pageSize > 100) pageSize = 10;
+
+                var pagedResult = await _nhanVienService.GetByLoaiNvPagedAsync(loaiNv, page, pageSize);
                 var loaiNhanVien = await _loaiNhanVienService.GetByTypeAsync(loaiNv);
 
                 ViewBag.LoaiNhanVien = loaiNhanVien;
-                return View("Index", nhanViens);
+                ViewBag.CurrentPage = page;
+                ViewBag.PageSize = pageSize;
+                ViewBag.TotalPages = pagedResult.TotalPages;
+                ViewBag.TotalItems = pagedResult.TotalItems;
+                ViewBag.LoaiNv = loaiNv;
+
+                return View("Index", pagedResult.Items);
             }
             catch (Exception ex)
             {
@@ -249,13 +272,24 @@ namespace BTL.Web.Controllers
         }
 
         // GET: NhanVien/GetActive
-        public async Task<IActionResult> GetActive()
+        public async Task<IActionResult> GetActive(int page = 1, int pageSize = 10)
         {
             try
             {
-                var nhanViens = await _nhanVienService.GetActiveAsync();
+                // Validate page parameters
+                if (page < 1) page = 1;
+                if (pageSize < 1 || pageSize > 100) pageSize = 10;
+
+                var pagedResult = await _nhanVienService.GetActivePagedAsync(page, pageSize);
+
                 ViewBag.Title = "Nhân viên đang hoạt động";
-                return View("Index", nhanViens);
+                ViewBag.CurrentPage = page;
+                ViewBag.PageSize = pageSize;
+                ViewBag.TotalPages = pagedResult.TotalPages;
+                ViewBag.TotalItems = pagedResult.TotalItems;
+                ViewBag.IsActive = true;
+
+                return View("Index", pagedResult.Items);
             }
             catch (Exception ex)
             {
@@ -265,7 +299,7 @@ namespace BTL.Web.Controllers
         }
 
         // GET: NhanVien/Search
-        public async Task<IActionResult> Search(string searchTerm)
+        public async Task<IActionResult> Search(string searchTerm, int page = 1, int pageSize = 10)
         {
             try
             {
@@ -274,10 +308,21 @@ namespace BTL.Web.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
-                var nhanViens = await _nhanVienService.SearchByNameAsync(searchTerm);
+                // Validate page parameters
+                if (page < 1) page = 1;
+                if (pageSize < 1 || pageSize > 100) pageSize = 10;
+
+                var pagedResult = await _nhanVienService.SearchByNamePagedAsync(searchTerm, page, pageSize);
+
                 ViewBag.SearchTerm = searchTerm;
                 ViewBag.Title = $"Kết quả tìm kiếm: {searchTerm}";
-                return View("Index", nhanViens);
+                ViewBag.CurrentPage = page;
+                ViewBag.PageSize = pageSize;
+                ViewBag.TotalPages = pagedResult.TotalPages;
+                ViewBag.TotalItems = pagedResult.TotalItems;
+                ViewBag.IsSearch = true;
+
+                return View("Index", pagedResult.Items);
             }
             catch (Exception ex)
             {
@@ -297,6 +342,57 @@ namespace BTL.Web.Controllers
             catch (Exception ex)
             {
                 TempData["Error"] = $"Lỗi: {ex.Message}";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        // GET: NhanVien/Upload
+        public IActionResult Upload()
+        {
+            return View();
+        }
+
+        // POST: NhanVien/Upload
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Upload(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                ModelState.AddModelError("", "Vui lòng chọn file Excel để upload");
+                return View();
+            }
+
+            try
+            {
+                var result = await _nhanVienService.ProcessExcelUploadAsync(file);
+
+                if (result.ErrorCount > 0)
+                {
+                    TempData["Warning"] = $"Upload hoàn thành với {result.ErrorCount} lỗi. " +
+                                        $"Đã thêm mới: {result.InsertedCount}, Cập nhật: {result.UpdatedCount}. " +
+                                        $"Chi tiết lỗi: {result.ErrorMessages}";
+                }
+                else
+                {
+                    TempData["Message"] = $"Upload thành công! Đã thêm mới: {result.InsertedCount}, Cập nhật: {result.UpdatedCount} nhân viên.";
+                }
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch (ArgumentException ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                return View();
+            }
+            catch (InvalidOperationException ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                return View();
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Lỗi không xác định: {ex.Message}";
                 return RedirectToAction(nameof(Index));
             }
         }

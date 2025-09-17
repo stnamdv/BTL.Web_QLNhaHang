@@ -38,7 +38,14 @@
                                     <dl class="row">
                                         <dt class="col-sm-3">@Html.DisplayNameFor(model => model.nv_id)</dt>
                                         <dd class="col-sm-9">
-                                            <span class="badge bg-primary fs-6">@Html.DisplayFor(model => model.nv_id)</span>
+                                            <span class="badge bg-primary fs-6">@Html.DisplayFor(model =>
+                                                model.nv_id)</ span >
+                                        </dd>
+
+                                        <dt class="col-sm-3">Mã nhân viên</dt>
+                                        <dd class="col-sm-9">
+                                            <span class="badge bg-success fs-6">@Html.DisplayFor(model =>
+                                                model.ma_nv)</ span >
                                         </dd>
 
                                         <dt class="col-sm-3">@Html.DisplayNameFor(model => model.ho_ten)</dt>
@@ -48,14 +55,16 @@
 
                                         <dt class="col-sm-3">@Html.DisplayNameFor(model => model.loai_nv)</dt>
                                         <dd class="col-sm-9">
-                                            <span class="badge bg-info fs-6">@BTL.Web.Models.LoaiNv.GetDisplayName(Model.loai_nv)</span>
+                                            <span
+                                                class="badge bg-info fs-6">@BTL.Web.Models.LoaiNv.GetDisplayName(Model.loai_nv)</span>
                                         </dd>
 
                                         <dt class="col-sm-3">@Html.DisplayNameFor(model => model.ngay_vao_lam)</dt>
                                         <dd class="col-sm-9">
                                             @if (Model.ngay_vao_lam.HasValue)
                                             {
-                                                <span class="text-success fw-bold">@Model.ngay_vao_lam.Value.ToString("dd/MM/yyyy")</span>
+                                                <span
+                                                    class="text-success fw-bold">@Model.ngay_vao_lam.Value.ToString("dd/MM/yyyy")</span>
                                             }
                                             else
                                             {
@@ -67,11 +76,13 @@
                                         <dd class="col-sm-9">
                                             @if (Model.trang_thai == BTL.Web.Models.TrangThaiNv.ACTIVE)
                                             {
-                                                <span class="badge bg-success fs-6">@BTL.Web.Models.TrangThaiNv.GetDisplayName(Model.trang_thai)</span>
+                                                <span
+                                                    class="badge bg-success fs-6">@BTL.Web.Models.TrangThaiNv.GetDisplayName(Model.trang_thai)</span>
                                             }
                                             else
                                             {
-                                                <span class="badge bg-danger fs-6">@BTL.Web.Models.TrangThaiNv.GetDisplayName(Model.trang_thai)</span>
+                                                <span
+                                                    class="badge bg-danger fs-6">@BTL.Web.Models.TrangThaiNv.GetDisplayName(Model.trang_thai)</span>
                                             }
                                         </dd>
                                     </dl>
@@ -90,7 +101,9 @@
                                         <dl class="row">
                                             <dt class="col-sm-5">Lương cơ bản:</dt>
                                             <dd class="col-sm-7">
-                                                <span class="text-success fw-bold fs-5">@Model.LoaiNhanVien.luong_co_ban.ToString("N0") VNĐ</span>
+                                                <span
+                                                    class="text-success fw-bold fs-5">@Model.LoaiNhanVien.luong_co_ban.ToString("N0")
+                                                    VNĐ</span>
                                             </dd>
                                         </dl>
                                     }
@@ -98,8 +111,9 @@
                                     @if (Model.ngay_vao_lam.HasValue)
                                     {
                                         var thamNien = DateTime.Today.Year - Model.ngay_vao_lam.Value.Year;
-                                        if (DateTime.Today.Month < Model.ngay_vao_lam.Value.Month || 
-                                            (DateTime.Today.Month == Model.ngay_vao_lam.Value.Month && DateTime.Today.Day < Model.ngay_vao_lam.Value.Day))
+                                        if (DateTime.Today.Month < Model.ngay_vao_lam.Value.Month ||
+                                        (DateTime.Today.Month == Model.ngay_vao_lam.Value.Month && DateTime.Today.Day <
+                                        Model.ngay_vao_lam.Value.Day))
                                         {
                                             thamNien--;
                                         }

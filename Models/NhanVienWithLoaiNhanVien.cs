@@ -6,6 +6,9 @@ namespace BTL.Web.Models
     {
         public int nv_id { get; set; }
 
+        [Display(Name = "Mã nhân viên")]
+        public string ma_nv { get; set; } = string.Empty;
+
         [Display(Name = "Họ tên")]
         public string ho_ten { get; set; } = string.Empty;
 

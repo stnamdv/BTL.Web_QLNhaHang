@@ -14,6 +14,9 @@
                         <a asp-action="Create" class="btn btn-primary">
                             <i class="fas fa-plus"></i> Thêm nhân viên
                         </a>
+                        <a asp-action="Upload" class="btn btn-warning">
+                            <i class="fas fa-upload"></i> Upload Excel
+                        </a>
                         <a asp-action="GetActive" class="btn btn-success">
                             <i class="fas fa-user-check"></i> Nhân viên hoạt động
                         </a>
@@ -53,6 +56,14 @@
                                 </div>
                     }
 
+                    @if (TempData["Warning"] != null)
+                    {
+                                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                                    @TempData["Warning"]
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                    }
+
                     @if (Model != null && Model.Any())
                     {
                                 <div class="table-responsive">
@@ -60,6 +71,7 @@
                                         <thead class="table-dark">
                                             <tr>
                                                 <th>@Html.DisplayNameFor(model => model.First().nv_id)</th>
+                                                <th>Mã NV</th>
                                                 <th>@Html.DisplayNameFor(model => model.First().ho_ten)</th>
                                                 <th>@Html.DisplayNameFor(model => model.First().TenLoaiNhanVien)</th>
                                                 <th>@Html.DisplayNameFor(model => model.First().ngay_vao_lam)</th>
@@ -74,6 +86,9 @@
                                             {
                                                         <tr>
                                                             <td>@Html.DisplayFor(modelItem => item.nv_id)</td>
+                                                            <td>
+                                                                <span class="badge bg-primary">@Html.DisplayFor(modelItem => item.ma_nv)</span>
+                                                            </td>
                                                             <td>
                                                                 <strong>@Html.DisplayFor(modelItem => item.ho_ten)</strong>
                                                             </td>
@@ -134,6 +149,9 @@
                                         </tbody>
                                     </table>
                                 </div>
+
+                                <!-- Phân trang -->
+                                @await Html.PartialAsync("_Pagination")
                     }
                     else
                     {
