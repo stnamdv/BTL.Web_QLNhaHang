@@ -33,6 +33,7 @@ namespace BTL.Web.Models
         public virtual BanAn? BanAn { get; set; }
 
         public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+        public virtual ICollection<LichSuThucHien> LichSuThucHien { get; set; } = new List<LichSuThucHien>();
         public virtual HoaDon? HoaDon { get; set; }
     }
 }

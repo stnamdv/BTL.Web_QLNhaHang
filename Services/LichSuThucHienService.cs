@@ -24,9 +24,9 @@ namespace BTL.Web.Services
             return await _repository.GetAllPagedAsync(pageNumber, pageSize);
         }
 
-        public async Task<IEnumerable<LichSuThucHienWithDetails>> GetByOrderItemAsync(int orderItemId)
+        public async Task<IEnumerable<LichSuThucHienWithDetails>> GetByOrderAsync(int orderId)
         {
-            return await _repository.GetByOrderItemAsync(orderItemId);
+            return await _repository.GetByOrderAsync(orderId);
         }
 
         public async Task<IEnumerable<LichSuThucHienWithDetails>> GetByBuocAsync(int buocId)
@@ -54,9 +54,9 @@ namespace BTL.Web.Services
             return await _repository.HoanThanhAsync(lichSuId, ghiChu);
         }
 
-        public async Task<IEnumerable<dynamic>> GetTrangThaiAsync(int orderItemId)
+        public async Task<IEnumerable<dynamic>> GetTrangThaiAsync(int orderId)
         {
-            return await _repository.GetTrangThaiAsync(orderItemId);
+            return await _repository.GetTrangThaiAsync(orderId);
         }
 
         public async Task<IEnumerable<ThongKeHieuSuat>> GetThongKeAsync(int? nvId = null, int? buocId = null, DateTime? tuNgay = null, DateTime? denNgay = null)
@@ -87,11 +87,6 @@ namespace BTL.Web.Services
             return allLichSu.Items.Where(x => x.nv_id == nvId && x.trang_thai == TrangThaiThucHien.CHUA_BAT_DAU);
         }
 
-        public async Task<IEnumerable<LichSuThucHienWithDetails>> GetByOrderAsync(int orderId)
-        {
-            return await _repository.GetByOrderAsync(orderId);
-        }
-
         public async Task<bool> UpdateStepStatusAsync(int orderId, int stepId, int employeeId, string action)
         {
             try
@@ -99,7 +94,7 @@ namespace BTL.Web.Services
                 Console.WriteLine($"=== UpdateStepStatusAsync called ===");
                 Console.WriteLine($"OrderId: {orderId}, StepId: {stepId}, EmployeeId: {employeeId}, Action: {action}");
 
-                // Use stored procedure for better performance and atomicity
+                // Sử dụng stored procedure để có hiệu suất tốt hơn và tính nguyên tử
                 var result = await _repository.UpdateStepStatusForOrderAsync(orderId, stepId, employeeId, action);
 
                 Console.WriteLine($"UpdateStepStatusAsync result: {result}");
@@ -108,6 +103,26 @@ namespace BTL.Web.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in UpdateStepStatusAsync: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                return false;
+            }
+        }
+
+        public async Task<bool> CheckAndUpdateOrderStatusAsync(int orderId)
+        {
+            try
+            {
+                Console.WriteLine($"=== CheckAndUpdateOrderStatusAsync called ===");
+                Console.WriteLine($"OrderId: {orderId}");
+
+                var result = await _repository.CheckAndUpdateOrderStatusAsync(orderId);
+
+                Console.WriteLine($"CheckAndUpdateOrderStatusAsync result: {result}");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in CheckAndUpdateOrderStatusAsync: {ex.Message}");
                 Console.WriteLine($"Stack trace: {ex.StackTrace}");
                 return false;
             }

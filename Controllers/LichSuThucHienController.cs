@@ -33,45 +33,46 @@ namespace BTL.Web.Controllers
             return View(lichSu);
         }
 
-        // GET: LichSuThucHien/GetByOrderItem/1
-        public async Task<IActionResult> GetByOrderItem(int orderItemId)
+        // GET: LichSuThucHien/GetByOrder/1
+        [HttpGet("LichSuThucHien/GetByOrder/{orderId}")]
+        public async Task<IActionResult> GetByOrder(int orderId)
         {
-            var lichSus = await _lichSuService.GetByOrderItemAsync(orderItemId);
-            return View("Index", new PagedResult<LichSuThucHienWithDetails>(lichSus, lichSus.Count(), 1, 10));
+            var lichSus = await _lichSuService.GetByOrderAsync(orderId);
+            return Json(new { success = true, data = lichSus });
         }
 
         // GET: LichSuThucHien/GetByBuoc/1
         public async Task<IActionResult> GetByBuoc(int buocId)
         {
             var lichSus = await _lichSuService.GetByBuocAsync(buocId);
-            return View("Index", new PagedResult<LichSuThucHienWithDetails>(lichSus, lichSus.Count(), 1, 10));
+            return Json(new { success = true, data = lichSus });
         }
 
         // GET: LichSuThucHien/GetByNhanVien/1
         public async Task<IActionResult> GetByNhanVien(int nvId)
         {
             var lichSus = await _lichSuService.GetByNhanVienAsync(nvId);
-            return View("Index", new PagedResult<LichSuThucHienWithDetails>(lichSus, lichSus.Count(), 1, 10));
+            return Json(new { success = true, data = lichSus });
         }
 
         // GET: LichSuThucHien/GetDangXuLy
         public async Task<IActionResult> GetDangXuLy()
         {
             var lichSus = await _lichSuService.GetDangXuLyAsync();
-            return View("Index", new PagedResult<LichSuThucHienWithDetails>(lichSus, lichSus.Count(), 1, 10));
+            return Json(new { success = true, data = lichSus });
         }
 
         // GET: LichSuThucHien/GetChoXuLy/1
         public async Task<IActionResult> GetChoXuLy(int nvId)
         {
             var lichSus = await _lichSuService.GetChoXuLyAsync(nvId);
-            return View("Index", new PagedResult<LichSuThucHienWithDetails>(lichSus, lichSus.Count(), 1, 10));
+            return Json(new { success = true, data = lichSus });
         }
 
         // GET: LichSuThucHien/GetTrangThai/1
-        public async Task<IActionResult> GetTrangThai(int orderItemId)
+        public async Task<IActionResult> GetTrangThai(int orderId)
         {
-            var trangThai = await _lichSuService.GetTrangThaiAsync(orderItemId);
+            var trangThai = await _lichSuService.GetTrangThaiAsync(orderId);
             return Json(new { success = true, data = trangThai });
         }
 
@@ -166,20 +167,6 @@ namespace BTL.Web.Controllers
             }
         }
 
-        // GET: LichSuThucHien/GetByOrder/1
-        [Route("LichSuThucHien/GetByOrder/{orderId}")]
-        public async Task<IActionResult> GetByOrder(int orderId)
-        {
-            try
-            {
-                var lichSus = await _lichSuService.GetByOrderAsync(orderId);
-                return Json(new { success = true, data = lichSus });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = ex.Message });
-            }
-        }
 
         // POST: LichSuThucHien/UpdateStepStatus
         [HttpPost]
@@ -204,6 +191,33 @@ namespace BTL.Web.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in UpdateStepStatus: {ex.Message}");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // POST: LichSuThucHien/CheckOrderStatus
+        [HttpPost]
+        public async Task<IActionResult> CheckOrderStatus(int orderId)
+        {
+            try
+            {
+                Console.WriteLine($"=== CheckOrderStatus called ===");
+                Console.WriteLine($"OrderId: {orderId}");
+
+                var result = await _lichSuService.CheckAndUpdateOrderStatusAsync(orderId);
+
+                if (result)
+                {
+                    return Json(new { success = true, message = "Trạng thái đơn hàng đã được kiểm tra và cập nhật" });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Không thể kiểm tra trạng thái đơn hàng" });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in CheckOrderStatus: {ex.Message}");
                 return Json(new { success = false, message = ex.Message });
             }
         }

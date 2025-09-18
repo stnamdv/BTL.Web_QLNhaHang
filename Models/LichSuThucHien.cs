@@ -29,7 +29,7 @@ namespace BTL.Web.Models
         public int lich_su_id { get; set; }
 
         [Required]
-        public int order_item_id { get; set; }
+        public int order_id { get; set; }
 
         [Required]
         public int buoc_id { get; set; }
@@ -52,8 +52,8 @@ namespace BTL.Web.Models
         public DateTime thoi_diem_tao { get; set; } = DateTime.Now;
 
         // Navigation properties
-        [ForeignKey("order_item_id")]
-        public virtual OrderItem OrderItem { get; set; } = null!;
+        [ForeignKey("order_id")]
+        public virtual Order Order { get; set; } = null!;
 
         [ForeignKey("buoc_id")]
         public virtual BuocXuLy BuocXuLy { get; set; } = null!;

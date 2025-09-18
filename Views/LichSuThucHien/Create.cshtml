@@ -23,9 +23,9 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label asp-for="order_item_id" class="form-label">Order Item ID</label>
-                                    <input asp-for="order_item_id" class="form-control" type="number" />
-                                    <span asp-validation-for="order_item_id" class="text-danger"></span>
+                                    <label asp-for="order_id" class="form-label">Order ID</label>
+                                    <input asp-for="order_id" class="form-control" type="number" />
+                                    <span asp-validation-for="order_id" class="text-danger"></span>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -78,54 +78,54 @@
 </div>
 
 @section Scripts {
-            <script>
-                $(document).ready(function() {
-                    loadBuocXuLy();
-                    $('#buocSelect').change(function() {
-                        const buocId = $(this).val();
-                        if (buocId) {
-                            loadNhanVienChoBuoc(buocId);
-                        } else {
-                            $('#nvSelect').empty().append('<option value="">-- Chọn nhân viên --</option>');
-                        }
-                    });
-                });
-
-                function loadBuocXuLy() {
-                    $.get('/BuocXuLy/GetAll')
-                        .done(function(data) {
-                            const select = $('#buocSelect');
-                            select.empty().append('<option value="">-- Chọn bước xử lý --</option>');
-                    
-                            data.forEach(function(buoc) {
-                                select.append(`<option value="${buoc.buoc_id}">${buoc.thu_tu}. ${buoc.ten_buoc}</option>`);
+                    <script>
+                        $(document).ready(function() {
+                            loadBuocXuLy();
+                            $('#buocSelect').change(function() {
+                                const buocId = $(this).val();
+                                if (buocId) {
+                                    loadNhanVienChoBuoc(buocId);
+                                } else {
+                                    $('#nvSelect').empty().append('<option value="">-- Chọn nhân viên --</option>');
+                                }
                             });
-                        })
-                        .fail(function() {
-                            console.error('Lỗi khi tải danh sách bước xử lý');
                         });
-                }
 
-                function loadNhanVienChoBuoc(buocId) {
-                    $.get('/LichSuThucHien/GetNhanVienChoBuoc', { buocId: buocId })
-                        .done(function(data) {
-                            const select = $('#nvSelect');
-                            select.empty().append('<option value="">-- Chọn nhân viên --</option>');
+                        function loadBuocXuLy() {
+                            $.get('/BuocXuLy/GetAll')
+                                .done(function(data) {
+                                    const select = $('#buocSelect');
+                                    select.empty().append('<option value="">-- Chọn bước xử lý --</option>');
                     
-                            if (data.success && data.data.length > 0) {
-                                data.data.forEach(function(nv) {
-                                    if (nv.nv_id) {
-                                        select.append(`<option value="${nv.nv_id}">${nv.ho_ten} (${nv.loai_nv})</option>`);
-                                    }
+                                    data.forEach(function(buoc) {
+                                        select.append(`<option value="${buoc.buoc_id}">${buoc.thu_tu}. ${buoc.ten_buoc}</option>`);
+                                    });
+                                })
+                                .fail(function() {
+                                    console.error('Lỗi khi tải danh sách bước xử lý');
                                 });
-                            } else {
-                                select.append('<option value="" disabled>Không có nhân viên nào được phân công cho bước này</option>');
-                            }
-                        })
-                        .fail(function() {
-                            console.error('Lỗi khi tải danh sách nhân viên');
-                            $('#nvSelect').empty().append('<option value="">Lỗi khi tải danh sách nhân viên</option>');
-                        });
-                }
-            </script>
+                        }
+
+                        function loadNhanVienChoBuoc(buocId) {
+                            $.get('/LichSuThucHien/GetNhanVienChoBuoc', { buocId: buocId })
+                                .done(function(data) {
+                                    const select = $('#nvSelect');
+                                    select.empty().append('<option value="">-- Chọn nhân viên --</option>');
+                    
+                                    if (data.success && data.data.length > 0) {
+                                        data.data.forEach(function(nv) {
+                                            if (nv.nv_id) {
+                                                select.append(`<option value="${nv.nv_id}">${nv.ho_ten} (${nv.loai_nv})</option>`);
+                                            }
+                                        });
+                                    } else {
+                                        select.append('<option value="" disabled>Không có nhân viên nào được phân công cho bước này</option>');
+                                    }
+                                })
+                                .fail(function() {
+                                    console.error('Lỗi khi tải danh sách nhân viên');
+                                    $('#nvSelect').empty().append('<option value="">Lỗi khi tải danh sách nhân viên</option>');
+                                });
+                        }
+                    </script>
 }

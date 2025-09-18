@@ -5,12 +5,9 @@ namespace BTL.Web.Models
     public class LichSuThucHienWithDetails
     {
         public int lich_su_id { get; set; }
-        public int order_item_id { get; set; }
         public int order_id { get; set; }
         public int? ban_id { get; set; }
         public string? ban_so_hieu { get; set; }
-        public int mon_id { get; set; }
-        public string ten_mon { get; set; } = string.Empty;
         public int buoc_id { get; set; }
         public string ten_buoc { get; set; } = string.Empty;
         public int thu_tu { get; set; }

@@ -34,12 +34,12 @@ namespace BTL.Web.Repositories
             return new PagedResult<LichSuThucHienWithDetails>(items, totalItems, pageNumber, pageSize);
         }
 
-        public async Task<IEnumerable<LichSuThucHienWithDetails>> GetByOrderItemAsync(int orderItemId)
+        public async Task<IEnumerable<LichSuThucHienWithDetails>> GetByOrderAsync(int orderId)
         {
             using var connection = _context.CreateConnection();
             return await connection.QueryAsync<LichSuThucHienWithDetails>(
-                "sp_LichSuThucHien_GetByOrderItem",
-                new { OrderItemId = orderItemId },
+                "sp_LichSuThucHien_GetByOrder",
+                new { OrderId = orderId },
                 commandType: CommandType.StoredProcedure);
         }
 
@@ -66,7 +66,7 @@ namespace BTL.Web.Repositories
             using var connection = _context.CreateConnection();
 
             var parameters = new DynamicParameters();
-            parameters.Add("@OrderItemId", lichSu.order_item_id);
+            parameters.Add("@OrderId", lichSu.order_id);
             parameters.Add("@BuocId", lichSu.buoc_id);
             parameters.Add("@NvId", lichSu.nv_id);
             parameters.Add("@GhiChu", lichSu.ghi_chu);
@@ -119,12 +119,12 @@ namespace BTL.Web.Repositories
             }
         }
 
-        public async Task<IEnumerable<dynamic>> GetTrangThaiAsync(int orderItemId)
+        public async Task<IEnumerable<dynamic>> GetTrangThaiAsync(int orderId)
         {
             using var connection = _context.CreateConnection();
             return await connection.QueryAsync<dynamic>(
                 "sp_LichSuThucHien_GetTrangThai",
-                new { OrderItemId = orderItemId },
+                new { OrderId = orderId },
                 commandType: CommandType.StoredProcedure);
         }
 
@@ -153,15 +153,6 @@ namespace BTL.Web.Repositories
             return count > 0;
         }
 
-        public async Task<IEnumerable<LichSuThucHienWithDetails>> GetByOrderAsync(int orderId)
-        {
-            using var connection = _context.CreateConnection();
-            return await connection.QueryAsync<LichSuThucHienWithDetails>(
-                "sp_LichSuThucHien_GetByOrder",
-                new { OrderId = orderId },
-                commandType: CommandType.StoredProcedure);
-        }
-
         public async Task<IEnumerable<OrderItem>> GetOrderItemsByOrderIdAsync(int orderId)
         {
             using var connection = _context.CreateConnection();
@@ -170,39 +161,39 @@ namespace BTL.Web.Repositories
                 new { orderId });
         }
 
-        public async Task<bool> StartStepForOrderItemAsync(int orderItemId, int stepId, int employeeId)
+        public async Task<bool> StartStepForOrderAsync(int orderId, int stepId, int employeeId)
         {
             try
             {
                 using var connection = _context.CreateConnection();
 
-                // Check if LichSuThucHien already exists for this order item and step
+                // Kiểm tra xem LichSuThucHien đã tồn tại cho đơn hàng và bước này chưa
                 var existing = await connection.QuerySingleOrDefaultAsync<int>(
-                    "SELECT COUNT(*) FROM dbo.LichSuThucHien WHERE order_item_id = @orderItemId AND buoc_id = @stepId",
-                    new { orderItemId, stepId });
+                    "SELECT COUNT(*) FROM dbo.LichSuThucHien WHERE order_id = @orderId AND buoc_id = @stepId",
+                    new { orderId, stepId });
 
                 if (existing > 0)
                 {
-                    // Update existing record
+                    // Cập nhật bản ghi hiện có
                     await connection.ExecuteAsync(
-                        "UPDATE dbo.LichSuThucHien SET nv_id = @employeeId, trang_thai = @status, thoi_diem_bat_dau = @startTime WHERE order_item_id = @orderItemId AND buoc_id = @stepId",
+                        "UPDATE dbo.LichSuThucHien SET nv_id = @employeeId, trang_thai = @status, thoi_diem_bat_dau = @startTime WHERE order_id = @orderId AND buoc_id = @stepId",
                         new
                         {
                             employeeId,
                             status = TrangThaiThucHien.DANG_THUC_HIEN,
                             startTime = DateTime.Now,
-                            orderItemId,
+                            orderId,
                             stepId
                         });
                 }
                 else
                 {
-                    // Create new record
+                    // Tạo bản ghi mới
                     await connection.ExecuteAsync(
-                        "INSERT INTO dbo.LichSuThucHien (order_item_id, buoc_id, nv_id, trang_thai, thoi_diem_bat_dau, thoi_diem_tao) VALUES (@orderItemId, @stepId, @employeeId, @status, @startTime, @createTime)",
+                        "INSERT INTO dbo.LichSuThucHien (order_id, buoc_id, nv_id, trang_thai, thoi_diem_bat_dau, thoi_diem_tao) VALUES (@orderId, @stepId, @employeeId, @status, @startTime, @createTime)",
                         new
                         {
-                            orderItemId,
+                            orderId,
                             stepId,
                             employeeId,
                             status = TrangThaiThucHien.DANG_THUC_HIEN,
@@ -215,25 +206,25 @@ namespace BTL.Web.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in StartStepForOrderItemAsync: {ex.Message}");
+                Console.WriteLine($"Error in StartStepForOrderAsync: {ex.Message}");
                 return false;
             }
         }
 
-        public async Task<bool> CompleteStepForOrderItemAsync(int orderItemId, int stepId, int employeeId)
+        public async Task<bool> CompleteStepForOrderAsync(int orderId, int stepId, int employeeId)
         {
             try
             {
                 using var connection = _context.CreateConnection();
 
-                // Update the existing record to mark as completed
+                // Cập nhật bản ghi hiện có để đánh dấu là đã hoàn thành
                 var rowsAffected = await connection.ExecuteAsync(
-                    "UPDATE dbo.LichSuThucHien SET trang_thai = @status, thoi_diem_ket_thuc = @endTime WHERE order_item_id = @orderItemId AND buoc_id = @stepId AND nv_id = @employeeId",
+                    "UPDATE dbo.LichSuThucHien SET trang_thai = @status, thoi_diem_ket_thuc = @endTime WHERE order_id = @orderId AND buoc_id = @stepId AND nv_id = @employeeId",
                     new
                     {
                         status = TrangThaiThucHien.HOAN_THANH,
                         endTime = DateTime.Now,
-                        orderItemId,
+                        orderId,
                         stepId,
                         employeeId
                     });
@@ -242,7 +233,7 @@ namespace BTL.Web.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in CompleteStepForOrderItemAsync: {ex.Message}");
+                Console.WriteLine($"Error in CompleteStepForOrderAsync: {ex.Message}");
                 return false;
             }
         }
@@ -269,6 +260,35 @@ namespace BTL.Web.Repositories
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in UpdateStepStatusForOrderAsync: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<bool> CheckAndUpdateOrderStatusAsync(int orderId)
+        {
+            try
+            {
+                using var connection = _context.CreateConnection();
+
+                var parameters = new DynamicParameters();
+                parameters.Add("@OrderId", orderId);
+                parameters.Add("@Success", dbType: DbType.Boolean, direction: ParameterDirection.Output);
+                parameters.Add("@Message", dbType: DbType.String, size: 500, direction: ParameterDirection.Output);
+
+                await connection.ExecuteAsync(
+                    "sp_Order_CheckAndUpdateStatus",
+                    parameters,
+                    commandType: CommandType.StoredProcedure);
+
+                var success = parameters.Get<bool>("@Success");
+                var message = parameters.Get<string>("@Message");
+
+                Console.WriteLine($"CheckAndUpdateOrderStatus result: {success}, Message: {message}");
+                return success;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in CheckAndUpdateOrderStatusAsync: {ex.Message}");
                 return false;
             }
         }

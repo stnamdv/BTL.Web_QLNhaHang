@@ -720,16 +720,51 @@ class OrderWorkflow {
       const result = await response.json();
       console.log("Step completed:", result);
 
-      // Refresh timeline to show updated status
-      this.loadOrderStatus();
+      // Làm mới timeline để hiển thị trạng thái đã cập nhật
+      await this.loadOrderStatus();
+      this.renderTimeline();
 
-      // Show success message
+      // Kiểm tra và cập nhật trạng thái đơn hàng sau khi hoàn thành bước
+      await this.checkOrderStatus();
+
+      // Hiển thị thông báo thành công
       this.showSuccess(
         `Bước "${step.ten_buoc}" đã được hoàn thành bởi ${employeeInfo.name}`
       );
     } catch (error) {
       console.error("Error completing step:", error);
       this.showError("Không thể hoàn thành bước xử lý");
+    }
+  }
+
+  async checkOrderStatus() {
+    try {
+      console.log("Checking order status for order:", this.orderId);
+
+      const response = await fetch("/LichSuThucHien/CheckOrderStatus", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          RequestVerificationToken: document.querySelector(
+            'input[name="__RequestVerificationToken"]'
+          )?.value,
+        },
+        body: JSON.stringify({ orderId: this.orderId }),
+      });
+
+      if (!response.ok) throw new Error("Failed to check order status");
+
+      const result = await response.json();
+      console.log("Order status check result:", result);
+
+      if (result.success) {
+        // Làm mới trang để hiển thị trạng thái đơn hàng đã cập nhật
+        await this.loadOrderStatus();
+        this.renderTimeline();
+      }
+    } catch (error) {
+      console.error("Error checking order status:", error);
+      // Không hiển thị lỗi cho người dùng vì đây là thao tác nền
     }
   }
 
@@ -901,7 +936,8 @@ class OrderWorkflow {
       modal.hide();
 
       // Refresh timeline to show updated status
-      this.loadOrderStatus();
+      await this.loadOrderStatus();
+      this.renderTimeline();
 
       // Show success message
       this.showSuccess(
