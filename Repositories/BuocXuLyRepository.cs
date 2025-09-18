@@ -57,5 +57,74 @@ namespace BTL.Web.Repositories
                 "sp_BuocXuLy_GetBuocDauTien",
                 commandType: CommandType.StoredProcedure);
         }
+
+        public async Task<BuocXuLy> CreateAsync(BuocXuLy buocXuLy)
+        {
+            using var connection = _context.CreateConnection();
+            var parameters = new
+            {
+                TenBuoc = buocXuLy.ten_buoc,
+                MoTa = buocXuLy.mo_ta,
+                ThuTu = buocXuLy.thu_tu,
+                ThoiGianDuKien = buocXuLy.thoi_gian_du_kien
+            };
+
+            var result = await connection.QueryFirstOrDefaultAsync<BuocXuLy>(
+                "sp_BuocXuLy_Create",
+                parameters,
+                commandType: CommandType.StoredProcedure);
+
+            return result ?? buocXuLy;
+        }
+
+        public async Task<BuocXuLy> UpdateAsync(BuocXuLy buocXuLy)
+        {
+            using var connection = _context.CreateConnection();
+            var parameters = new
+            {
+                BuocId = buocXuLy.buoc_id,
+                TenBuoc = buocXuLy.ten_buoc,
+                MoTa = buocXuLy.mo_ta,
+                ThuTu = buocXuLy.thu_tu,
+                ThoiGianDuKien = buocXuLy.thoi_gian_du_kien
+            };
+
+            var result = await connection.QueryFirstOrDefaultAsync<BuocXuLy>(
+                "sp_BuocXuLy_Update",
+                parameters,
+                commandType: CommandType.StoredProcedure);
+
+            return result ?? buocXuLy;
+        }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            using var connection = _context.CreateConnection();
+            try
+            {
+                var result = await connection.QueryFirstOrDefaultAsync<int>(
+                    "sp_BuocXuLy_Delete",
+                    new { BuocId = id },
+                    commandType: CommandType.StoredProcedure);
+
+                return result == 1;
+            }
+            catch (SqlException ex)
+            {
+                // Re-throw với thông báo lỗi từ stored procedure
+                throw new InvalidOperationException(ex.Message, ex);
+            }
+        }
+
+        public async Task<bool> ExistsAsync(int id)
+        {
+            using var connection = _context.CreateConnection();
+            var result = await connection.QueryFirstOrDefaultAsync<int>(
+                "sp_BuocXuLy_Exists",
+                new { BuocId = id },
+                commandType: CommandType.StoredProcedure);
+
+            return result > 0;
+        }
     }
 }

@@ -54,9 +54,46 @@ namespace BTL.Web.Controllers
             return Json(new { success = true, data = nhanViens });
         }
 
+        // GET: PhanCongBuocXuLy/GetBuocChuaPhanCong
+        public async Task<IActionResult> GetBuocChuaPhanCong()
+        {
+            Console.WriteLine("=== GetBuocChuaPhanCong called ===");
+            try
+            {
+                var buocXuLys = await _phanCongService.GetBuocChuaPhanCongAsync();
+                Console.WriteLine($"Found {buocXuLys?.Count()} bước xử lý chưa phân công");
+                return Json(buocXuLys);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetBuocChuaPhanCong: {ex.Message}");
+                return Json(new { error = ex.Message });
+            }
+        }
+
+        // GET: PhanCongBuocXuLy/GetLoaiNhanVienChuaPhanCong/1
+        public async Task<IActionResult> GetLoaiNhanVienChuaPhanCong(int buocId)
+        {
+            Console.WriteLine($"=== GetLoaiNhanVienChuaPhanCong called with buocId: {buocId} ===");
+            try
+            {
+                var loaiNhanViens = await _phanCongService.GetLoaiNhanVienChuaPhanCongAsync(buocId);
+                Console.WriteLine($"Found {loaiNhanViens?.Count()} loại nhân viên chưa phân công cho bước {buocId}");
+                return Json(loaiNhanViens);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetLoaiNhanVienChuaPhanCong: {ex.Message}");
+                return Json(new { error = ex.Message });
+            }
+        }
+
         // GET: PhanCongBuocXuLy/Create
         public IActionResult Create()
         {
+            Console.WriteLine("=== PhanCongBuocXuLyController.Create GET ===");
+            Console.WriteLine($"Request URL: {Request.Path}");
+            Console.WriteLine($"User Agent: {Request.Headers["User-Agent"]}");
             return View();
         }
 
@@ -65,18 +102,42 @@ namespace BTL.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(PhanCongBuocXuLy phanCong)
         {
+            Console.WriteLine("=== PhanCongBuocXuLyController.Create POST ===");
+            Console.WriteLine($"Received data - BuocId: {phanCong?.buoc_id}, LoaiNvId: {phanCong?.loai_nv_id}, VaiTro: {phanCong?.vai_tro}");
+            Console.WriteLine($"ModelState.IsValid: {ModelState.IsValid}");
+
+            if (!ModelState.IsValid)
+            {
+                Console.WriteLine("=== ModelState Errors ===");
+                foreach (var error in ModelState)
+                {
+                    Console.WriteLine($"Key: {error.Key}");
+                    foreach (var errorMessage in error.Value.Errors)
+                    {
+                        Console.WriteLine($"  Error: {errorMessage.ErrorMessage}");
+                    }
+                }
+            }
+
             if (ModelState.IsValid)
             {
                 try
                 {
-                    await _phanCongService.CreateAsync(phanCong);
+                    Console.WriteLine("Calling _phanCongService.CreateAsync...");
+                    var result = await _phanCongService.CreateAsync(phanCong);
+                    Console.WriteLine($"CreateAsync completed successfully. Result ID: {result?.phan_cong_buoc_id}");
+                    TempData["SuccessMessage"] = "Tạo phân công thành công!";
                     return RedirectToAction(nameof(Index));
                 }
                 catch (Exception ex)
                 {
+                    Console.WriteLine($"Exception in CreateAsync: {ex.Message}");
+                    Console.WriteLine($"Stack Trace: {ex.StackTrace}");
                     ModelState.AddModelError("", ex.Message);
                 }
             }
+
+            Console.WriteLine("Returning View with model...");
             return View(phanCong);
         }
 

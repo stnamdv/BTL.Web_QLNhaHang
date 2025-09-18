@@ -104,3 +104,169 @@ BEGIN
     WHERE thu_tu = 1;
 END
 GO
+
+-- =========================================================
+-- 6. sp_BuocXuLy_Create - Tạo bước xử lý mới
+-- =========================================================
+CREATE OR ALTER PROCEDURE dbo.sp_BuocXuLy_Create
+    @TenBuoc NVARCHAR(100),
+    @MoTa NVARCHAR(500) = NULL,
+    @ThuTu INT,
+    @ThoiGianDuKien INT = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        
+        -- Kiểm tra thứ tự đã tồn tại chưa
+        IF EXISTS (SELECT 1 FROM dbo.BuocXuLy WHERE thu_tu = @ThuTu)
+        BEGIN
+            RAISERROR('Thứ tự %d đã tồn tại. Vui lòng chọn thứ tự khác.', 16, 1, @ThuTu);
+            RETURN;
+        END
+        
+        -- Thêm bước mới
+        INSERT INTO dbo.BuocXuLy (ten_buoc, mo_ta, thu_tu, thoi_gian_du_kien)
+        VALUES (@TenBuoc, @MoTa, @ThuTu, @ThoiGianDuKien);
+        
+        -- Trả về bước vừa tạo
+        SELECT 
+            buoc_id,
+            ten_buoc,
+            mo_ta,
+            thu_tu,
+            thoi_gian_du_kien
+        FROM dbo.BuocXuLy
+        WHERE buoc_id = SCOPE_IDENTITY();
+        
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END
+GO
+
+-- =========================================================
+-- 7. sp_BuocXuLy_Update - Cập nhật bước xử lý
+-- =========================================================
+CREATE OR ALTER PROCEDURE dbo.sp_BuocXuLy_Update
+    @BuocId INT,
+    @TenBuoc NVARCHAR(100),
+    @MoTa NVARCHAR(500) = NULL,
+    @ThuTu INT,
+    @ThoiGianDuKien INT = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        
+        -- Kiểm tra bước có tồn tại không
+        IF NOT EXISTS (SELECT 1 FROM dbo.BuocXuLy WHERE buoc_id = @BuocId)
+        BEGIN
+            RAISERROR('Không tìm thấy bước xử lý với ID %d', 16, 1, @BuocId);
+            RETURN;
+        END
+        
+        -- Kiểm tra thứ tự đã tồn tại chưa (trừ bước hiện tại)
+        IF EXISTS (SELECT 1 FROM dbo.BuocXuLy WHERE thu_tu = @ThuTu AND buoc_id != @BuocId)
+        BEGIN
+            RAISERROR('Thứ tự %d đã tồn tại. Vui lòng chọn thứ tự khác.', 16, 1, @ThuTu);
+            RETURN;
+        END
+        
+        -- Cập nhật bước
+        UPDATE dbo.BuocXuLy
+        SET 
+            ten_buoc = @TenBuoc,
+            mo_ta = @MoTa,
+            thu_tu = @ThuTu,
+            thoi_gian_du_kien = @ThoiGianDuKien
+        WHERE buoc_id = @BuocId;
+        
+        -- Trả về bước đã cập nhật
+        SELECT 
+            buoc_id,
+            ten_buoc,
+            mo_ta,
+            thu_tu,
+            thoi_gian_du_kien
+        FROM dbo.BuocXuLy
+        WHERE buoc_id = @BuocId;
+        
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END
+GO
+
+-- =========================================================
+-- 8. sp_BuocXuLy_Delete - Xóa bước xử lý
+-- =========================================================
+CREATE OR ALTER PROCEDURE dbo.sp_BuocXuLy_Delete
+    @BuocId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        
+        -- Kiểm tra bước có tồn tại không
+        IF NOT EXISTS (SELECT 1 FROM dbo.BuocXuLy WHERE buoc_id = @BuocId)
+        BEGIN
+            RAISERROR('Không tìm thấy bước xử lý với ID %d', 16, 1, @BuocId);
+            RETURN;
+        END
+        
+        -- Kiểm tra có phân công nhân viên nào không
+        IF EXISTS (SELECT 1 FROM dbo.PhanCongBuocXuLy WHERE buoc_id = @BuocId)
+        BEGIN
+            RAISERROR('Không thể xóa bước xử lý này vì đã có phân công nhân viên. Vui lòng xóa phân công trước.', 16, 1);
+            RETURN;
+        END
+        
+        -- Kiểm tra có lịch sử thực hiện nào không
+        IF EXISTS (SELECT 1 FROM dbo.LichSuThucHien WHERE buoc_id = @BuocId)
+        BEGIN
+            RAISERROR('Không thể xóa bước xử lý này vì đã có lịch sử thực hiện. Vui lòng xóa lịch sử trước.', 16, 1);
+            RETURN;
+        END
+        
+        -- Xóa bước
+        DELETE FROM dbo.BuocXuLy WHERE buoc_id = @BuocId;
+        
+        -- Trả về kết quả thành công
+        SELECT 1 as Success;
+        
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END
+GO
+
+-- =========================================================
+-- 9. sp_BuocXuLy_Exists - Kiểm tra bước có tồn tại không
+-- =========================================================
+CREATE OR ALTER PROCEDURE dbo.sp_BuocXuLy_Exists
+    @BuocId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT COUNT(1) as ExistsCount
+    FROM dbo.BuocXuLy
+    WHERE buoc_id = @BuocId;
+END
+GO

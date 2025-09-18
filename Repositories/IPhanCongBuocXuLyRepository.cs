@@ -8,6 +8,8 @@ namespace BTL.Web.Repositories
         Task<IEnumerable<BuocXuLyWithPhanCong>> GetByBuocAsync(int buocId);
         Task<IEnumerable<BuocXuLyWithPhanCong>> GetByLoaiNhanVienAsync(int loaiNvId);
         Task<IEnumerable<dynamic>> GetNhanVienChoBuocAsync(int buocId);
+        Task<IEnumerable<BuocXuLy>> GetBuocChuaPhanCongAsync();
+        Task<IEnumerable<LoaiNhanVien>> GetLoaiNhanVienChuaPhanCongAsync(int buocId);
         Task<PhanCongBuocXuLy> CreateAsync(PhanCongBuocXuLy phanCong);
         Task<PhanCongBuocXuLy> UpdateAsync(PhanCongBuocXuLy phanCong);
         Task<bool> DeleteAsync(int id);

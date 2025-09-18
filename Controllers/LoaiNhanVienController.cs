@@ -221,5 +221,12 @@ namespace BTL.Web.Controllers
             }
         }
 
+        // GET: LoaiNhanVien/GetAll
+        public async Task<IActionResult> GetAll()
+        {
+            var loaiNhanViens = await _loaiNhanVienService.GetAllAsync();
+            return Json(loaiNhanViens);
+        }
+
     }
 }

@@ -1,0 +1,87 @@
+@model BTL.Web.Models.BuocXuLy
+
+@{
+    ViewData["Title"] = "Chỉnh sửa bước xử lý";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-edit me-2"></i>@ViewData["Title"]
+                    </h3>
+                    <div class="card-tools">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        <input asp-for="buoc_id" type="hidden" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="ten_buoc" class="form-label">
+                                        <i class="fas fa-tag me-1"></i>Tên bước <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="ten_buoc" class="form-control" placeholder="Nhập tên bước xử lý" />
+                                    <span asp-validation-for="ten_buoc" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="thu_tu" class="form-label">
+                                        <i class="fas fa-sort-numeric-up me-1"></i>Thứ tự <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="thu_tu" class="form-control" type="number" min="1" placeholder="Nhập thứ tự" />
+                                    <span asp-validation-for="thu_tu" class="text-danger"></span>
+                                    <div class="form-text">Thứ tự thực hiện của bước trong quy trình</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="thoi_gian_du_kien" class="form-label">
+                                        <i class="fas fa-clock me-1"></i>Thời gian dự kiến (phút)
+                                    </label>
+                                    <input asp-for="thoi_gian_du_kien" class="form-control" type="number" min="0" placeholder="Nhập thời gian dự kiến" />
+                                    <span asp-validation-for="thoi_gian_du_kien" class="text-danger"></span>
+                                    <div class="form-text">Thời gian ước tính để hoàn thành bước này</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="mo_ta" class="form-label">
+                                <i class="fas fa-align-left me-1"></i>Mô tả
+                            </label>
+                            <textarea asp-for="mo_ta" class="form-control" rows="4" placeholder="Nhập mô tả chi tiết về bước xử lý"></textarea>
+                            <span asp-validation-for="mo_ta" class="text-danger"></span>
+                            <div class="form-text">Mô tả chi tiết về công việc cần thực hiện trong bước này</div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Hủy
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Cập nhật bước xử lý
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

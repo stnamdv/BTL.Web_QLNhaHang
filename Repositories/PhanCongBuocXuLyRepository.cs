@@ -114,5 +114,22 @@ namespace BTL.Web.Repositories
                 new { id });
             return count > 0;
         }
+
+        public async Task<IEnumerable<BuocXuLy>> GetBuocChuaPhanCongAsync()
+        {
+            using var connection = _context.CreateConnection();
+            return await connection.QueryAsync<BuocXuLy>(
+                "sp_PhanCongBuocXuLy_GetBuocChuaPhanCong",
+                commandType: CommandType.StoredProcedure);
+        }
+
+        public async Task<IEnumerable<LoaiNhanVien>> GetLoaiNhanVienChuaPhanCongAsync(int buocId)
+        {
+            using var connection = _context.CreateConnection();
+            return await connection.QueryAsync<LoaiNhanVien>(
+                "sp_PhanCongBuocXuLy_GetLoaiNhanVienChuaPhanCong",
+                new { BuocId = buocId },
+                commandType: CommandType.StoredProcedure);
+        }
     }
 }

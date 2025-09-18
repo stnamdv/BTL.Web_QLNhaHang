@@ -19,7 +19,7 @@
                 <div class="card-body">
                     <form asp-action="Create" method="post">
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
-                        
+
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
@@ -45,7 +45,8 @@
                             <div class="col-md-12">
                                 <div class="mb-3">
                                     <label asp-for="vai_tro" class="form-label">Vai trò cụ thể</label>
-                                    <input asp-for="vai_tro" class="form-control" placeholder="Ví dụ: Nhận đơn hàng, Chế biến món ăn, Mang món ra bàn..." />
+                                    <input asp-for="vai_tro" class="form-control"
+                                        placeholder="Ví dụ: Nhận đơn hàng, Chế biến món ăn, Mang món ra bàn..." />
                                     <span asp-validation-for="vai_tro" class="text-danger"></span>
                                 </div>
                             </div>
@@ -72,38 +73,57 @@
 
 @section Scripts {
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             loadBuocXuLy();
-            loadLoaiNhanVien();
+
+            // Khi thay đổi bước xử lý, cập nhật danh sách loại nhân viên
+            $('#buocSelect').change(function () {
+                const buocId = $(this).val();
+                if (buocId) {
+                    loadLoaiNhanVien(buocId);
+                } else {
+                    $('#loaiNvSelect').empty().append('<option value="">-- Chọn loại nhân viên --</option>');
+                }
+            });
         });
 
         function loadBuocXuLy() {
-            $.get('/BuocXuLy/GetAll')
-                .done(function(data) {
+            $.get('/PhanCongBuocXuLy/GetBuocChuaPhanCong')
+                .done(function (data) {
                     const select = $('#buocSelect');
                     select.empty().append('<option value="">-- Chọn bước xử lý --</option>');
-                    
-                    data.forEach(function(buoc) {
-                        select.append(`<option value="${buoc.buoc_id}">${buoc.thu_tu}. ${buoc.ten_buoc}</option>`);
-                    });
+
+                    if (data && data.length > 0) {
+                        data.forEach(function (buoc) {
+                            select.append(`<option value="${buoc.buoc_id}">${buoc.thu_tu}. ${buoc.ten_buoc}</option>`);
+                        });
+                    } else {
+                        select.append('<option value="" disabled>Tất cả bước xử lý đã được phân công</option>');
+                    }
                 })
-                .fail(function() {
+                .fail(function () {
                     console.error('Lỗi khi tải danh sách bước xử lý');
+                    $('#buocSelect').append('<option value="" disabled>Lỗi khi tải dữ liệu</option>');
                 });
         }
 
-        function loadLoaiNhanVien() {
-            $.get('/LoaiNhanVien/GetAll')
-                .done(function(data) {
+        function loadLoaiNhanVien(buocId) {
+            $.get(`/PhanCongBuocXuLy/GetLoaiNhanVienChuaPhanCong/${buocId}`)
+                .done(function (data) {
                     const select = $('#loaiNvSelect');
                     select.empty().append('<option value="">-- Chọn loại nhân viên --</option>');
-                    
-                    data.forEach(function(loai) {
-                        select.append(`<option value="${loai.loai_nv_id}">${loai.loai_nv}</option>`);
-                    });
+
+                    if (data && data.length > 0) {
+                        data.forEach(function (loai) {
+                            select.append(`<option value="${loai.loai_nv_id}">${loai.loai_nv}</option>`);
+                        });
+                    } else {
+                        select.append('<option value="" disabled>Tất cả loại nhân viên đã được phân công cho bước này</option>');
+                    }
                 })
-                .fail(function() {
+                .fail(function () {
                     console.error('Lỗi khi tải danh sách loại nhân viên');
+                    $('#loaiNvSelect').append('<option value="" disabled>Lỗi khi tải dữ liệu</option>');
                 });
         }
     </script>

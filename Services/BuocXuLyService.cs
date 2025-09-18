@@ -36,5 +36,25 @@ namespace BTL.Web.Services
         {
             return await _repository.GetBuocDauTienAsync();
         }
+
+        public async Task<BuocXuLy> CreateAsync(BuocXuLy buocXuLy)
+        {
+            return await _repository.CreateAsync(buocXuLy);
+        }
+
+        public async Task<BuocXuLy> UpdateAsync(BuocXuLy buocXuLy)
+        {
+            return await _repository.UpdateAsync(buocXuLy);
+        }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            return await _repository.DeleteAsync(id);
+        }
+
+        public async Task<bool> ExistsAsync(int id)
+        {
+            return await _repository.ExistsAsync(id);
+        }
     }
 }

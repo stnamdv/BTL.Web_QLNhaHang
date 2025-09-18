@@ -26,9 +26,9 @@ namespace BTL.Web.Models
 
         // Navigation properties
         [ForeignKey("buoc_id")]
-        public virtual BuocXuLy BuocXuLy { get; set; } = null!;
+        public virtual BuocXuLy? BuocXuLy { get; set; }
 
         [ForeignKey("loai_nv_id")]
-        public virtual LoaiNhanVien LoaiNhanVien { get; set; } = null!;
+        public virtual LoaiNhanVien? LoaiNhanVien { get; set; }
     }
 }

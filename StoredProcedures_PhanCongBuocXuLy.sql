@@ -239,3 +239,50 @@ BEGIN
     END CATCH
 END
 GO
+
+-- =========================================================
+-- 8. sp_PhanCongBuocXuLy_GetBuocChuaPhanCong - Lấy bước xử lý chưa được phân công
+-- =========================================================
+CREATE OR ALTER PROCEDURE dbo.sp_PhanCongBuocXuLy_GetBuocChuaPhanCong
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        bx.buoc_id,
+        bx.ten_buoc,
+        bx.thu_tu,
+        bx.mo_ta
+    FROM dbo.BuocXuLy bx
+    WHERE NOT EXISTS (
+        SELECT 1 FROM dbo.PhanCongBuocXuLy pcbx 
+        WHERE pcbx.buoc_id = bx.buoc_id 
+          AND pcbx.trang_thai = 'ACTIVE'
+    )
+    ORDER BY bx.thu_tu;
+END
+GO
+
+-- =========================================================
+-- 9. sp_PhanCongBuocXuLy_GetLoaiNhanVienChuaPhanCong - Lấy loại nhân viên chưa được phân công cho bước cụ thể
+-- =========================================================
+CREATE OR ALTER PROCEDURE dbo.sp_PhanCongBuocXuLy_GetLoaiNhanVienChuaPhanCong
+    @BuocId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        lnv.loai_nv_id,
+        lnv.loai_nv,
+        lnv.luong_co_ban
+    FROM dbo.LoaiNhanVien lnv
+    WHERE NOT EXISTS (
+        SELECT 1 FROM dbo.PhanCongBuocXuLy pcbx 
+        WHERE pcbx.loai_nv_id = lnv.loai_nv_id 
+          AND pcbx.buoc_id = @BuocId
+          AND pcbx.trang_thai = 'ACTIVE'
+    )
+    ORDER BY lnv.loai_nv;
+END
+GO

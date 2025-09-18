@@ -51,5 +51,15 @@ namespace BTL.Web.Services
         {
             return await _repository.ExistsByIdAsync(id);
         }
+
+        public async Task<IEnumerable<BuocXuLy>> GetBuocChuaPhanCongAsync()
+        {
+            return await _repository.GetBuocChuaPhanCongAsync();
+        }
+
+        public async Task<IEnumerable<LoaiNhanVien>> GetLoaiNhanVienChuaPhanCongAsync(int buocId)
+        {
+            return await _repository.GetLoaiNhanVienChuaPhanCongAsync(buocId);
+        }
     }
 }
