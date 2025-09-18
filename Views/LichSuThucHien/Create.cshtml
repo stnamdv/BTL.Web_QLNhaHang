@@ -1,0 +1,131 @@
+@model BTL.Web.Models.LichSuThucHien
+
+@{
+    ViewData["Title"] = "Tạo lịch sử thực hiện";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">@ViewData["Title"]</h3>
+                    <div>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="order_item_id" class="form-label">Order Item ID</label>
+                                    <input asp-for="order_item_id" class="form-control" type="number" />
+                                    <span asp-validation-for="order_item_id" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="buoc_id" class="form-label">Bước xử lý</label>
+                                    <select asp-for="buoc_id" class="form-select" id="buocSelect">
+                                        <option value="">-- Chọn bước xử lý --</option>
+                                    </select>
+                                    <span asp-validation-for="buoc_id" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="nv_id" class="form-label">Nhân viên</label>
+                                    <select asp-for="nv_id" class="form-select" id="nvSelect">
+                                        <option value="">-- Chọn nhân viên --</option>
+                                    </select>
+                                    <span asp-validation-for="nv_id" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="ghi_chu" class="form-label">Ghi chú</label>
+                                    <textarea asp-for="ghi_chu" class="form-control" rows="3" placeholder="Ghi chú về việc phân công..."></textarea>
+                                    <span asp-validation-for="ghi_chu" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Tạo lịch sử
+                                    </button>
+                                    <a asp-action="Index" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> Hủy
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+            <script>
+                $(document).ready(function() {
+                    loadBuocXuLy();
+                    $('#buocSelect').change(function() {
+                        const buocId = $(this).val();
+                        if (buocId) {
+                            loadNhanVienChoBuoc(buocId);
+                        } else {
+                            $('#nvSelect').empty().append('<option value="">-- Chọn nhân viên --</option>');
+                        }
+                    });
+                });
+
+                function loadBuocXuLy() {
+                    $.get('/BuocXuLy/GetAll')
+                        .done(function(data) {
+                            const select = $('#buocSelect');
+                            select.empty().append('<option value="">-- Chọn bước xử lý --</option>');
+                    
+                            data.forEach(function(buoc) {
+                                select.append(`<option value="${buoc.buoc_id}">${buoc.thu_tu}. ${buoc.ten_buoc}</option>`);
+                            });
+                        })
+                        .fail(function() {
+                            console.error('Lỗi khi tải danh sách bước xử lý');
+                        });
+                }
+
+                function loadNhanVienChoBuoc(buocId) {
+                    $.get('/LichSuThucHien/GetNhanVienChoBuoc', { buocId: buocId })
+                        .done(function(data) {
+                            const select = $('#nvSelect');
+                            select.empty().append('<option value="">-- Chọn nhân viên --</option>');
+                    
+                            if (data.success && data.data.length > 0) {
+                                data.data.forEach(function(nv) {
+                                    if (nv.nv_id) {
+                                        select.append(`<option value="${nv.nv_id}">${nv.ho_ten} (${nv.loai_nv})</option>`);
+                                    }
+                                });
+                            } else {
+                                select.append('<option value="" disabled>Không có nhân viên nào được phân công cho bước này</option>');
+                            }
+                        })
+                        .fail(function() {
+                            console.error('Lỗi khi tải danh sách nhân viên');
+                            $('#nvSelect').empty().append('<option value="">Lỗi khi tải danh sách nhân viên</option>');
+                        });
+                }
+            </script>
+}

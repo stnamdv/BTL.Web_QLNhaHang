@@ -1,0 +1,241 @@
+@model BTL.Web.Models.LichSuThucHienWithDetails
+
+@{
+    ViewData["Title"] = "Chi tiết lịch sử thực hiện";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">@ViewData["Title"]</h3>
+                    <div>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <dl class="row">
+                                <dt class="col-sm-4">Đơn hàng:</dt>
+                                <dd class="col-sm-8">
+                                    <strong>#@Model.order_id</strong>
+                                </dd>
+
+                                <dt class="col-sm-4">Bàn ăn:</dt>
+                                <dd class="col-sm-8">
+                                    @if (Model.ban_so_hieu != null)
+                                    {
+                                        <span class="badge bg-primary">@Model.ban_so_hieu</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Mang về</span>
+                                    }
+                                </dd>
+
+                                <dt class="col-sm-4">Món ăn:</dt>
+                                <dd class="col-sm-8">
+                                    <strong>@Model.ten_mon</strong>
+                                </dd>
+
+                                <dt class="col-sm-4">Bước xử lý:</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge bg-info">@Model.ten_buoc</span>
+                                    <span class="badge bg-primary ms-2">Bước @Model.thu_tu</span>
+                                </dd>
+
+                                <dt class="col-sm-4">Nhân viên thực hiện:</dt>
+                                <dd class="col-sm-8">
+                                    <strong>@Model.nv_ho_ten</strong>
+                                    <br><small class="text-muted">@Model.loai_nv</small>
+                                </dd>
+
+                                <dt class="col-sm-4">Trạng thái:</dt>
+                                <dd class="col-sm-8">
+                                    @switch (Model.trang_thai)
+                                    {
+                                        case "CHUA_BAT_DAU":
+                                            <span class="badge bg-secondary">Chưa bắt đầu</span>
+                                            break;
+                                        case "DANG_THUC_HIEN":
+                                            <span class="badge bg-warning">Đang thực hiện</span>
+                                            break;
+                                        case "HOAN_THANH":
+                                            <span class="badge bg-success">Hoàn thành</span>
+                                            break;
+                                        default:
+                                            <span class="badge bg-light text-dark">@Model.trang_thai</span>
+                                            break;
+                                    }
+                                </dd>
+
+                                <dt class="col-sm-4">Thời gian bắt đầu:</dt>
+                                <dd class="col-sm-8">
+                                    @if (Model.thoi_diem_bat_dau.HasValue)
+                                    {
+                                        <span class="text-success">@Model.thoi_diem_bat_dau.Value.ToString("dd/MM/yyyy HH:mm:ss")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Chưa bắt đầu</span>
+                                    }
+                                </dd>
+
+                                <dt class="col-sm-4">Thời gian kết thúc:</dt>
+                                <dd class="col-sm-8">
+                                    @if (Model.thoi_diem_ket_thuc.HasValue)
+                                    {
+                                        <span class="text-success">@Model.thoi_diem_ket_thuc.Value.ToString("dd/MM/yyyy HH:mm:ss")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Chưa kết thúc</span>
+                                    }
+                                </dd>
+
+                                @if (Model.thoi_gian_thuc_hien_phut.HasValue)
+                                {
+                                    <dt class="col-sm-4">Thời gian thực hiện:</dt>
+                                    <dd class="col-sm-8">
+                                        <span class="badge bg-info">@Model.thoi_gian_thuc_hien_phut phút</span>
+                                    </dd>
+                                }
+
+                                <dt class="col-sm-4">Ghi chú:</dt>
+                                <dd class="col-sm-8">
+                                    @(Model.ghi_chu ?? "Không có ghi chú")
+                                </dd>
+
+                                <dt class="col-sm-4">Thời gian tạo:</dt>
+                                <dd class="col-sm-8">
+                                    <small class="text-muted">@Model.thoi_diem_tao.ToString("dd/MM/yyyy HH:mm:ss")</small>
+                                </dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-header">
+                                    <h6 class="card-title mb-0">
+                                        <i class="fas fa-info-circle"></i> Thông tin bước
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            Đây là bước thứ <strong>@Model.thu_tu</strong> trong quy trình xử lý đơn hàng.
+                                            Nhân viên <strong>@Model.nv_ho_ten</strong> (@Model.loai_nv) 
+                                            đang thực hiện bước <strong>@Model.ten_buoc</strong>.
+                                        </small>
+                                    </p>
+                                </div>
+                            </div>
+
+                            @if (Model.trang_thai == "CHUA_BAT_DAU")
+                            {
+                                <div class="card bg-warning text-dark mt-3">
+                                    <div class="card-header">
+                                        <h6 class="card-title mb-0">
+                                            <i class="fas fa-clock"></i> Chờ thực hiện
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text">
+                                            <small>
+                                                Bước này đã được phân công nhưng chưa được bắt đầu thực hiện.
+                                            </small>
+                                        </p>
+                                        <button class="btn btn-success btn-sm" onclick="batDau(@Model.lich_su_id)">
+                                            <i class="fas fa-play"></i> Bắt đầu
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                            else if (Model.trang_thai == "DANG_THUC_HIEN")
+                            {
+                                <div class="card bg-info text-white mt-3">
+                                    <div class="card-header">
+                                        <h6 class="card-title mb-0">
+                                            <i class="fas fa-spinner"></i> Đang thực hiện
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text">
+                                            <small>
+                                                Bước này đang được thực hiện bởi <strong>@Model.nv_ho_ten</strong>.
+                                            </small>
+                                        </p>
+                                        <button class="btn btn-warning btn-sm" onclick="hoanThanh(@Model.lich_su_id)">
+                                            <i class="fas fa-check"></i> Hoàn thành
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                            else if (Model.trang_thai == "HOAN_THANH")
+                            {
+                                <div class="card bg-success text-white mt-3">
+                                    <div class="card-header">
+                                        <h6 class="card-title mb-0">
+                                            <i class="fas fa-check-circle"></i> Đã hoàn thành
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text">
+                                            <small>
+                                                Bước này đã được hoàn thành thành công.
+                                                @if (Model.thoi_gian_thuc_hien_phut.HasValue)
+                                                {
+                                                    <text><br>Thời gian thực hiện: <strong>@Model.thoi_gian_thuc_hien_phut.Value phút</strong></text>
+                                                }
+                                                    </small>
+                                                </p>
+                                            </div>
+                                        </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+            <script>
+                function batDau(lichSuId) {
+                    if (confirm('Bạn có chắc chắn muốn bắt đầu thực hiện bước này?')) {
+                        $.post('/LichSuThucHien/BatDau', { lichSuId: lichSuId })
+                            .done(function(data) {
+                                if (data.success) {
+                                    location.reload();
+                                } else {
+                                    alert('Lỗi: ' + data.message);
+                                }
+                            })
+                            .fail(function() {
+                                alert('Có lỗi xảy ra khi bắt đầu thực hiện');
+                            });
+                    }
+                }
+
+                function hoanThanh(lichSuId) {
+                    const ghiChu = prompt('Nhập ghi chú (tùy chọn):');
+                    if (ghiChu !== null) {
+                        $.post('/LichSuThucHien/HoanThanh', { lichSuId: lichSuId, ghiChu: ghiChu })
+                            .done(function(data) {
+                                if (data.success) {
+                                    location.reload();
+                                } else {
+                                    alert('Lỗi: ' + data.message);
+                                }
+                            })
+                            .fail(function() {
+                                alert('Có lỗi xảy ra khi hoàn thành');
+                            });
+                    }
+                }
+            </script>
+}

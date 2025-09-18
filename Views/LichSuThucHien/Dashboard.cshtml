@@ -1,0 +1,262 @@
+@{
+    ViewData["Title"] = "Dashboard Quy Trình";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">@ViewData["Title"]</h3>
+                    <div>
+                        <button class="btn btn-primary" onclick="refreshDashboard()">
+                            <i class="fas fa-sync-alt"></i> Làm mới
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Summary Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h4 class="card-title" id="totalOrders">0</h4>
+                                            <p class="card-text">Tổng đơn hàng</p>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fas fa-shopping-cart fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h4 class="card-title" id="processingOrders">0</h4>
+                                            <p class="card-text">Đang xử lý</p>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fas fa-clock fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h4 class="card-title" id="completedOrders">0</h4>
+                                            <p class="card-text">Đã hoàn thành</p>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fas fa-check-circle fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h4 class="card-title" id="avgTime">0</h4>
+                                            <p class="card-text">Thời gian TB (phút)</p>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fas fa-stopwatch fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Workflow Steps -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5>Quy trình xử lý đơn hàng</h5>
+                            <div class="row" id="workflowSteps">
+                                <!-- Sẽ được load từ API -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Processing Orders -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-list"></i> Đơn hàng đang xử lý
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="processingOrdersList">
+                                        <div class="text-center">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Đang tải...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            loadDashboard();
+            // Auto refresh every 30 seconds
+            setInterval(loadDashboard, 30000);
+        });
+
+        function refreshDashboard() {
+            loadDashboard();
+        }
+
+        function loadDashboard() {
+            loadWorkflowSteps();
+            loadProcessingOrders();
+            loadStatistics();
+        }
+
+        function loadWorkflowSteps() {
+            $.get('/BuocXuLy/GetAll')
+                .done(function(data) {
+                    const container = $('#workflowSteps');
+                    container.empty();
+                    
+                    data.forEach(function(step, index) {
+                        const cardClass = index === 0 ? 'border-primary' : 
+                                         index === data.length - 1 ? 'border-success' : 'border-info';
+                        
+                        container.append(`
+                            <div class="col-md-4 mb-3">
+                                <div class="card ${cardClass}">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title">
+                                            <span class="badge bg-primary">${step.thu_tu}</span>
+                                            ${step.ten_buoc}
+                                        </h6>
+                                        <p class="card-text">
+                                            <small class="text-muted">
+                                                ${step.thoi_gian_du_kien ? step.thoi_gian_du_kien + ' phút' : 'Chưa xác định'}
+                                            </small>
+                                        </p>
+                                        <div class="mt-2" id="step-${step.buoc_id}-count">
+                                            <span class="badge bg-secondary">0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `);
+                    });
+                })
+                .fail(function() {
+                    console.error('Lỗi khi tải quy trình xử lý');
+                });
+        }
+
+        function loadProcessingOrders() {
+            $.get('/LichSuThucHien/GetDangXuLy')
+                .done(function(data) {
+                    const container = $('#processingOrdersList');
+                    
+                    if (data && data.length > 0) {
+                        let html = '<div class="table-responsive"><table class="table table-sm">';
+                        html += '<thead><tr><th>Đơn hàng</th><th>Bàn</th><th>Món</th><th>Bước</th><th>Nhân viên</th><th>Thời gian</th><th>Thao tác</th></tr></thead><tbody>';
+                        
+                        data.forEach(function(item) {
+                            const timeElapsed = item.thoi_diem_bat_dau ? 
+                                Math.floor((new Date() - new Date(item.thoi_diem_bat_dau)) / 60000) : 0;
+                            
+                            html += `
+                                <tr>
+                                    <td><strong>#${item.order_id}</strong></td>
+                                    <td>${item.ban_so_hieu ? `<span class="badge bg-primary">${item.ban_so_hieu}</span>` : '<span class="badge bg-secondary">Mang về</span>'}</td>
+                                    <td>${item.ten_mon}</td>
+                                    <td><span class="badge bg-info">${item.ten_buoc}</span></td>
+                                    <td>${item.nv_ho_ten}</td>
+                                    <td><span class="badge bg-warning">${timeElapsed} phút</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success" onclick="hoanThanh(${item.lich_su_id})">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                        
+                        html += '</tbody></table></div>';
+                        container.html(html);
+                    } else {
+                        container.html(`
+                            <div class="text-center py-3">
+                                <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                                <p class="text-muted">Không có đơn hàng nào đang xử lý</p>
+                            </div>
+                        `);
+                    }
+                })
+                .fail(function() {
+                    $('#processingOrdersList').html(`
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle"></i> 
+                            Có lỗi xảy ra khi tải danh sách đơn hàng
+                        </div>
+                    `);
+                });
+        }
+
+        function loadStatistics() {
+            // Load statistics from API
+            $.get('/LichSuThucHien/ThongKe')
+                .done(function(data) {
+                    // Update summary cards
+                    $('#totalOrders').text(data.length || 0);
+                    $('#completedOrders').text(data.filter(x => x.trang_thai === 'HOAN_THANH').length || 0);
+                    $('#processingOrders').text(data.filter(x => x.trang_thai === 'DANG_THUC_HIEN').length || 0);
+                    
+                    // Calculate average time
+                    const completedItems = data.filter(x => x.thoi_gian_trung_binh_phut);
+                    const avgTime = completedItems.length > 0 ? 
+                        (completedItems.reduce((sum, x) => sum + x.thoi_gian_trung_binh_phut, 0) / completedItems.length).toFixed(1) : 0;
+                    $('#avgTime').text(avgTime);
+                })
+                .fail(function() {
+                    console.error('Lỗi khi tải thống kê');
+                });
+        }
+
+        function hoanThanh(lichSuId) {
+            const ghiChu = prompt('Nhập ghi chú (tùy chọn):');
+            if (ghiChu !== null) {
+                $.post('/LichSuThucHien/HoanThanh', { lichSuId: lichSuId, ghiChu: ghiChu })
+                    .done(function(data) {
+                        if (data.success) {
+                            loadDashboard();
+                        } else {
+                            alert('Lỗi: ' + data.message);
+                        }
+                    })
+                    .fail(function() {
+                        alert('Có lỗi xảy ra khi hoàn thành');
+                    });
+            }
+        }
+    </script>
+}

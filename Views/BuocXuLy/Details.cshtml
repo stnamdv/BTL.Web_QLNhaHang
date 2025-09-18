@@ -1,0 +1,148 @@
+@model BTL.Web.Models.BuocXuLy
+
+@{
+    ViewData["Title"] = "Chi tiết bước xử lý";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">@ViewData["Title"]</h3>
+                    <div>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <dl class="row">
+                                <dt class="col-sm-3">Thứ tự:</dt>
+                                <dd class="col-sm-9">
+                                    <span class="badge bg-primary fs-6">@Model.thu_tu</span>
+                                </dd>
+
+                                <dt class="col-sm-3">Tên bước:</dt>
+                                <dd class="col-sm-9">
+                                    <strong>@Model.ten_buoc</strong>
+                                </dd>
+
+                                <dt class="col-sm-3">Mô tả:</dt>
+                                <dd class="col-sm-9">
+                                    @(Model.mo_ta ?? "Chưa có mô tả")
+                                </dd>
+
+                                <dt class="col-sm-3">Thời gian dự kiến:</dt>
+                                <dd class="col-sm-9">
+                                    @if (Model.thoi_gian_du_kien.HasValue)
+                                    {
+                                        <span class="badge bg-info">@Model.thoi_gian_du_kien phút</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Chưa xác định</span>
+                                    }
+                                </dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-header">
+                                    <h6 class="card-title mb-0">
+                                        <i class="fas fa-info-circle"></i> Thông tin bước
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            Đây là bước thứ <strong>@Model.thu_tu</strong> trong quy trình xử lý đơn hàng.
+                                        </small>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Phân công nhân viên -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-users"></i> Nhân viên được phân công
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="assignedStaff">
+                                        <div class="text-center">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Đang tải...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            loadAssignedStaff(@Model.buoc_id);
+        });
+
+        function loadAssignedStaff(buocId) {
+            $.get('/PhanCongBuocXuLy/GetNhanVienChoBuoc', { buocId: buocId })
+                .done(function(data) {
+                    if (data.success && data.data.length > 0) {
+                        let html = '<div class="row">';
+                        data.data.forEach(function(staff) {
+                            html += `
+                                <div class="col-md-6 mb-3">
+                                    <div class="card border-primary">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <i class="fas fa-user"></i> ${staff.ho_ten}
+                                            </h6>
+                                            <p class="card-text">
+                                                <span class="badge bg-secondary">${staff.loai_nv}</span>
+                                                ${staff.vai_tro ? '<br><small class="text-muted">' + staff.vai_tro + '</small>' : ''}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        html += '</div>';
+                        $('#assignedStaff').html(html);
+                    } else {
+                        $('#assignedStaff').html(`
+                            <div class="text-center py-3">
+                                <i class="fas fa-user-slash fa-2x text-muted mb-2"></i>
+                                <p class="text-muted">Chưa có nhân viên nào được phân công cho bước này</p>
+                                <a href="/PhanCongBuocXuLy/Create" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-plus"></i> Phân công nhân viên
+                                </a>
+                            </div>
+                        `);
+                    }
+                })
+                .fail(function() {
+                    $('#assignedStaff').html(`
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle"></i> 
+                            Có lỗi xảy ra khi tải thông tin nhân viên
+                        </div>
+                    `);
+                });
+        }
+    </script>
+}

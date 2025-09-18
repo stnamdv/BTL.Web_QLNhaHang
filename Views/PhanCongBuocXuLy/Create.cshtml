@@ -1,0 +1,110 @@
+@model BTL.Web.Models.PhanCongBuocXuLy
+
+@{
+    ViewData["Title"] = "Thêm phân công nhân viên";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">@ViewData["Title"]</h3>
+                    <div>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="buoc_id" class="form-label">Bước xử lý</label>
+                                    <select asp-for="buoc_id" class="form-select" id="buocSelect">
+                                        <option value="">-- Chọn bước xử lý --</option>
+                                    </select>
+                                    <span asp-validation-for="buoc_id" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="loai_nv_id" class="form-label">Loại nhân viên</label>
+                                    <select asp-for="loai_nv_id" class="form-select" id="loaiNvSelect">
+                                        <option value="">-- Chọn loại nhân viên --</option>
+                                    </select>
+                                    <span asp-validation-for="loai_nv_id" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label asp-for="vai_tro" class="form-label">Vai trò cụ thể</label>
+                                    <input asp-for="vai_tro" class="form-control" placeholder="Ví dụ: Nhận đơn hàng, Chế biến món ăn, Mang món ra bàn..." />
+                                    <span asp-validation-for="vai_tro" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Lưu phân công
+                                    </button>
+                                    <a asp-action="Index" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> Hủy
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            loadBuocXuLy();
+            loadLoaiNhanVien();
+        });
+
+        function loadBuocXuLy() {
+            $.get('/BuocXuLy/GetAll')
+                .done(function(data) {
+                    const select = $('#buocSelect');
+                    select.empty().append('<option value="">-- Chọn bước xử lý --</option>');
+                    
+                    data.forEach(function(buoc) {
+                        select.append(`<option value="${buoc.buoc_id}">${buoc.thu_tu}. ${buoc.ten_buoc}</option>`);
+                    });
+                })
+                .fail(function() {
+                    console.error('Lỗi khi tải danh sách bước xử lý');
+                });
+        }
+
+        function loadLoaiNhanVien() {
+            $.get('/LoaiNhanVien/GetAll')
+                .done(function(data) {
+                    const select = $('#loaiNvSelect');
+                    select.empty().append('<option value="">-- Chọn loại nhân viên --</option>');
+                    
+                    data.forEach(function(loai) {
+                        select.append(`<option value="${loai.loai_nv_id}">${loai.loai_nv}</option>`);
+                    });
+                })
+                .fail(function() {
+                    console.error('Lỗi khi tải danh sách loại nhân viên');
+                });
+        }
+    </script>
+}
