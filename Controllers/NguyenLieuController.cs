@@ -8,10 +8,23 @@ namespace BTL.Web.Controllers
     public class NguyenLieuController : Controller
     {
         private readonly INguyenLieuService _nguyenLieuService;
+        private readonly INhaCungCapService _nhaCungCapService;
 
-        public NguyenLieuController(INguyenLieuService nguyenLieuService)
+        public NguyenLieuController(INguyenLieuService nguyenLieuService, INhaCungCapService nhaCungCapService)
         {
             _nguyenLieuService = nguyenLieuService;
+            _nhaCungCapService = nhaCungCapService;
+        }
+
+        private async Task LoadDropdownDataAsync()
+        {
+            // Lấy danh sách đơn vị để hiển thị trong dropdown
+            var donVis = await _nguyenLieuService.GetDistinctDonViAsync();
+            ViewBag.DonViOptions = donVis.Select(dv => new SelectListItem { Value = dv, Text = dv }).ToList();
+
+            // Lấy danh sách nhà cung cấp để hiển thị trong dropdown
+            var nhaCungCaps = await _nhaCungCapService.GetAllAsync();
+            ViewBag.NhaCungCapOptions = nhaCungCaps.Select(ncc => new SelectListItem { Value = ncc.ncc_id.ToString(), Text = ncc.ten }).ToList();
         }
 
         // GET: NguyenLieu
@@ -23,7 +36,7 @@ namespace BTL.Web.Controllers
                 if (page < 1) page = 1;
                 if (pageSize < 1 || pageSize > 100) pageSize = 10;
 
-                var pagedResult = await _nguyenLieuService.GetAllPagedAsync(page, pageSize, searchTerm);
+                var pagedResult = await _nguyenLieuService.GetAllWithNhaCungCapPagedAsync(page, pageSize, searchTerm);
 
                 // Pass pagination info to view
                 ViewBag.CurrentPage = page;
@@ -37,7 +50,7 @@ namespace BTL.Web.Controllers
             catch (Exception ex)
             {
                 TempData["Error"] = $"Lỗi: {ex.Message}";
-                return View(new List<NguyenLieu>());
+                return View(new List<NguyenLieuWithNhaCungCap>());
             }
         }
 
@@ -46,13 +59,13 @@ namespace BTL.Web.Controllers
         {
             try
             {
-                var nguyenLieuWithMon = await _nguyenLieuService.GetWithMonAsync(id);
-                if (nguyenLieuWithMon == null)
+                var nguyenLieuWithNhaCungCap = await _nguyenLieuService.GetWithNhaCungCapAsync(id);
+                if (nguyenLieuWithNhaCungCap == null)
                 {
                     return NotFound();
                 }
 
-                return View(nguyenLieuWithMon);
+                return View(nguyenLieuWithNhaCungCap);
             }
             catch (Exception ex)
             {
@@ -66,10 +79,7 @@ namespace BTL.Web.Controllers
         {
             try
             {
-                // Lấy danh sách đơn vị để hiển thị trong dropdown
-                var donVis = await _nguyenLieuService.GetDistinctDonViAsync();
-                ViewBag.DonViOptions = donVis.Select(dv => new SelectListItem { Value = dv, Text = dv }).ToList();
-
+                await LoadDropdownDataAsync();
                 return View();
             }
             catch (Exception ex)
@@ -88,9 +98,7 @@ namespace BTL.Web.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    // Reload data for dropdowns
-                    var donVis = await _nguyenLieuService.GetDistinctDonViAsync();
-                    ViewBag.DonViOptions = donVis.Select(dv => new SelectListItem { Value = dv, Text = dv }).ToList();
+                    await LoadDropdownDataAsync();
                     return View(nguyenLieu);
                 }
 
@@ -101,8 +109,7 @@ namespace BTL.Web.Controllers
             catch (ArgumentException ex)
             {
                 ModelState.AddModelError("", ex.Message);
-                var donVis = await _nguyenLieuService.GetDistinctDonViAsync();
-                ViewBag.DonViOptions = donVis.Select(dv => new SelectListItem { Value = dv, Text = dv }).ToList();
+                await LoadDropdownDataAsync();
                 return View(nguyenLieu);
             }
             catch (Exception ex)
@@ -124,8 +131,7 @@ namespace BTL.Web.Controllers
                 }
 
                 // Lấy danh sách đơn vị để hiển thị trong dropdown
-                var donVis = await _nguyenLieuService.GetDistinctDonViAsync();
-                ViewBag.DonViOptions = donVis.Select(dv => new SelectListItem { Value = dv, Text = dv }).ToList();
+                await LoadDropdownDataAsync();
 
                 return View(nguyenLieu);
             }
@@ -163,8 +169,7 @@ namespace BTL.Web.Controllers
             catch (ArgumentException ex)
             {
                 ModelState.AddModelError("", ex.Message);
-                var donVis = await _nguyenLieuService.GetDistinctDonViAsync();
-                ViewBag.DonViOptions = donVis.Select(dv => new SelectListItem { Value = dv, Text = dv }).ToList();
+                await LoadDropdownDataAsync();
                 return View(nguyenLieu);
             }
             catch (Exception ex)
@@ -258,8 +263,7 @@ namespace BTL.Web.Controllers
                 var results = await _nguyenLieuService.SearchByCriteriaAsync(searchTerm, donVi, nguonGoc, page, pageSize);
 
                 // Lấy danh sách đơn vị để hiển thị trong dropdown
-                var donVis = await _nguyenLieuService.GetDistinctDonViAsync();
-                ViewBag.DonViOptions = donVis.Select(dv => new SelectListItem { Value = dv, Text = dv }).ToList();
+                await LoadDropdownDataAsync();
                 ViewBag.SearchTerm = searchTerm;
                 ViewBag.DonVi = donVi;
                 ViewBag.NguonGoc = nguonGoc;

@@ -1,0 +1,45 @@
+@model BTL.Web.Models.NhaCungCap
+
+@{
+    ViewData["Title"] = "Sửa nhà cung cấp";
+}
+
+<h1>Sửa nhà cung cấp</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="ncc_id" />
+
+            <div class="form-group">
+                <label asp-for="ten" class="control-label">Tên nhà cung cấp</label>
+                <input asp-for="ten" class="form-control" />
+                <span asp-validation-for="ten" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="dia_chi" class="control-label">Địa chỉ</label>
+                <textarea asp-for="dia_chi" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="dia_chi" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="sdt" class="control-label">Số điện thoại</label>
+                <input asp-for="sdt" class="form-control" type="tel" />
+                <span asp-validation-for="sdt" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mt-3">
+                <input type="submit" value="Lưu" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

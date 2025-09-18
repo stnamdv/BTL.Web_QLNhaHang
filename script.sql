@@ -81,17 +81,6 @@ CREATE TABLE dbo.NguyenLieu (
 );
 GO
 
--- Phiếu nhập (mua hàng)
-CREATE TABLE dbo.NL_NCC (
-  phieu_nhap_id INT IDENTITY(1,1) PRIMARY KEY,
-  nl_id     INT NOT NULL FOREIGN KEY REFERENCES dbo.NguyenLieu(nl_id),
-  ncc_id    INT NOT NULL FOREIGN KEY REFERENCES dbo.NhaCungCap(ncc_id),
-  ngay_nhap DATE NOT NULL,
-  so_luong  DECIMAL(14,3) NOT NULL CHECK (so_luong > 0),
-  don_gia   DECIMAL(14,2) NOT NULL CHECK (don_gia >= 0)
-);
-GO
-
 -- Công thức: món dùng các nguyên liệu nào (định lượng cho 1 suất)
 CREATE TABLE dbo.CongThuc (
   mon_id     INT NOT NULL,
@@ -167,7 +156,6 @@ GO
 -- CREATE INDEX IX_OrderItem_mon       ON dbo.OrderItem(mon_id);
 -- CREATE INDEX IX_OrderItem_order     ON dbo.OrderItem(order_id);
 -- CREATE INDEX IX_CongThuc_mon        ON dbo.CongThuc(mon_id);
--- CREATE INDEX IX_NL_NCC_ngay         ON dbo.NL_NCC(ngay_nhap);
 
 
 /* ================================================

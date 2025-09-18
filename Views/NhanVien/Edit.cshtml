@@ -17,9 +17,9 @@
                 <div class="card-body">
                     <form asp-action="Edit" method="post">
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
-                        
+
                         <input asp-for="nv_id" type="hidden" />
-                        
+
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
@@ -28,14 +28,15 @@
                                     <span asp-validation-for="ho_ten" class="text-danger"></span>
                                 </div>
                             </div>
-                            
+
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label asp-for="loai_nv" class="form-label"></label>
-                                    <select asp-for="loai_nv" class="form-select" asp-items="@(new SelectList(ViewBag.LoaiNhanViens, "loai_nv", "loai_nv"))">
+                                    <label asp-for="loai_nv_id" class="form-label">Loại nhân viên</label>
+                                    <select asp-for="loai_nv_id" class="form-select"
+                                        asp-items="@(new SelectList(ViewBag.LoaiNhanViens, "loai_nv_id", "loai_nv"))">
                                         <option value="">-- Chọn loại nhân viên --</option>
                                     </select>
-                                    <span asp-validation-for="loai_nv" class="text-danger"></span>
+                                    <span asp-validation-for="loai_nv_id" class="text-danger"></span>
                                 </div>
                             </div>
                         </div>
@@ -44,19 +45,21 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label asp-for="ngay_vao_lam" class="form-label"></label>
-                                    <input asp-for="ngay_vao_lam" type="date" class="form-control" max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                                    <input asp-for="ngay_vao_lam" type="date" class="form-control"
+                                        max="@DateTime.Today.ToString("yyyy-MM-dd")" />
                                     <span asp-validation-for="ngay_vao_lam" class="text-danger"></span>
                                     <div class="form-text">Ngày vào làm không được là ngày tương lai</div>
                                 </div>
                             </div>
-                            
+
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label asp-for="trang_thai" class="form-label"></label>
                                     <select asp-for="trang_thai" class="form-select">
                                         @foreach (var status in ViewBag.TrangThaiOptions)
                                         {
-                                                    <option value="@status">@BTL.Web.Models.TrangThaiNv.GetDisplayName(status)</option>
+                                            <option value="@status">@BTL.Web.Models.TrangThaiNv.GetDisplayName(status)
+                                            </option>
                                         }
                                     </select>
                                     <span asp-validation-for="trang_thai" class="text-danger"></span>

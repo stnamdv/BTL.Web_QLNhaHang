@@ -19,7 +19,15 @@ namespace BTL.Web.Repositories
         public async Task<IEnumerable<Mon>> GetAllAsync()
         {
             using var connection = _context.CreateConnection();
-            return await connection.QueryAsync<Mon>("EXEC SP_GetAllMon @PageNumber = 1, @PageSize = 1000");
+            var parameters = new DynamicParameters();
+            parameters.Add("@PageNumber", 1);
+            parameters.Add("@PageSize", 1000);
+            parameters.Add("@TotalCount", dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+            return await connection.QueryAsync<Mon>(
+                "sp_Mon_GetAll",
+                parameters,
+                commandType: CommandType.StoredProcedure);
         }
 
         public async Task<PagedResult<Mon>> GetAllPagedAsync(int pageNumber, int pageSize, string? searchTerm = null, string? loaiMon = null)
@@ -31,14 +39,14 @@ namespace BTL.Web.Repositories
             parameters.Add("@PageSize", pageSize);
             parameters.Add("@SearchTerm", searchTerm);
             parameters.Add("@LoaiMon", loaiMon);
+            parameters.Add("@TotalCount", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
             var items = await connection.QueryAsync<Mon>(
-                "SP_GetAllMon",
+                "sp_Mon_GetAll",
                 parameters,
                 commandType: CommandType.StoredProcedure);
 
-            // Lấy total count từ item đầu tiên
-            var totalItems = items.FirstOrDefault()?.GetType().GetProperty("TotalCount")?.GetValue(items.First()) as int? ?? 0;
+            var totalItems = parameters.Get<int>("@TotalCount");
 
             return new PagedResult<Mon>(items, totalItems, pageNumber, pageSize);
         }
@@ -47,7 +55,7 @@ namespace BTL.Web.Repositories
         {
             using var connection = _context.CreateConnection();
             return await connection.QueryFirstOrDefaultAsync<Mon>(
-                "EXEC SP_GetMonById @MonId",
+                "EXEC sp_Mon_GetById @MonId",
                 new { MonId = id });
         }
 
@@ -56,7 +64,7 @@ namespace BTL.Web.Repositories
             using var connection = _context.CreateConnection();
 
             using var multi = await connection.QueryMultipleAsync(
-                "EXEC SP_GetMonWithCongThuc @MonId",
+                "EXEC sp_Mon_GetWithCongThuc @MonId",
                 new { MonId = id });
 
             var mon = await multi.ReadFirstOrDefaultAsync<Mon>();
@@ -96,7 +104,7 @@ namespace BTL.Web.Repositories
             parameters.Add("@CongThucJson", congThucJson);
 
             await connection.ExecuteAsync(
-                "SP_CreateMon",
+                "sp_Mon_Create",
                 parameters,
                 commandType: CommandType.StoredProcedure);
 
@@ -131,7 +139,7 @@ namespace BTL.Web.Repositories
             parameters.Add("@CongThucJson", congThucJson);
 
             await connection.ExecuteAsync(
-                "SP_UpdateMon",
+                "sp_Mon_Update",
                 parameters,
                 commandType: CommandType.StoredProcedure);
 
@@ -145,7 +153,7 @@ namespace BTL.Web.Repositories
             try
             {
                 await connection.ExecuteAsync(
-                    "EXEC SP_DeleteMon @MonId",
+                    "EXEC sp_Mon_Delete @MonId",
                     new { MonId = id });
                 return true;
             }
@@ -214,9 +222,16 @@ namespace BTL.Web.Repositories
         public async Task<IEnumerable<Mon>> GetByLoaiMonAsync(string loaiMon)
         {
             using var connection = _context.CreateConnection();
+            var parameters = new DynamicParameters();
+            parameters.Add("@PageNumber", 1);
+            parameters.Add("@PageSize", 1000);
+            parameters.Add("@LoaiMon", loaiMon);
+            parameters.Add("@TotalCount", dbType: DbType.Int32, direction: ParameterDirection.Output);
+
             return await connection.QueryAsync<Mon>(
-                "EXEC SP_GetAllMon @PageNumber = 1, @PageSize = 1000, @LoaiMon = @loaiMon",
-                new { loaiMon });
+                "sp_Mon_GetAll",
+                parameters,
+                commandType: CommandType.StoredProcedure);
         }
 
         public async Task<PagedResult<Mon>> GetByLoaiMonPagedAsync(string loaiMon, int pageNumber, int pageSize)
@@ -227,9 +242,16 @@ namespace BTL.Web.Repositories
         public async Task<IEnumerable<Mon>> SearchAsync(string searchTerm)
         {
             using var connection = _context.CreateConnection();
+            var parameters = new DynamicParameters();
+            parameters.Add("@PageNumber", 1);
+            parameters.Add("@PageSize", 1000);
+            parameters.Add("@SearchTerm", searchTerm);
+            parameters.Add("@TotalCount", dbType: DbType.Int32, direction: ParameterDirection.Output);
+
             return await connection.QueryAsync<Mon>(
-                "EXEC SP_GetAllMon @PageNumber = 1, @PageSize = 1000, @SearchTerm = @searchTerm",
-                new { searchTerm });
+                "sp_Mon_GetAll",
+                parameters,
+                commandType: CommandType.StoredProcedure);
         }
 
         public async Task<PagedResult<Mon>> SearchPagedAsync(string searchTerm, int pageNumber, int pageSize)
@@ -256,7 +278,7 @@ namespace BTL.Web.Repositories
         {
             using var connection = _context.CreateConnection();
             return await connection.QueryAsync<Mon>(
-                "EXEC SP_GetMonWithCongThuc @MonId",
+                "EXEC sp_Mon_GetWithCongThuc @MonId",
                 new { MonId = monId });
         }
     }

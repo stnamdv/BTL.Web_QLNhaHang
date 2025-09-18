@@ -25,17 +25,10 @@ namespace BTL.Web.Models
         [Display(Name = "Trạng thái")]
         public string TrangThai { get; set; } = string.Empty;
 
-        // Mapping từ Excel data sang database values
+        // Trả về trực tiếp BoPhan vì stored procedure sẽ xử lý mapping
         public string GetLoaiNvFromBoPhan()
         {
-            return BoPhan?.ToUpper() switch
-            {
-                "ĐẦU BẾP" => "BEP",
-                "PHỤC VỤ" => "PHUC_VU",
-                "DỊCH VỤ" => "DICH_VU",
-                "THU NGÂN" => "THU_NGAN",
-                _ => BoPhan ?? ""
-            };
+            return BoPhan ?? "";
         }
 
         public string GetTrangThaiFromDisplay()

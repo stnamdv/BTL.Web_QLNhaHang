@@ -18,7 +18,15 @@ namespace BTL.Web.Repositories
         public async Task<IEnumerable<NguyenLieu>> GetAllAsync()
         {
             using var connection = _context.CreateConnection();
-            return await connection.QueryAsync<NguyenLieu>("EXEC SP_GetAllNguyenLieu @PageNumber = 1, @PageSize = 1000");
+            var parameters = new DynamicParameters();
+            parameters.Add("@PageNumber", 1);
+            parameters.Add("@PageSize", 1000);
+            parameters.Add("@TotalCount", dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+            return await connection.QueryAsync<NguyenLieu>(
+                "sp_NguyenLieu_GetAll",
+                parameters,
+                commandType: CommandType.StoredProcedure);
         }
 
         public async Task<PagedResult<NguyenLieu>> GetAllPagedAsync(int pageNumber, int pageSize, string? searchTerm = null)
@@ -29,14 +37,14 @@ namespace BTL.Web.Repositories
             parameters.Add("@PageNumber", pageNumber);
             parameters.Add("@PageSize", pageSize);
             parameters.Add("@SearchTerm", searchTerm);
+            parameters.Add("@TotalCount", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
             var items = await connection.QueryAsync<NguyenLieu>(
-                "SP_GetAllNguyenLieu",
+                "sp_NguyenLieu_GetAll",
                 parameters,
                 commandType: CommandType.StoredProcedure);
 
-            // Lấy total count từ item đầu tiên
-            var totalItems = items.FirstOrDefault()?.GetType().GetProperty("TotalCount")?.GetValue(items.First()) as int? ?? 0;
+            var totalItems = parameters.Get<int>("@TotalCount");
 
             return new PagedResult<NguyenLieu>(items, totalItems, pageNumber, pageSize);
         }
@@ -45,8 +53,26 @@ namespace BTL.Web.Repositories
         {
             using var connection = _context.CreateConnection();
             return await connection.QueryFirstOrDefaultAsync<NguyenLieu>(
-                "EXEC SP_GetNguyenLieuById @NlId",
+                "EXEC sp_NguyenLieu_GetById @NlId",
                 new { NlId = id });
+        }
+
+        public async Task<NguyenLieuWithNhaCungCap?> GetWithNhaCungCapAsync(int id)
+        {
+            using var connection = _context.CreateConnection();
+
+            using var multi = await connection.QueryMultipleAsync(
+                "EXEC sp_NguyenLieu_GetById @NlId",
+                new { NlId = id });
+
+            var nguyenLieu = await multi.ReadFirstOrDefaultAsync<NguyenLieuWithNhaCungCap>();
+            if (nguyenLieu != null)
+            {
+                var mons = await multi.ReadAsync<MonSuDungNguyenLieu>();
+                nguyenLieu.Mons = mons;
+            }
+
+            return nguyenLieu;
         }
 
         public async Task<NguyenLieuWithMon?> GetWithMonAsync(int id)
@@ -54,7 +80,7 @@ namespace BTL.Web.Repositories
             using var connection = _context.CreateConnection();
 
             using var multi = await connection.QueryMultipleAsync(
-                "EXEC SP_GetNguyenLieuById @NlId",
+                "EXEC sp_NguyenLieu_GetById @NlId",
                 new { NlId = id });
 
             var nguyenLieu = await multi.ReadFirstOrDefaultAsync<NguyenLieu>();
@@ -77,10 +103,11 @@ namespace BTL.Web.Repositories
             parameters.Add("@Ten", nguyenLieu.ten);
             parameters.Add("@DonVi", nguyenLieu.don_vi);
             parameters.Add("@NguonGoc", nguyenLieu.nguon_goc);
+            parameters.Add("@NccId", nguyenLieu.ncc_id);
             parameters.Add("@NlId", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
             await connection.ExecuteAsync(
-                "SP_CreateNguyenLieu",
+                "sp_NguyenLieu_Create",
                 parameters,
                 commandType: CommandType.StoredProcedure);
 
@@ -99,9 +126,10 @@ namespace BTL.Web.Repositories
             parameters.Add("@Ten", nguyenLieu.ten);
             parameters.Add("@DonVi", nguyenLieu.don_vi);
             parameters.Add("@NguonGoc", nguyenLieu.nguon_goc);
+            parameters.Add("@NccId", nguyenLieu.ncc_id);
 
             await connection.ExecuteAsync(
-                "SP_UpdateNguyenLieu",
+                "sp_NguyenLieu_Update",
                 parameters,
                 commandType: CommandType.StoredProcedure);
 
@@ -115,7 +143,7 @@ namespace BTL.Web.Repositories
             try
             {
                 await connection.ExecuteAsync(
-                    "EXEC SP_DeleteNguyenLieu @NlId",
+                    "EXEC sp_NguyenLieu_Delete @NlId",
                     new { NlId = id });
                 return true;
             }
@@ -184,9 +212,16 @@ namespace BTL.Web.Repositories
         public async Task<IEnumerable<NguyenLieu>> SearchAsync(string searchTerm)
         {
             using var connection = _context.CreateConnection();
+            var parameters = new DynamicParameters();
+            parameters.Add("@PageNumber", 1);
+            parameters.Add("@PageSize", 1000);
+            parameters.Add("@SearchTerm", searchTerm);
+            parameters.Add("@TotalCount", dbType: DbType.Int32, direction: ParameterDirection.Output);
+
             return await connection.QueryAsync<NguyenLieu>(
-                "EXEC SP_GetAllNguyenLieu @PageNumber = 1, @PageSize = 1000, @SearchTerm = @searchTerm",
-                new { searchTerm });
+                "sp_NguyenLieu_GetAll",
+                parameters,
+                commandType: CommandType.StoredProcedure);
         }
 
         public async Task<PagedResult<NguyenLieu>> SearchPagedAsync(string searchTerm, int pageNumber, int pageSize)
@@ -204,9 +239,10 @@ namespace BTL.Web.Repositories
             parameters.Add("@NguonGoc", nguonGoc);
             parameters.Add("@PageNumber", pageNumber);
             parameters.Add("@PageSize", pageSize);
+            parameters.Add("@TotalCount", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
             return await connection.QueryAsync<NguyenLieu>(
-                "SP_SearchNguyenLieu",
+                "sp_NguyenLieu_Search",
                 parameters,
                 commandType: CommandType.StoredProcedure);
         }
@@ -219,7 +255,7 @@ namespace BTL.Web.Repositories
             parameters.Add("@NlId", nlId);
 
             return await connection.QueryAsync<dynamic>(
-                "SP_GetNguyenLieuStats",
+                "sp_NguyenLieu_GetStats",
                 parameters,
                 commandType: CommandType.StoredProcedure);
         }
@@ -234,7 +270,7 @@ namespace BTL.Web.Repositories
             parameters.Add("@ErrorMessage", dbType: DbType.String, size: 500, direction: ParameterDirection.Output);
 
             await connection.ExecuteAsync(
-                "SP_ValidateNguonGoc",
+                "sp_NguyenLieu_ValidateNguonGoc",
                 parameters,
                 commandType: CommandType.StoredProcedure);
 
@@ -242,6 +278,26 @@ namespace BTL.Web.Repositories
             var errorMessage = parameters.Get<string>("@ErrorMessage") ?? string.Empty;
 
             return (isValid, errorMessage);
+        }
+
+        public async Task<PagedResult<NguyenLieuWithNhaCungCap>> GetAllWithNhaCungCapPagedAsync(int pageNumber, int pageSize, string? searchTerm = null)
+        {
+            using var connection = _context.CreateConnection();
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@PageNumber", pageNumber);
+            parameters.Add("@PageSize", pageSize);
+            parameters.Add("@SearchTerm", searchTerm);
+            parameters.Add("@TotalCount", dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+            var items = await connection.QueryAsync<NguyenLieuWithNhaCungCap>(
+                "sp_NguyenLieu_GetAllWithNhaCungCap",
+                parameters,
+                commandType: CommandType.StoredProcedure);
+
+            var totalItems = parameters.Get<int>("@TotalCount");
+
+            return new PagedResult<NguyenLieuWithNhaCungCap>(items, totalItems, pageNumber, pageSize);
         }
     }
 }

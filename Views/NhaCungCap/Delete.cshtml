@@ -1,0 +1,51 @@
+@model BTL.Web.Models.NhaCungCap
+
+@{
+    ViewData["Title"] = "Xóa nhà cung cấp";
+}
+
+<h1>Xóa nhà cung cấp</h1>
+
+@if (ViewBag.CanDelete != null && !ViewBag.CanDelete)
+{
+        <div class="alert alert-warning" role="alert">
+            <i class="bi bi-exclamation-triangle"></i>
+            <strong>Cảnh báo:</strong>
+            @ViewBag.DeleteMessage
+        </div>
+}
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Thông tin nhà cung cấp sẽ xóa</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Tên nhà cung cấp:</dt>
+            <dd class="col-sm-9">
+                <span class="badge bg-info">@Model.ten</span>
+            </dd>
+
+            <dt class="col-sm-3">Địa chỉ:</dt>
+            <dd class="col-sm-9">@(Model.dia_chi ?? "Chưa cập nhật")</dd>
+
+            <dt class="col-sm-3">Số điện thoại:</dt>
+            <dd class="col-sm-9">@(Model.sdt ?? "Chưa cập nhật")</dd>
+        </dl>   
+    </div>
+</div>
+
+<div class="mt-3">
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="ncc_id" />
+        @if (ViewBag.CanDelete == true)
+        {
+                <input type="submit" value="Xóa" class="btn btn-danger" />
+        }
+        else
+        {
+                <input type="submit" value="Xóa" class="btn btn-danger" disabled title="Không thể xóa nhà cung cấp này" />
+        }
+        <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+    </form>
+</div>

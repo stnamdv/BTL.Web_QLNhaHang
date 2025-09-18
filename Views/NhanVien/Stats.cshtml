@@ -33,7 +33,7 @@
                                         <div class="card-body">
                                             <div class="d-flex justify-content-between">
                                                 <div>
-                                                    <h6 class="card-title">@BTL.Web.Models.LoaiNv.GetDisplayName(stat.loai_nv)</h6>
+                                                    <h6 class="card-title">@stat.loai_nv</h6>
                                                     <h4 class="mb-0">@stat.so_luong_nv</h4>
                                                     <small>Tổng nhân viên</small>
                                                 </div>
@@ -66,7 +66,7 @@
                                         
                                         <tr>
                                             <td>
-                                                <span class="badge bg-info fs-6">@BTL.Web.Models.LoaiNv.GetDisplayName(stat.loai_nv)</span>
+                                                <span class="badge bg-info fs-6">@stat.loai_nv</span>
                                             </td>
                                             <td>
                                                 <span class="text-success fw-bold">@(((decimal)stat.luong_co_ban).ToString("N0")) VNĐ</span>

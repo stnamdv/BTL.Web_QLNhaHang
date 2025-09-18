@@ -53,10 +53,10 @@
                                             <h5 class="mb-0">@Html.DisplayFor(model => model.ho_ten)</h5>
                                         </dd>
 
-                                        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.loai_nv)</dt>
+                                        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.LoaiNhanVien.loai_nv)
+                                        </dt>
                                         <dd class="col-sm-9">
-                                            <span
-                                                class="badge bg-info fs-6">@BTL.Web.Models.LoaiNv.GetDisplayName(Model.loai_nv)</span>
+                                            <span class="badge bg-info fs-6">@Model.LoaiNhanVien.loai_nv</span>
                                         </dd>
 
                                         <dt class="col-sm-3">@Html.DisplayNameFor(model => model.ngay_vao_lam)</dt>

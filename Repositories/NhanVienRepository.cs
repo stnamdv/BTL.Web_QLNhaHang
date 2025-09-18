@@ -48,20 +48,20 @@ namespace BTL.Web.Repositories
                 new { nv_id = id });
         }
 
-        public async Task<IEnumerable<NhanVienWithLoaiNhanVien>> GetByLoaiNvAsync(string loaiNv)
+        public async Task<IEnumerable<NhanVienWithLoaiNhanVien>> GetByLoaiNvAsync(int loaiNvId)
         {
             using var connection = _context.CreateConnection();
             return await connection.QueryAsync<NhanVienWithLoaiNhanVien>(
-                "EXEC sp_NhanVien_GetByLoaiNv @loai_nv",
-                new { loai_nv = loaiNv });
+                "EXEC sp_NhanVien_GetByLoaiNv @loai_nv_id",
+                new { loai_nv_id = loaiNvId });
         }
 
-        public async Task<PagedResult<NhanVienWithLoaiNhanVien>> GetByLoaiNvPagedAsync(string loaiNv, int pageNumber, int pageSize)
+        public async Task<PagedResult<NhanVienWithLoaiNhanVien>> GetByLoaiNvPagedAsync(int loaiNvId, int pageNumber, int pageSize)
         {
             using var connection = _context.CreateConnection();
 
             var parameters = new DynamicParameters();
-            parameters.Add("@loai_nv", loaiNv);
+            parameters.Add("@loai_nv_id", loaiNvId);
             parameters.Add("@page_number", pageNumber);
             parameters.Add("@page_size", pageSize);
             parameters.Add("@total_count", dbType: System.Data.DbType.Int32, direction: System.Data.ParameterDirection.Output);
@@ -79,12 +79,12 @@ namespace BTL.Web.Repositories
         public async Task<NhanVien> CreateAsync(NhanVien nhanVien)
         {
             using var connection = _context.CreateConnection();
-            var sql = "EXEC sp_NhanVien_Create @ho_ten, @loai_nv, @ngay_vao_lam, @trang_thai";
+            var sql = "EXEC sp_NhanVien_Create @ho_ten, @loai_nv_id, @ngay_vao_lam, @trang_thai";
 
             var id = await connection.QuerySingleAsync<int>(sql, new
             {
                 ho_ten = nhanVien.ho_ten,
-                loai_nv = nhanVien.loai_nv,
+                loai_nv_id = nhanVien.loai_nv_id,
                 ngay_vao_lam = nhanVien.ngay_vao_lam,
                 trang_thai = nhanVien.trang_thai
             });
@@ -95,13 +95,13 @@ namespace BTL.Web.Repositories
         public async Task<NhanVien> UpdateAsync(NhanVien nhanVien)
         {
             using var connection = _context.CreateConnection();
-            var sql = "EXEC sp_NhanVien_Update @nv_id, @ho_ten, @loai_nv, @ngay_vao_lam, @trang_thai";
+            var sql = "EXEC sp_NhanVien_Update @nv_id, @ho_ten, @loai_nv_id, @ngay_vao_lam, @trang_thai";
 
             var result = await connection.QuerySingleAsync<dynamic>(sql, new
             {
                 nv_id = nhanVien.nv_id,
                 ho_ten = nhanVien.ho_ten,
-                loai_nv = nhanVien.loai_nv,
+                loai_nv_id = nhanVien.loai_nv_id,
                 ngay_vao_lam = nhanVien.ngay_vao_lam,
                 trang_thai = nhanVien.trang_thai
             });
@@ -145,11 +145,12 @@ namespace BTL.Web.Repositories
                 nv_id = result.nv_id,
                 ma_nv = result.ma_nv,
                 ho_ten = result.ho_ten,
-                loai_nv = result.loai_nv,
+                loai_nv_id = result.loai_nv_id,
                 ngay_vao_lam = result.ngay_vao_lam,
                 trang_thai = result.trang_thai,
                 LoaiNhanVien = new LoaiNhanVien
                 {
+                    loai_nv_id = result.loai_nv_id,
                     loai_nv = result.loai_nv,
                     luong_co_ban = result.luong_co_ban
                 }

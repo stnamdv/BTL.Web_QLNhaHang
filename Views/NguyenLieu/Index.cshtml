@@ -1,4 +1,4 @@
-@model IEnumerable<BTL.Web.Models.NguyenLieu>
+@model IEnumerable<BTL.Web.Models.NguyenLieuWithNhaCungCap>
 
 @{
     ViewData["Title"] = "Danh sách nguyên liệu";
@@ -24,9 +24,8 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <form asp-action="Index" method="get" class="d-flex">
-                                <input type="text" name="searchTerm" class="form-control me-2" 
-                                       placeholder="Tìm kiếm theo tên nguyên liệu..." 
-                                       value="@ViewBag.SearchTerm">
+                                <input type="text" name="searchTerm" class="form-control me-2"
+                                    placeholder="Tìm kiếm theo tên nguyên liệu..." value="@ViewBag.SearchTerm">
                                 <button type="submit" class="btn btn-outline-primary">
                                     <i class="fas fa-search"></i>
                                 </button>
@@ -41,121 +40,143 @@
 
                     @if (TempData["Success"] != null)
                     {
-                                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                    @TempData["Success"]
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["Success"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
                     }
 
                     @if (TempData["Error"] != null)
                     {
-                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                    @TempData["Error"]
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["Error"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
                     }
 
                     @if (Model.Any())
                     {
-                                <div class="table-responsive">
-                                    <table class="table table-striped table-hover">
-                                        <thead class="table-dark">
-                                            <tr>
-                                                <th>Tên nguyên liệu</th>
-                                                <th>Đơn vị</th>
-                                                <th>Nguồn gốc</th>
-                                                <th class="text-center">Thao tác</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach (var item in Model)
-                                            {
-                                                        <tr>
-                                                            <td>
-                                                                <strong>@item.ten</strong>
-                                                            </td>
-                                                            <td>
-                                                                <span class="badge bg-secondary">@item.don_vi</span>
-                                                            </td>
-                                                            <td>
-                                                                <div class="text-truncate" style="max-width: 300px;" title="@item.nguon_goc">
-                                                                    @item.nguon_goc
-                                                                </div>
-                                                            </td>
-                                                            <td class="text-center">
-                                                                <div class="btn-group" role="group">
-                                                                    <a asp-action="Details" asp-route-id="@item.nl_id" 
-                                                                       class="btn btn-sm btn-outline-info" title="Xem chi tiết">
-                                                                        <i class="fas fa-eye"></i>
-                                                                    </a>
-                                                                    <a asp-action="Edit" asp-route-id="@item.nl_id" 
-                                                                       class="btn btn-sm btn-outline-warning" title="Chỉnh sửa">
-                                                                        <i class="fas fa-edit"></i>
-                                                                    </a>
-                                                                    <a asp-action="Delete" asp-route-id="@item.nl_id" 
-                                                                       class="btn btn-sm btn-outline-danger" title="Xóa">
-                                                                        <i class="fas fa-trash"></i>
-                                                                    </a>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                            }
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <!-- Pagination -->
-                                @if (ViewBag.TotalPages > 1)
-                                {
-                                            <nav aria-label="Page navigation">
-                                                <ul class="pagination justify-content-center">
-                                                    @if (ViewBag.CurrentPage > 1)
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Tên nguyên liệu</th>
+                                        <th>Đơn vị</th>
+                                        <th>Nhà cung cấp</th>
+                                        <th>Nguồn gốc</th>
+                                        <th class="text-center">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@item.ten</strong>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary">@item.don_vi</span>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex flex-column">
+                                                    <strong class="text-primary">@item.ncc_ten</strong>
+                                                    @if (!string.IsNullOrEmpty(item.ncc_dia_chi))
                                                     {
-                                                                <li class="page-item">
-                                                                    <a class="page-link" asp-action="Index" 
-                                                                       asp-route-page="@(ViewBag.CurrentPage - 1)" 
-                                                                       asp-route-pageSize="@ViewBag.PageSize"
-                                                                       asp-route-searchTerm="@ViewBag.SearchTerm">Trước</a>
-                                                                </li>
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-map-marker-alt"></i> @item.ncc_dia_chi
+                                                        </small>
                                                     }
-
-                                                    @for (int i = Math.Max(1, ViewBag.CurrentPage - 2); i <= Math.Min(ViewBag.TotalPages, ViewBag.CurrentPage + 2); i++)
+                                                    @if (!string.IsNullOrEmpty(item.ncc_sdt))
                                                     {
-                                                                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
-                                                                    <a class="page-link" asp-action="Index" 
-                                                                       asp-route-page="@i" 
-                                                                       asp-route-pageSize="@ViewBag.PageSize"
-                                                                       asp-route-searchTerm="@ViewBag.SearchTerm">@i</a>
-                                                                </li>
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-phone"></i> @item.ncc_sdt
+                                                        </small>
                                                     }
-
-                                                    @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                                                    @if (item.so_mon_su_dung > 0)
                                                     {
-                                                                <li class="page-item">
-                                                                    <a class="page-link" asp-action="Index" 
-                                                                       asp-route-page="@(ViewBag.CurrentPage + 1)" 
-                                                                       asp-route-pageSize="@ViewBag.PageSize"
-                                                                       asp-route-searchTerm="@ViewBag.SearchTerm">Sau</a>
-                                                                </li>
+                                                        <small class="text-info">
+                                                            <i class="fas fa-utensils"></i> @item.so_mon_su_dung món
+                                                        </small>
                                                     }
-                                                </ul>
-                                            </nav>
-                                }
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="text-truncate" style="max-width: 300px;" title="@item.nguon_goc">
+                                                    @item.nguon_goc
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group" role="group">
+                                                    <a asp-action="Details" asp-route-id="@item.nl_id"
+                                                        class="btn btn-sm btn-outline-info" title="Xem chi tiết">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a asp-action="Edit" asp-route-id="@item.nl_id"
+                                                        class="btn btn-sm btn-outline-warning" title="Chỉnh sửa">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <a asp-action="Delete" asp-route-id="@item.nl_id"
+                                                        class="btn btn-sm btn-outline-danger" title="Xóa">
+                                                        <i class="fas fa-trash"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
 
-                                <div class="text-muted text-center">
-                                    Hiển thị @Model.Count() trong tổng số @ViewBag.TotalItems nguyên liệu
-                                </div>
+                        <!-- Pagination -->
+                        @if (ViewBag.TotalPages > 1)
+                        {
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination justify-content-center">
+                                    @if (ViewBag.CurrentPage > 1)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" asp-action="Index" asp-route-page="@(ViewBag.CurrentPage - 1)"
+                                                asp-route-pageSize="@ViewBag.PageSize"
+                                                asp-route-searchTerm="@ViewBag.SearchTerm">Trước</a>
+                                        </li>
+                                    }
+
+                                    @for (int i = Math.Max(1, ViewBag.CurrentPage - 2); i <= Math.Min(ViewBag.TotalPages,
+                                                                ViewBag.CurrentPage + 2); i++)
+                                    {
+                                        <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                            <a class="page-link" asp-action="Index" asp-route-page="@i"
+                                                asp-route-pageSize="@ViewBag.PageSize"
+                                                asp-route-searchTerm="@ViewBag.SearchTerm">@i</a>
+                                        </li>
+                                    }
+
+                                    @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" asp-action="Index" asp-route-page="@(ViewBag.CurrentPage + 1)"
+                                                asp-route-pageSize="@ViewBag.PageSize"
+                                                asp-route-searchTerm="@ViewBag.SearchTerm">Sau</a>
+                                        </li>
+                                    }
+                                </ul>
+                            </nav>
+                        }
+
+                        <div class="text-muted text-center">
+                            Hiển thị @Model.Count() trong tổng số @ViewBag.TotalItems nguyên liệu
+                        </div>
                     }
                     else
                     {
-                                <div class="text-center py-5">
-                                    <i class="fas fa-leaf fa-3x text-muted mb-3"></i>
-                                    <h5 class="text-muted">Không có nguyên liệu nào</h5>
-                                    <p class="text-muted">Hãy thêm nguyên liệu đầu tiên của bạn!</p>
-                                    <a asp-action="Create" class="btn btn-primary">
-                                        <i class="fas fa-plus"></i> Thêm nguyên liệu
-                                    </a>
-                                </div>
+                        <div class="text-center py-5">
+                            <i class="fas fa-leaf fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Không có nguyên liệu nào</h5>
+                            <p class="text-muted">Hãy thêm nguyên liệu đầu tiên của bạn!</p>
+                            <a asp-action="Create" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Thêm nguyên liệu
+                            </a>
+                        </div>
                     }
                 </div>
             </div>

@@ -7,8 +7,8 @@ namespace BTL.Web.Services
         Task<IEnumerable<NhanVienWithLoaiNhanVien>> GetAllAsync();
         Task<PagedResult<NhanVienWithLoaiNhanVien>> GetAllPagedAsync(int pageNumber, int pageSize);
         Task<NhanVien?> GetByIdAsync(int id);
-        Task<IEnumerable<NhanVienWithLoaiNhanVien>> GetByLoaiNvAsync(string loaiNv);
-        Task<PagedResult<NhanVienWithLoaiNhanVien>> GetByLoaiNvPagedAsync(string loaiNv, int pageNumber, int pageSize);
+        Task<IEnumerable<NhanVienWithLoaiNhanVien>> GetByLoaiNvAsync(int loaiNvId);
+        Task<PagedResult<NhanVienWithLoaiNhanVien>> GetByLoaiNvPagedAsync(int loaiNvId, int pageNumber, int pageSize);
         Task<NhanVien> CreateAsync(NhanVien nhanVien);
         Task<NhanVien> UpdateAsync(NhanVien nhanVien);
         Task<bool> DeleteAsync(int id);

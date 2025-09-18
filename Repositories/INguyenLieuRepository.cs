@@ -7,6 +7,7 @@ namespace BTL.Web.Repositories
         Task<IEnumerable<NguyenLieu>> GetAllAsync();
         Task<PagedResult<NguyenLieu>> GetAllPagedAsync(int pageNumber, int pageSize, string? searchTerm = null);
         Task<NguyenLieu?> GetByIdAsync(int id);
+        Task<NguyenLieuWithNhaCungCap?> GetWithNhaCungCapAsync(int id);
         Task<NguyenLieuWithMon?> GetWithMonAsync(int id);
         Task<NguyenLieu> CreateAsync(NguyenLieu nguyenLieu);
         Task<NguyenLieu> UpdateAsync(NguyenLieu nguyenLieu);
@@ -21,5 +22,6 @@ namespace BTL.Web.Repositories
         Task<IEnumerable<NguyenLieu>> SearchByCriteriaAsync(string? searchTerm, string? donVi, string? nguonGoc, int pageNumber, int pageSize);
         Task<IEnumerable<dynamic>> GetStatsAsync(int? nlId = null);
         Task<(bool isValid, string errorMessage)> ValidateNguonGocAsync(string nguonGoc);
+        Task<PagedResult<NguyenLieuWithNhaCungCap>> GetAllWithNhaCungCapPagedAsync(int pageNumber, int pageSize, string? searchTerm = null);
     }
 }

@@ -83,7 +83,7 @@ namespace BTL.Web.Controllers
         // POST: NhanVien/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ho_ten,loai_nv,ngay_vao_lam,trang_thai")] NhanVien nhanVien)
+        public async Task<IActionResult> Create([Bind("ho_ten,loai_nv_id,ngay_vao_lam,trang_thai")] NhanVien nhanVien)
         {
             if (ModelState.IsValid)
             {
@@ -143,7 +143,7 @@ namespace BTL.Web.Controllers
         // POST: NhanVien/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("nv_id,ho_ten,loai_nv,ngay_vao_lam,trang_thai")] NhanVien nhanVien)
+        public async Task<IActionResult> Edit(int id, [Bind("nv_id,ho_ten,loai_nv_id,ngay_vao_lam,trang_thai")] NhanVien nhanVien)
         {
             Console.WriteLine(JsonSerializer.Serialize(nhanVien));
             if (id != nhanVien.nv_id)
@@ -244,7 +244,7 @@ namespace BTL.Web.Controllers
         }
 
         // GET: NhanVien/GetByLoaiNv/BEP
-        public async Task<IActionResult> GetByLoaiNv(string loaiNv, int page = 1, int pageSize = 10)
+        public async Task<IActionResult> GetByLoaiNv(int loaiNvId, int page = 1, int pageSize = 10)
         {
             try
             {
@@ -252,15 +252,15 @@ namespace BTL.Web.Controllers
                 if (page < 1) page = 1;
                 if (pageSize < 1 || pageSize > 100) pageSize = 10;
 
-                var pagedResult = await _nhanVienService.GetByLoaiNvPagedAsync(loaiNv, page, pageSize);
-                var loaiNhanVien = await _loaiNhanVienService.GetByTypeAsync(loaiNv);
+                var pagedResult = await _nhanVienService.GetByLoaiNvPagedAsync(loaiNvId, page, pageSize);
+                var loaiNhanVien = await _loaiNhanVienService.GetByIdAsync(loaiNvId);
 
                 ViewBag.LoaiNhanVien = loaiNhanVien;
                 ViewBag.CurrentPage = page;
                 ViewBag.PageSize = pageSize;
                 ViewBag.TotalPages = pagedResult.TotalPages;
                 ViewBag.TotalItems = pagedResult.TotalItems;
-                ViewBag.LoaiNv = loaiNv;
+                ViewBag.LoaiNv = loaiNvId;
 
                 return View("Index", pagedResult.Items);
             }

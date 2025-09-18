@@ -19,7 +19,12 @@ namespace BTL.Web.Models
         [Required]
         public string nguon_goc { get; set; } = string.Empty;
 
+        [Required]
+        public int ncc_id { get; set; }
+
         // Navigation properties
+        [ForeignKey("ncc_id")]
+        public virtual NhaCungCap? NhaCungCap { get; set; } = null!;
         public virtual ICollection<NlNcc> NlNccs { get; set; } = new List<NlNcc>();
         public virtual ICollection<CongThuc> CongThucs { get; set; } = new List<CongThuc>();
     }

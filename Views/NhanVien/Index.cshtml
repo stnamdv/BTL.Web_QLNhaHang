@@ -73,7 +73,7 @@
                                                 <th>@Html.DisplayNameFor(model => model.First().nv_id)</th>
                                                 <th>Mã NV</th>
                                                 <th>@Html.DisplayNameFor(model => model.First().ho_ten)</th>
-                                                <th>@Html.DisplayNameFor(model => model.First().TenLoaiNhanVien)</th>
+                                                <th>@Html.DisplayNameFor(model => model.First().loai_nv)</th>
                                                 <th>@Html.DisplayNameFor(model => model.First().ngay_vao_lam)</th>
                                                 <th>@Html.DisplayNameFor(model => model.First().ThamNien)</th>
                                                 <th>@Html.DisplayNameFor(model => model.First().TrangThaiHienThi)</th>
@@ -93,7 +93,7 @@
                                                                 <strong>@Html.DisplayFor(modelItem => item.ho_ten)</strong>
                                                             </td>
                                                             <td>
-                                                                <span class="badge bg-info">@Html.DisplayFor(modelItem => item.TenLoaiNhanVien)</span>
+                                                                <span class="badge bg-info">@Html.DisplayFor(modelItem => item.loai_nv)</span>
                                                             </td>
                                                             <td>
                                                                 @if (item.ngay_vao_lam.HasValue)

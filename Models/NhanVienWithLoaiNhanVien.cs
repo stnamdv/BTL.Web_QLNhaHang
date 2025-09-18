@@ -12,6 +12,8 @@ namespace BTL.Web.Models
         [Display(Name = "Họ tên")]
         public string ho_ten { get; set; } = string.Empty;
 
+        public int loai_nv_id { get; set; }
+
         [Display(Name = "Loại nhân viên")]
         public string loai_nv { get; set; } = string.Empty;
 
@@ -26,8 +28,6 @@ namespace BTL.Web.Models
         public decimal luong_co_ban { get; set; }
 
         // Computed properties
-        [Display(Name = "Tên loại nhân viên")]
-        public string TenLoaiNhanVien => LoaiNv.GetDisplayName(loai_nv);
 
         [Display(Name = "Trạng thái hiển thị")]
         public string TrangThaiHienThi => TrangThaiNv.GetDisplayName(trang_thai);

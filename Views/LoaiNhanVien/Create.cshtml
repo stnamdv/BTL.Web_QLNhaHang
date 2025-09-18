@@ -18,12 +18,10 @@
 
             <div class="form-group">
                 <label asp-for="loai_nv" class="control-label">Loại nhân viên</label>
-                <select asp-for="loai_nv" class="form-control" asp-items="@(new SelectList(ViewBag.LoaiNvOptions, "Value", "Text"))">
-                    <option value="">-- Chọn loại nhân viên --</option>
-                </select>
+                <input asp-for="loai_nv" class="form-control" />
                 <span asp-validation-for="loai_nv" class="text-danger"></span>
             </div>
-            
+
             <div class="form-group">
                 <label asp-for="luong_co_ban" class="control-label">Lương cơ bản (VNĐ)</label>
                 <input asp-for="luong_co_ban" class="form-control" type="number" step="1000" min="0" />

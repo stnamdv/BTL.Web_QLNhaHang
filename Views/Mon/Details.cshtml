@@ -112,12 +112,9 @@
                                         </div>
 
                                         <!-- Tổng giá trị nguyên liệu -->
-                                        @{
-                                            var totalCost = Model.CongThucs.Sum(ct => ct.dinh_luong * ct.gia_nguyen_lieu);
-                                        }
                                         <div class="alert alert-info mt-3">
                                             <strong>Tổng giá trị nguyên liệu:</strong> 
-                                            <span class="text-success">@totalCost.ToString("N0") ₫</span>
+                                            <span class="text-success">@Model.CongThucs.Sum(ct => ct.dinh_luong * ct.gia_nguyen_lieu).ToString("N0") ₫</span>
                                         </div>
                                     }
                                     else
@@ -162,6 +159,7 @@
                                             <div class="text-center">
                                                 <h6 class="text-muted">Lợi nhuận ước tính</h6>
                                                 @{
+                                                    var totalCost = Model.CongThucs.Sum(ct => ct.dinh_luong * ct.gia_nguyen_lieu);
                                                     var profit = Model.Mon.gia - totalCost;
                                                     var profitClass = profit >= 0 ? "text-success" : "text-danger";
                                                 }

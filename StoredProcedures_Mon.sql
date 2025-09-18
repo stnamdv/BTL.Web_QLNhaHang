@@ -7,15 +7,14 @@ USE NhaHang
 GO
 
 -- =========================================================
--- 1. SP_GetAllMon - Lấy danh sách tất cả món ăn
+-- 1. sp_Mon_GetAll - Lấy danh sách tất cả món ăn
 -- =========================================================
-DROP PROCEDURE IF EXISTS dbo.SP_GetAllMon
-GO
-CREATE PROCEDURE dbo.SP_GetAllMon
+CREATE OR ALTER PROCEDURE dbo.sp_Mon_GetAll
     @PageNumber INT = 1,
     @PageSize INT = 10,
     @SearchTerm NVARCHAR(120) = NULL,
-    @LoaiMon NVARCHAR(12) = NULL
+    @LoaiMon NVARCHAR(12) = NULL,
+    @TotalCount INT OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -23,8 +22,7 @@ BEGIN
     DECLARE @Offset INT = (@PageNumber - 1) * @PageSize;
     
     -- Đếm tổng số records
-    DECLARE @TotalCount INT;
-    SELECT @TotalCount = COUNT(*)
+    SELECT @TotalCount = COUNT(1)
     FROM dbo.Mon m
     WHERE (@SearchTerm IS NULL OR m.ten_mon LIKE N'%' + @SearchTerm + N'%' OR m.ma_mon LIKE N'%' + @SearchTerm + N'%')
       AND (@LoaiMon IS NULL OR m.loai_mon = @LoaiMon);
@@ -35,8 +33,7 @@ BEGIN
         m.ma_mon,
         m.ten_mon,
         m.loai_mon,
-        m.gia,
-        @TotalCount AS TotalCount
+        m.gia
     FROM dbo.Mon m
     WHERE (@SearchTerm IS NULL OR m.ten_mon LIKE N'%' + @SearchTerm + N'%' OR m.ma_mon LIKE N'%' + @SearchTerm + N'%')
       AND (@LoaiMon IS NULL OR m.loai_mon = @LoaiMon)
@@ -47,11 +44,9 @@ END
 GO
 
 -- =========================================================
--- 2. SP_GetMonById - Lấy thông tin món ăn theo ID
+-- 2. sp_Mon_GetById - Lấy thông tin món ăn theo ID
 -- =========================================================
-DROP PROCEDURE IF EXISTS dbo.SP_GetMonById
-GO
-CREATE PROCEDURE dbo.SP_GetMonById
+CREATE OR ALTER PROCEDURE dbo.sp_Mon_GetById
     @MonId INT
 AS
 BEGIN
@@ -88,11 +83,9 @@ END
 GO
 
 -- =========================================================
--- 3. SP_CreateMon - Tạo món ăn mới với validation
+-- 3. sp_Mon_Create - Tạo món ăn mới với validation
 -- =========================================================
-DROP PROCEDURE IF EXISTS dbo.SP_CreateMon
-GO
-CREATE PROCEDURE dbo.SP_CreateMon
+CREATE OR ALTER PROCEDURE dbo.sp_Mon_Create
     @MaMon NVARCHAR(20),
     @TenMon NVARCHAR(120),
     @LoaiMon NVARCHAR(12),
@@ -173,11 +166,9 @@ END
 GO
 
 -- =========================================================
--- 4. SP_UpdateMon - Cập nhật món ăn với validation
+-- 4. sp_Mon_Update - Cập nhật món ăn với validation
 -- =========================================================
-DROP PROCEDURE IF EXISTS dbo.SP_UpdateMon
-GO
-CREATE PROCEDURE dbo.SP_UpdateMon
+CREATE OR ALTER PROCEDURE dbo.sp_Mon_Update
     @MonId INT,
     @MaMon NVARCHAR(20),
     @TenMon NVARCHAR(120),
@@ -279,11 +270,9 @@ END
 GO
 
 -- =========================================================
--- 5. SP_DeleteMon - Xóa món ăn với validation
+-- 5. sp_Mon_Delete - Xóa món ăn với validation
 -- =========================================================
-DROP PROCEDURE IF EXISTS dbo.SP_DeleteMon
-GO
-CREATE PROCEDURE dbo.SP_DeleteMon
+CREATE OR ALTER PROCEDURE dbo.sp_Mon_Delete
     @MonId INT
 AS
 BEGIN
@@ -332,11 +321,9 @@ END
 GO
 
 -- =========================================================
--- 6. SP_GetMonWithCongThuc - Lấy món ăn kèm công thức chi tiết
+-- 6. sp_Mon_GetWithCongThuc - Lấy món ăn kèm công thức chi tiết
 -- =========================================================
-DROP PROCEDURE IF EXISTS dbo.SP_GetMonWithCongThuc
-GO
-CREATE PROCEDURE dbo.SP_GetMonWithCongThuc
+CREATE OR ALTER PROCEDURE dbo.sp_Mon_GetWithCongThuc
     @MonId INT
 AS
 BEGIN
@@ -381,14 +368,13 @@ END
 GO
 
 -- =========================================================
--- 7. SP_GetAllNguyenLieu - Lấy danh sách nguyên liệu
+-- 7. sp_NguyenLieu_GetAll - Lấy danh sách nguyên liệu
 -- =========================================================
-DROP PROCEDURE IF EXISTS dbo.SP_GetAllNguyenLieu
-GO
-CREATE PROCEDURE dbo.SP_GetAllNguyenLieu
+CREATE OR ALTER PROCEDURE dbo.sp_NguyenLieu_GetAll
     @PageNumber INT = 1,
     @PageSize INT = 10,
-    @SearchTerm NVARCHAR(160) = NULL
+    @SearchTerm NVARCHAR(160) = NULL,
+    @TotalCount INT OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -396,8 +382,7 @@ BEGIN
     DECLARE @Offset INT = (@PageNumber - 1) * @PageSize;
     
     -- Đếm tổng số records
-    DECLARE @TotalCount INT;
-    SELECT @TotalCount = COUNT(*)
+    SELECT @TotalCount = COUNT(1)
     FROM dbo.NguyenLieu nl
     WHERE (@SearchTerm IS NULL OR nl.ten LIKE N'%' + @SearchTerm + N'%');
     
@@ -406,53 +391,11 @@ BEGIN
         nl.nl_id,
         nl.ten,
         nl.don_vi,
-        nl.nguon_goc,
-        @TotalCount AS TotalCount
+        nl.nguon_goc
     FROM dbo.NguyenLieu nl
     WHERE (@SearchTerm IS NULL OR nl.ten LIKE N'%' + @SearchTerm + N'%')
     ORDER BY nl.ten
     OFFSET @Offset ROWS
     FETCH NEXT @PageSize ROWS ONLY;
-END
-GO
-
--- =========================================================
--- 8. SP_GetNguyenLieuById - Lấy thông tin nguyên liệu theo ID
--- =========================================================
-DROP PROCEDURE IF EXISTS dbo.SP_GetNguyenLieuById
-GO
-CREATE PROCEDURE dbo.SP_GetNguyenLieuById
-    @NlId INT
-AS
-BEGIN
-    SET NOCOUNT ON;
-    
-    -- Kiểm tra nguyên liệu có tồn tại không
-    IF NOT EXISTS (SELECT 1 FROM dbo.NguyenLieu WHERE nl_id = @NlId)
-    BEGIN
-        RAISERROR(N'Nguyên liệu không tồn tại.', 16, 1);
-        RETURN;
-    END
-    
-    -- Lấy thông tin nguyên liệu
-    SELECT 
-        nl.nl_id,
-        nl.ten,
-        nl.don_vi,
-        nl.nguon_goc
-    FROM dbo.NguyenLieu nl
-    WHERE nl.nl_id = @NlId;
-    
-    -- Lấy danh sách món sử dụng nguyên liệu này
-    SELECT 
-        m.mon_id,
-        m.ma_mon,
-        m.ten_mon,
-        m.loai_mon,
-        ct.dinh_luong
-    FROM dbo.CongThuc ct
-    JOIN dbo.Mon m ON m.mon_id = ct.mon_id
-    WHERE ct.nl_id = @NlId
-    ORDER BY m.ten_mon;
 END
 GO

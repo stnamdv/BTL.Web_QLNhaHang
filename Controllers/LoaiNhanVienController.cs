@@ -28,24 +28,30 @@ namespace BTL.Web.Controllers
             }
         }
 
-        // GET: LoaiNhanVien/Details/BEP
-        public async Task<IActionResult> Details(string id)
+        // GET: LoaiNhanVien/Details/1
+        public async Task<IActionResult> Details(int id)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(id) || !LoaiNv.All.Contains(id))
+                if (id <= 0)
                 {
                     return NotFound();
                 }
 
-                var loaiNhanVienDetails = await _loaiNhanVienService.GetDetailsWithUsageAsync(id);
+                var loaiNhanVien = await _loaiNhanVienService.GetByIdAsync(id);
+                if (loaiNhanVien == null)
+                {
+                    return NotFound();
+                }
+
+                var loaiNhanVienDetails = await _loaiNhanVienService.GetDetailsWithUsageAsync(loaiNhanVien.loai_nv_id);
                 if (loaiNhanVienDetails == null)
                 {
                     return NotFound();
                 }
 
                 // Lấy danh sách nhân viên thuộc loại này
-                var employees = await _loaiNhanVienService.GetEmployeesAsync(id);
+                var employees = await _loaiNhanVienService.GetEmployeesAsync(loaiNhanVien.loai_nv_id);
 
                 ViewBag.Employees = employees;
                 return View(loaiNhanVienDetails);
@@ -60,10 +66,6 @@ namespace BTL.Web.Controllers
         // GET: LoaiNhanVien/Create
         public IActionResult Create()
         {
-            // Tạo danh sách các loại nhân viên có thể chọn
-            ViewBag.LoaiNvOptions = LoaiNv.All
-                .Select(e => new { Value = e, Text = LoaiNv.GetDisplayName(e) })
-                .ToList();
 
             return View();
         }
@@ -77,20 +79,11 @@ namespace BTL.Web.Controllers
             {
                 try
                 {
-                    // Kiểm tra xem đã tồn tại loại nhân viên này chưa
-                    var exists = await _loaiNhanVienService.ExistsByTypeAsync(loaiNhanVien.loai_nv);
-
-                    if (exists)
-                    {
-                        ModelState.AddModelError("loai_nv", "Loại nhân viên đã tồn tại.");
-                    }
-                    else
-                    {
-                        // Tạo loại nhân viên mới
-                        var createdLoaiNhanVien = await _loaiNhanVienService.CreateAsync(loaiNhanVien);
-                        TempData["Message"] = $"Đã tạo mới loại nhân viên {LoaiNv.GetDisplayName(loaiNhanVien.loai_nv)} với lương cơ bản {loaiNhanVien.luong_co_ban:N0} VNĐ.";
-                        return RedirectToAction(nameof(Index));
-                    }
+                    // Kiểm tra xem đã tồn tại loại nhân viên này chưa                                        
+                    // Tạo loại nhân viên mới
+                    var createdLoaiNhanVien = await _loaiNhanVienService.CreateAsync(loaiNhanVien);
+                    TempData["Message"] = $"Đã tạo mới loại nhân viên {loaiNhanVien.loai_nv} với lương cơ bản {loaiNhanVien.luong_co_ban:N0} VNĐ.";
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (Exception ex)
                 {
@@ -98,32 +91,27 @@ namespace BTL.Web.Controllers
                 }
             }
 
-            // Tạo lại danh sách các loại nhân viên có thể chọn
-            ViewBag.LoaiNvOptions = LoaiNv.All
-                .Select(e => new { Value = e, Text = LoaiNv.GetDisplayName(e) })
-                .ToList();
-
             return View(loaiNhanVien);
         }
 
-        // GET: LoaiNhanVien/Edit/BEP
-        public async Task<IActionResult> Edit(string id)
+        // GET: LoaiNhanVien/Edit/1
+        public async Task<IActionResult> Edit(int id)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(id) || !LoaiNv.All.Contains(id))
+                if (id <= 0)
                 {
                     return NotFound();
                 }
 
-                var loaiNhanVien = await _loaiNhanVienService.GetByTypeAsync(id);
+                var loaiNhanVien = await _loaiNhanVienService.GetByIdAsync(id);
                 if (loaiNhanVien == null)
                 {
                     return NotFound();
                 }
 
                 // Kiểm tra xem có thể edit không
-                var updateCheck = await _loaiNhanVienService.CanUpdateAsync(id, loaiNhanVien.luong_co_ban);
+                var updateCheck = await _loaiNhanVienService.CanUpdateAsync(loaiNhanVien.loai_nv_id, loaiNhanVien.luong_co_ban);
                 if (!updateCheck.can_update)
                 {
                     TempData["Error"] = updateCheck.error_message;
@@ -131,7 +119,7 @@ namespace BTL.Web.Controllers
                 }
 
                 ViewBag.UpdateCheck = updateCheck;
-                ViewBag.LoaiNvDisplayName = LoaiNv.GetDisplayName(id);
+                ViewBag.LoaiNvDisplayName = loaiNhanVien.loai_nv;
                 return View(loaiNhanVien);
             }
             catch (Exception ex)
@@ -141,12 +129,12 @@ namespace BTL.Web.Controllers
             }
         }
 
-        // POST: LoaiNhanVien/Edit/BEP
+        // POST: LoaiNhanVien/Edit/1
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("loai_nv,luong_co_ban")] LoaiNhanVien loaiNhanVien)
+        public async Task<IActionResult> Edit(int id, [Bind("loai_nv_id,loai_nv,luong_co_ban")] LoaiNhanVien loaiNhanVien)
         {
-            if (string.IsNullOrWhiteSpace(id) || id != loaiNhanVien.loai_nv)
+            if (id != loaiNhanVien.loai_nv_id)
             {
                 return NotFound();
             }
@@ -156,7 +144,7 @@ namespace BTL.Web.Controllers
                 try
                 {
                     await _loaiNhanVienService.UpdateAsync(loaiNhanVien);
-                    TempData["Message"] = $"Cập nhật loại nhân viên {LoaiNv.GetDisplayName(loaiNhanVien.loai_nv)} thành công.";
+                    TempData["Message"] = $"Cập nhật loại nhân viên {loaiNhanVien.loai_nv} thành công.";
                     return RedirectToAction(nameof(Index));
                 }
                 catch (Exception ex)
@@ -165,30 +153,28 @@ namespace BTL.Web.Controllers
                 }
             }
 
-            ViewBag.LoaiNvDisplayName = LoaiNv.GetDisplayName(id);
+            ViewBag.LoaiNvDisplayName = loaiNhanVien.loai_nv;
             return View(loaiNhanVien);
         }
 
-        // GET: LoaiNhanVien/Delete/BEP
-        public async Task<IActionResult> Delete(string id)
+        // GET: LoaiNhanVien/Delete/1
+        public async Task<IActionResult> Delete(int id)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(id) || !LoaiNv.All.Contains(id))
+                if (id <= 0)
                 {
                     return NotFound();
                 }
 
-                var loaiNhanVien = await _loaiNhanVienService.GetByTypeAsync(id);
+                var loaiNhanVien = await _loaiNhanVienService.GetByIdAsync(id);
                 if (loaiNhanVien == null)
                 {
                     return NotFound();
                 }
 
                 // Kiểm tra xem có thể xóa không
-                Console.WriteLine("id: " + id);
-                var deleteCheck = await _loaiNhanVienService.CanDeleteAsync(id);
-                Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(deleteCheck, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+                var deleteCheck = await _loaiNhanVienService.CanDeleteAsync(loaiNhanVien.loai_nv_id);
                 if (!deleteCheck.can_delete)
                 {
                     TempData["Error"] = deleteCheck.error_message;
@@ -196,7 +182,7 @@ namespace BTL.Web.Controllers
                 }
 
                 ViewBag.DeleteCheck = deleteCheck;
-                ViewBag.LoaiNvDisplayName = LoaiNv.GetDisplayName(id);
+                ViewBag.LoaiNvDisplayName = loaiNhanVien.loai_nv;
                 return View(loaiNhanVien);
             }
             catch (Exception ex)
@@ -206,20 +192,26 @@ namespace BTL.Web.Controllers
             }
         }
 
-        // POST: LoaiNhanVien/Delete/BEP
+        // POST: LoaiNhanVien/Delete/1
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(string id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(id) || !LoaiNv.All.Contains(id))
+                if (id <= 0)
                 {
                     return NotFound();
                 }
 
-                await _loaiNhanVienService.DeleteAsync(id);
-                TempData["Message"] = $"Xóa loại nhân viên {LoaiNv.GetDisplayName(id)} thành công.";
+                var loaiNhanVien = await _loaiNhanVienService.GetByIdAsync(id);
+                if (loaiNhanVien == null)
+                {
+                    return NotFound();
+                }
+
+                await _loaiNhanVienService.DeleteAsync(loaiNhanVien.loai_nv_id);
+                TempData["Message"] = $"Xóa loại nhân viên {loaiNhanVien.loai_nv} thành công.";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)

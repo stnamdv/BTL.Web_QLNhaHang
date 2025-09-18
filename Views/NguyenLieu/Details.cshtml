@@ -1,4 +1,4 @@
-@model BTL.Web.Models.NguyenLieuWithMon
+@model BTL.Web.Models.NguyenLieuWithNhaCungCap
 
 @{
     ViewData["Title"] = "Chi tiết nguyên liệu";
@@ -11,7 +11,7 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title">@ViewData["Title"]</h3>
                     <div>
-                        <a asp-action="Edit" asp-route-id="@Model.NguyenLieu.nl_id" class="btn btn-warning">
+                        <a asp-action="Edit" asp-route-id="@Model.nl_id" class="btn btn-warning">
                             <i class="fas fa-edit"></i> Chỉnh sửa
                         </a>
                         <a asp-action="Index" class="btn btn-secondary">
@@ -22,10 +22,10 @@
                 <div class="card-body">
                     @if (TempData["Error"] != null)
                     {
-                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                    @TempData["Error"]
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["Error"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
                     }
 
                     <div class="row">
@@ -41,18 +41,23 @@
                                     <dl class="row">
                                         <dt class="col-sm-4">Tên nguyên liệu:</dt>
                                         <dd class="col-sm-8">
-                                            <strong>@Model.NguyenLieu.ten</strong>
+                                            <strong>@Model.ten</strong>
                                         </dd>
 
                                         <dt class="col-sm-4">Đơn vị:</dt>
                                         <dd class="col-sm-8">
-                                            <span class="badge bg-secondary fs-6">@Model.NguyenLieu.don_vi</span>
+                                            <span class="badge bg-secondary fs-6">@Model.don_vi</span>
+                                        </dd>
+
+                                        <dt class="col-sm-4">Nhà cung cấp:</dt>
+                                        <dd class="col-sm-8">
+                                            <span class="badge bg-primary fs-6">@Model.ncc_ten</span>
                                         </dd>
 
                                         <dt class="col-sm-4">Nguồn gốc:</dt>
                                         <dd class="col-sm-8">
                                             <div class="bg-light p-3 rounded">
-                                                @Model.NguyenLieu.nguon_goc
+                                                @Model.nguon_goc
                                             </div>
                                         </dd>
                                     </dl>
@@ -75,7 +80,8 @@
                                             <small class="text-muted">Số món sử dụng</small>
                                         </div>
                                         <div class="col-6">
-                                            <h3 class="text-success">@Model.Mons.Sum(m => m.dinh_luong).ToString("N3")</h3>
+                                            <h3 class="text-success">@Model.Mons.Sum(m => m.dinh_luong).ToString("N3")
+                                            </h3>
                                             <small class="text-muted">Tổng định lượng</small>
                                         </div>
                                     </div>
@@ -96,62 +102,65 @@
                                 <div class="card-body">
                                     @if (Model.Mons.Any())
                                     {
-                                                <div class="table-responsive">
-                                                    <table class="table table-striped table-hover">
-                                                        <thead class="table-dark">
-                                                            <tr>
-                                                                <th>Mã món</th>
-                                                                <th>Tên món</th>
-                                                                <th>Loại món</th>
-                                                                <th>Định lượng</th>
-                                                                <th>Đơn vị</th>
-                                                                <th class="text-center">Thao tác</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            @foreach (var mon in Model.Mons)
-                                                            {
-                                                                        <tr>
-                                                                            <td>
-                                                                                <span class="badge bg-secondary">@mon.ma_mon</span>
-                                                                            </td>
-                                                                            <td>
-                                                                                <strong>@mon.ten_mon</strong>
-                                                                            </td>
-                                                                            <td>
-                                                                                @{
-                                                                                            var loaiMonText = mon.loai_mon switch
-                                                                                            {
-                                                                                                        "KHAI_VI" => "Khai vị",
-                                                                                                        "MON_CHINH" => "Món chính",
-                                                                                                        "TRANG_MIENG" => "Tráng miệng",
-                                                                                                        _ => mon.loai_mon
-                                                                                            };
-                                                                                }
-                                                                                <span class="badge bg-info">@loaiMonText</span>
-                                                                            </td>
-                                                                            <td>
-                                                                                <span class="badge bg-primary">@mon.dinh_luong.ToString("N3")</span>
-                                                                            </td>
-                                                                            <td>@Model.NguyenLieu.don_vi</td>
-                                                                            <td class="text-center">
-                                                                                <a asp-controller="Mon" asp-action="Details" asp-route-id="@mon.mon_id" 
-                                                                                   class="btn btn-sm btn-outline-info" title="Xem chi tiết món">
-                                                                                    <i class="fas fa-eye"></i>
-                                                                                </a>
-                                                                            </td>
-                                                                        </tr>
-                                                            }
-                                                        </tbody>
-                                                    </table>
-                                                </div>
+                                        <div class="table-responsive">
+                                            <table class="table table-striped table-hover">
+                                                <thead class="table-dark">
+                                                    <tr>
+                                                        <th>Mã món</th>
+                                                        <th>Tên món</th>
+                                                        <th>Loại món</th>
+                                                        <th>Định lượng</th>
+                                                        <th>Đơn vị</th>
+                                                        <th class="text-center">Thao tác</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var mon in Model.Mons)
+                                                    {
+                                                        <tr>
+                                                            <td>
+                                                                <span class="badge bg-secondary">@mon.ma_mon</span>
+                                                            </td>
+                                                            <td>
+                                                                <strong>@mon.ten_mon</strong>
+                                                            </td>
+                                                            <td>
+                                                                @{
+                                                                    var loaiMonText = mon.loai_mon switch
+                                                                    {
+                                                                        "KHAI_VI" => "Khai vị",
+                                                                        "MON_CHINH" => "Món chính",
+                                                                        "TRANG_MIENG" => "Tráng miệng",
+                                                                        _ => mon.loai_mon
+                                                                    };
+                                                                }
+                                                                <span class="badge bg-info">@loaiMonText</span>
+                                                            </td>
+                                                            <td>
+                                                                <span
+                                                                    class="badge bg-primary">@mon.dinh_luong.ToString("N3")</span>
+                                                            </td>
+                                                            <td>@Model.don_vi</td>
+                                                            <td class="text-center">
+                                                                <a asp-controller="Mon" asp-action="Details"
+                                                                    asp-route-id="@mon.mon_id"
+                                                                    class="btn btn-sm btn-outline-info"
+                                                                    title="Xem chi tiết món">
+                                                                    <i class="fas fa-eye"></i>
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     }
                                     else
                                     {
-                                                <div class="text-center py-4">
-                                                    <i class="fas fa-info-circle fa-2x text-info mb-2"></i>
-                                                    <p class="text-muted">Nguyên liệu này chưa được sử dụng trong món ăn nào</p>
-                                                </div>
+                                        <div class="text-center py-4">
+                                            <i class="fas fa-info-circle fa-2x text-info mb-2"></i>
+                                            <p class="text-muted">Nguyên liệu này chưa được sử dụng trong món ăn nào</p>
+                                        </div>
                                     }
                                 </div>
                             </div>

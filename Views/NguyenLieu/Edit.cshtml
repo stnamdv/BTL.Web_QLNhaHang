@@ -29,24 +29,34 @@
                                     </div>
                                     <div class="card-body">
                                         <div class="mb-3">
-                                            <label asp-for="ten" class="form-label">Tên nguyên liệu <span class="text-danger">*</span></label>
+                                            <label asp-for="ten" class="form-label">Tên nguyên liệu <span
+                                                    class="text-danger">*</span></label>
                                             <input asp-for="ten" class="form-control" required />
                                             <span asp-validation-for="ten" class="text-danger"></span>
                                             <div class="form-text">Tên nguyên liệu phải rõ ràng và không trùng lặp</div>
                                         </div>
 
                                         <div class="mb-3">
-                                            <label asp-for="don_vi" class="form-label">Đơn vị <span class="text-danger">*</span></label>
+                                            <label asp-for="don_vi" class="form-label">Đơn vị <span
+                                                    class="text-danger">*</span></label>
                                             <div class="input-group">
-                                                <input asp-for="don_vi" class="form-control" list="donViList" required />
+                                                <input asp-for="don_vi" class="form-control" list="donViList"
+                                                    required />
                                                 <datalist id="donViList">
-                                                    @foreach (var donVi in ViewBag.DonViOptions as List<SelectListItem>)
+                                                    @{
+                                                        var donViOptions = ViewBag.DonViOptions as List<SelectListItem>;
+                                                    }
+                                                    @if (donViOptions != null)
                                                     {
-                                                        <option value="@donVi.Value">
+                                                        @foreach (var donVi in donViOptions)
+                                                        {
+                                                            <option value="@donVi.Value">@donVi.Text</option>
+                                                        }
                                                     }
                                                 </datalist>
-                                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="tooltip" 
-                                                        title="Các đơn vị phổ biến: kg, g, l, ml, cái, hộp, gói...">
+                                                <button type="button" class="btn btn-outline-secondary"
+                                                    data-bs-toggle="tooltip"
+                                                    title="Các đơn vị phổ biến: kg, g, l, ml, cái, hộp, gói...">
                                                     <i class="fas fa-info"></i>
                                                 </button>
                                             </div>
@@ -55,12 +65,35 @@
                                         </div>
 
                                         <div class="mb-3">
-                                            <label asp-for="nguon_goc" class="form-label">Nguồn gốc <span class="text-danger">*</span></label>
-                                            <textarea asp-for="nguon_goc" class="form-control" rows="4" required 
-                                                      placeholder="Mô tả chi tiết nguồn gốc nguyên liệu..."></textarea>
+                                            <label asp-for="ncc_id" class="form-label">Nhà cung cấp <span
+                                                    class="text-danger">*</span></label>
+                                            <select asp-for="ncc_id" class="form-select" required>
+                                                <option value="">-- Chọn nhà cung cấp --</option>
+                                                @{
+                                                    var nhaCungCapOptions = ViewBag.NhaCungCapOptions as
+                                                    List<SelectListItem>;
+                                                }
+                                                @if (nhaCungCapOptions != null)
+                                                {
+                                                    @foreach (var ncc in nhaCungCapOptions)
+                                                    {
+                                                        <option value="@ncc.Value">@ncc.Text</option>
+                                                    }
+                                                }
+                                            </select>
+                                            <span asp-validation-for="ncc_id" class="text-danger"></span>
+                                            <div class="form-text">Chọn nhà cung cấp cho nguyên liệu này</div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label asp-for="nguon_goc" class="form-label">Nguồn gốc <span
+                                                    class="text-danger">*</span></label>
+                                            <textarea asp-for="nguon_goc" class="form-control" rows="4" required
+                                                placeholder="Mô tả chi tiết nguồn gốc nguyên liệu..."></textarea>
                                             <span asp-validation-for="nguon_goc" class="text-danger"></span>
                                             <div class="form-text">
-                                                <strong>Yêu cầu:</strong> Thông tin nguồn gốc phải rõ ràng, chi tiết (ít nhất 10 ký tự) 
+                                                <strong>Yêu cầu:</strong> Thông tin nguồn gốc phải rõ ràng, chi tiết (ít
+                                                nhất 10 ký tự)
                                                 để đảm bảo tính minh bạch và an toàn thực phẩm.
                                             </div>
                                         </div>
@@ -107,7 +140,7 @@
                                     </div>
                                     <div class="card-body">
                                         <p class="small mb-0">
-                                            Thông tin nguồn gốc là bắt buộc và phải rõ ràng để đảm bảo 
+                                            Thông tin nguồn gốc là bắt buộc và phải rõ ràng để đảm bảo
                                             tính minh bạch và an toàn thực phẩm theo quy định.
                                         </p>
                                     </div>
@@ -135,18 +168,20 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             // Initialize tooltips
             $('[data-bs-toggle="tooltip"]').tooltip();
 
             // Validate nguồn gốc real-time
-            $('#nguon_goc').on('input', function() {
+            $('#nguon_goc').on('input', function () {
                 const nguonGoc = $(this).val().trim();
                 const minLength = 10;
-                
+
                 if (nguonGoc.length > 0 && nguonGoc.length < minLength) {
                     $(this).addClass('is-invalid');
                     if (!$(this).next('.invalid-feedback').length) {
@@ -159,17 +194,17 @@
             });
 
             // Validate form trước khi submit
-            $('#editForm').submit(function(e) {
+            $('#editForm').submit(function (e) {
                 const ten = $('#ten').val().trim();
                 const donVi = $('#don_vi').val().trim();
                 const nguonGoc = $('#nguon_goc').val().trim();
-                
+
                 if (!ten || !donVi || !nguonGoc) {
                     e.preventDefault();
                     alert('Vui lòng điền đầy đủ thông tin bắt buộc');
                     return false;
                 }
-                
+
                 if (nguonGoc.length < 10) {
                     e.preventDefault();
                     alert('Thông tin nguồn gốc phải có ít nhất 10 ký tự');

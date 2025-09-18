@@ -45,28 +45,28 @@ namespace BTL.Web.Services
             return await _nhanVienRepository.GetByIdAsync(id);
         }
 
-        public async Task<IEnumerable<NhanVienWithLoaiNhanVien>> GetByLoaiNvAsync(string loaiNv)
+        public async Task<IEnumerable<NhanVienWithLoaiNhanVien>> GetByLoaiNvAsync(int loaiNvId)
         {
-            if (string.IsNullOrWhiteSpace(loaiNv))
+            if (loaiNvId <= 0)
             {
-                throw new ArgumentException("Loại nhân viên không được để trống", nameof(loaiNv));
+                throw new ArgumentException("ID loại nhân viên không hợp lệ", nameof(loaiNvId));
             }
 
             // Kiểm tra loại nhân viên có tồn tại không
-            var loaiNhanVien = await _loaiNhanVienRepository.GetByTypeAsync(loaiNv);
+            var loaiNhanVien = await _loaiNhanVienRepository.GetByIdAsync(loaiNvId);
             if (loaiNhanVien == null)
             {
                 throw new InvalidOperationException("Loại nhân viên không tồn tại");
             }
 
-            return await _nhanVienRepository.GetByLoaiNvAsync(loaiNv);
+            return await _nhanVienRepository.GetByLoaiNvAsync(loaiNvId);
         }
 
-        public async Task<PagedResult<NhanVienWithLoaiNhanVien>> GetByLoaiNvPagedAsync(string loaiNv, int pageNumber, int pageSize)
+        public async Task<PagedResult<NhanVienWithLoaiNhanVien>> GetByLoaiNvPagedAsync(int loaiNvId, int pageNumber, int pageSize)
         {
-            if (string.IsNullOrWhiteSpace(loaiNv))
+            if (loaiNvId <= 0)
             {
-                throw new ArgumentException("Loại nhân viên không được để trống", nameof(loaiNv));
+                throw new ArgumentException("ID loại nhân viên không hợp lệ", nameof(loaiNvId));
             }
 
             if (pageNumber < 1)
@@ -80,13 +80,13 @@ namespace BTL.Web.Services
             }
 
             // Kiểm tra loại nhân viên có tồn tại không
-            var loaiNhanVien = await _loaiNhanVienRepository.GetByTypeAsync(loaiNv);
+            var loaiNhanVien = await _loaiNhanVienRepository.GetByIdAsync(loaiNvId);
             if (loaiNhanVien == null)
             {
                 throw new InvalidOperationException("Loại nhân viên không tồn tại");
             }
 
-            return await _nhanVienRepository.GetByLoaiNvPagedAsync(loaiNv, pageNumber, pageSize);
+            return await _nhanVienRepository.GetByLoaiNvPagedAsync(loaiNvId, pageNumber, pageSize);
         }
 
         public async Task<NhanVien> CreateAsync(NhanVien nhanVien)
@@ -101,13 +101,13 @@ namespace BTL.Web.Services
                 throw new ArgumentException("Họ tên không được để trống");
             }
 
-            if (string.IsNullOrWhiteSpace(nhanVien.loai_nv))
+            if (nhanVien.loai_nv_id <= 0)
             {
                 throw new ArgumentException("Loại nhân viên không được để trống");
             }
 
             // Kiểm tra loại nhân viên có tồn tại không
-            var loaiNhanVien = await _loaiNhanVienRepository.GetByTypeAsync(nhanVien.loai_nv);
+            var loaiNhanVien = await _loaiNhanVienRepository.GetByIdAsync(nhanVien.loai_nv_id);
             if (loaiNhanVien == null)
             {
                 throw new InvalidOperationException("Loại nhân viên không tồn tại");
@@ -145,7 +145,7 @@ namespace BTL.Web.Services
                 throw new ArgumentException("Họ tên không được để trống");
             }
 
-            if (string.IsNullOrWhiteSpace(nhanVien.loai_nv))
+            if (nhanVien.loai_nv_id <= 0)
             {
                 throw new ArgumentException("Loại nhân viên không được để trống");
             }
@@ -158,7 +158,7 @@ namespace BTL.Web.Services
             }
 
             // Kiểm tra loại nhân viên có tồn tại không
-            var loaiNhanVien = await _loaiNhanVienRepository.GetByTypeAsync(nhanVien.loai_nv);
+            var loaiNhanVien = await _loaiNhanVienRepository.GetByIdAsync(nhanVien.loai_nv_id);
             if (loaiNhanVien == null)
             {
                 throw new InvalidOperationException("Loại nhân viên không tồn tại");

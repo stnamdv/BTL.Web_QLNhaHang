@@ -1,0 +1,251 @@
+@model IEnumerable<dynamic>
+
+@{
+    ViewData["Title"] = "Thống kê nhà cung cấp";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-bar"></i> @ViewData["Title"]
+                    </h3>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Error"] != null)
+                    {
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                @TempData["Error"]
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                    }
+
+                    @if (Model.Any())
+                    {
+                            <div class="row">
+                                @foreach (var stat in Model)
+                                {
+                                        <div class="col-md-6 col-lg-4 mb-4">
+                                            <div class="card border-primary">
+                                                <div class="card-header bg-primary text-white">
+                                                    <h5 class="card-title mb-0">
+                                                        <i class="fas fa-building"></i> @stat.ten
+                                                    </h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="row text-center">
+                                                        <div class="col-6">
+                                                            <h4 class="text-primary">@stat.so_nguyen_lieu_cung_cap</h4>
+                                                            <small class="text-muted">Nguyên liệu</small>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <h4 class="text-success">@stat.so_lan_cung_cap</h4>
+                                                            <small class="text-muted">Lần cung cấp</small>
+                                                        </div>
+                                                    </div>
+                                                    <hr>
+                                                    <div class="row">
+                                                        <div class="col-6">
+                                                            <small class="text-muted">Tổng giá trị:</small>
+                                                            <br>
+                                                            <strong class="text-warning">@(((decimal)stat.tong_gia_tri).ToString("N0")) ₫</strong>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <small class="text-muted">Giá TB/lần:</small>
+                                                            <br>
+                                                            <strong class="text-info">@(((decimal)stat.gia_trung_binh_moi_lan).ToString("N0")) ₫</strong>
+                                                        </div>
+                                                    </div>
+                                                    @if (stat.lan_cung_cap_cuoi != null)
+                                                    {
+                                                            <hr>
+                                                            <div class="text-center">
+                                                                <small class="text-muted">Lần cung cấp cuối:</small>
+                                                                <br>
+                                                                <strong>@(((DateTime)stat.lan_cung_cap_cuoi).ToString("dd/MM/yyyy"))</strong>
+                                                            </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                }
+                            </div>
+
+                            <!-- Tổng kết -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card border-success">
+                                        <div class="card-header bg-success text-white">
+                                            <h5 class="card-title mb-0">
+                                                <i class="fas fa-chart-pie"></i> Tổng kết
+                                            </h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row text-center">
+                                                <div class="col-md-3">
+                                                    <h4 class="text-primary">@Model.Count()</h4>
+                                                    <small class="text-muted">Tổng nhà cung cấp</small>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <h4 class="text-success">@Model.Sum(s => (int)s.so_nguyen_lieu_cung_cap)</h4>
+                                                    <small class="text-muted">Tổng nguyên liệu</small>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <h4 class="text-info">@Model.Sum(s => (int)s.so_lan_cung_cap)</h4>
+                                                    <small class="text-muted">Tổng lần cung cấp</small>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <h4 class="text-warning">@(((decimal)Model.Sum(s => (decimal)s.tong_gia_tri)).ToString("N0")) ₫</h4>
+                                                    <small class="text-muted">Tổng giá trị</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Biểu đồ -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5 class="card-title mb-0">
+                                                <i class="fas fa-chart-bar"></i> Biểu đồ số nguyên liệu cung cấp theo nhà cung cấp
+                                            </h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="supplierChart" width="400" height="200"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Biểu đồ giá trị -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5 class="card-title mb-0">
+                                                <i class="fas fa-chart-pie"></i> Biểu đồ tổng giá trị theo nhà cung cấp
+                                            </h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="valueChart" width="400" height="200"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                    }
+                    else
+                    {
+                            <div class="text-center py-5">
+                                <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">Không có dữ liệu thống kê</h5>
+                                <p class="text-muted">Hãy thêm nhà cung cấp để xem thống kê!</p>
+                                <a asp-action="Create" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Thêm nhà cung cấp
+                                </a>
+                            </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            @if (Model.Any())
+            {
+                    <text>
+                    const statsData = @Html.Raw(Json.Serialize(Model));
+            
+                    // Biểu đồ số nguyên liệu
+                    const ctx1 = document.getElementById('supplierChart').getContext('2d');
+                    const supplierChart = new Chart(ctx1, {
+                        type: 'bar',
+                        data: {
+                            labels: statsData.map(s => s.ten),
+                            datasets: [{
+                                label: 'Số nguyên liệu cung cấp',
+                                data: statsData.map(s => s.so_nguyen_lieu_cung_cap),
+                                backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        stepSize: 1
+                                    }
+                                }
+                            },
+                            plugins: {
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return 'Số nguyên liệu: ' + context.parsed.y;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+                    // Biểu đồ giá trị
+                    const ctx2 = document.getElementById('valueChart').getContext('2d');
+                    const valueChart = new Chart(ctx2, {
+                        type: 'doughnut',
+                        data: {
+                            labels: statsData.map(s => s.ten),
+                            datasets: [{
+                                data: statsData.map(s => s.tong_gia_tri),
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.8)',
+                                    'rgba(54, 162, 235, 0.8)',
+                                    'rgba(255, 205, 86, 0.8)',
+                                    'rgba(75, 192, 192, 0.8)',
+                                    'rgba(153, 102, 255, 0.8)',
+                                    'rgba(255, 159, 64, 0.8)'
+                                ],
+                                borderColor: [
+                                    'rgba(255, 99, 132, 1)',
+                                    'rgba(54, 162, 235, 1)',
+                                    'rgba(255, 205, 86, 1)',
+                                    'rgba(75, 192, 192, 1)',
+                                    'rgba(153, 102, 255, 1)',
+                                    'rgba(255, 159, 64, 1)'
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            const value = context.parsed;
+                                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                            const percentage = ((value / total) * 100).toFixed(1);
+                                            return context.label + ': ' + value.toLocaleString() + ' ₫ (' + percentage + '%)';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    </text>
+            }
+        </script>
+}

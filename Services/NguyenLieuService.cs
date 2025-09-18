@@ -42,6 +42,16 @@ namespace BTL.Web.Services
             return await _nguyenLieuRepository.GetByIdAsync(id);
         }
 
+        public async Task<NguyenLieuWithNhaCungCap?> GetWithNhaCungCapAsync(int id)
+        {
+            if (id <= 0)
+            {
+                throw new ArgumentException("ID phải lớn hơn 0", nameof(id));
+            }
+
+            return await _nguyenLieuRepository.GetWithNhaCungCapAsync(id);
+        }
+
         public async Task<NguyenLieuWithMon?> GetWithMonAsync(int id)
         {
             if (id <= 0)
@@ -198,6 +208,21 @@ namespace BTL.Web.Services
                 .Distinct()
                 .OrderBy(dv => dv)
                 .ToList();
+        }
+
+        public async Task<PagedResult<NguyenLieuWithNhaCungCap>> GetAllWithNhaCungCapPagedAsync(int pageNumber, int pageSize, string? searchTerm = null)
+        {
+            if (pageNumber < 1)
+            {
+                throw new ArgumentException("Số trang phải lớn hơn 0", nameof(pageNumber));
+            }
+
+            if (pageSize < 1 || pageSize > 100)
+            {
+                throw new ArgumentException("Kích thước trang phải từ 1 đến 100", nameof(pageSize));
+            }
+
+            return await _nguyenLieuRepository.GetAllWithNhaCungCapPagedAsync(pageNumber, pageSize, searchTerm);
         }
 
         private async Task ValidateNguyenLieuAsync(NguyenLieu nguyenLieu, int? excludeId)

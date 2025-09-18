@@ -4,7 +4,8 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - BTL.Web</title>
+    <title>@ViewData["Title"] - Nhóm 23</title>
+    <link rel="icon" type="image/svg+xml" href="~/favicon.svg" />
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -17,46 +18,126 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">BTL.Web</a>
+                <a class="navbar-brand d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">
+                    <img src="~/logo.svg" alt="Nhóm 23" height="40" class="me-2" />
+                    <span class="fw-bold text-primary">Nhóm 23</span>
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
                     aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
+                        <!-- Trang chủ -->
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house-door me-1"></i>Trang chủ
+                            </a>
                         </li>
+
+                        <!-- Quản lý Bàn Ăn -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle text-dark" href="#" role="button"
                                 data-bs-toggle="dropdown">
-                                Bàn Ăn
+                                <i class="bi bi-table me-1"></i>Quản lý Bàn Ăn
                             </a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" asp-controller="BanAn" asp-action="Index">
-                                        <i class="bi bi-list-ul"></i> Danh sách
+                                        <i class="bi bi-list-ul me-2"></i>Danh sách bàn ăn
                                     </a></li>
                                 <li><a class="dropdown-item" asp-controller="BanAn" asp-action="Layout">
-                                        <i class="bi bi-grid-3x3-gap"></i> Layout nhà hàng
+                                        <i class="bi bi-grid-3x3-gap me-2"></i>Layout nhà hàng
+                                    </a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item" asp-controller="LoaiBan" asp-action="Index">
+                                        <i class="bi bi-tags me-2"></i>Loại bàn
                                     </a></li>
                             </ul>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="LoaiBan" asp-action="Index">Loại
-                                Bàn</a>
+
+                        <!-- Quản lý Nhân Viên -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" role="button"
+                                data-bs-toggle="dropdown">
+                                <i class="bi bi-people me-1"></i>Quản lý Nhân Viên
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" asp-controller="NhanVien" asp-action="Index">
+                                        <i class="bi bi-person-lines-fill me-2"></i>Danh sách nhân viên
+                                    </a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item" asp-controller="LoaiNhanVien" asp-action="Index">
+                                        <i class="bi bi-person-badge me-2"></i>Loại nhân viên
+                                    </a></li>
+                            </ul>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="LoaiNhanVien"
-                                asp-action="Index">Loại
-                                Nhân Viên</a>
+
+                        <!-- Quản lý Thực Đơn -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" role="button"
+                                data-bs-toggle="dropdown">
+                                <i class="bi bi-egg-fried me-1"></i>Quản lý Thực Đơn
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" asp-controller="Mon" asp-action="Index">
+                                        <i class="bi bi-list-ul me-2"></i>Danh sách món ăn
+                                    </a></li>
+                                <li><a class="dropdown-item" asp-controller="Mon" asp-action="Create">
+                                        <i class="bi bi-plus-circle me-2"></i>Thêm món ăn mới
+                                    </a></li>
+                                <li><a class="dropdown-item" asp-controller="Mon" asp-action="Stats">
+                                        <i class="bi bi-graph-up me-2"></i>Thống kê món ăn
+                                    </a></li>
+                            </ul>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="NhanVien" asp-action="Index">Nhân
-                                Viên</a>
+
+                        <!-- Quản lý Nguyên Liệu -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" role="button"
+                                data-bs-toggle="dropdown">
+                                <i class="bi bi-box-seam me-1"></i>Quản lý Nguyên Liệu
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" asp-controller="NguyenLieu" asp-action="Index">
+                                        <i class="bi bi-list-ul me-2"></i>Danh sách nguyên liệu
+                                    </a></li>
+                                <li><a class="dropdown-item" asp-controller="NguyenLieu" asp-action="Create">
+                                        <i class="bi bi-plus-circle me-2"></i>Thêm nguyên liệu mới
+                                    </a></li>
+                                <li><a class="dropdown-item" asp-controller="NguyenLieu" asp-action="Stats">
+                                        <i class="bi bi-graph-up me-2"></i>Thống kê nguyên liệu
+                                    </a></li>
+                            </ul>
                         </li>
+
+                        <!-- Quản lý Nhà Cung Cấp -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" role="button"
+                                data-bs-toggle="dropdown">
+                                <i class="bi bi-truck me-1"></i>Quản lý Nhà Cung Cấp
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" asp-controller="NhaCungCap" asp-action="Index">
+                                        <i class="bi bi-list-ul me-2"></i>Danh sách nhà cung cấp
+                                    </a></li>
+                                <li><a class="dropdown-item" asp-controller="NhaCungCap" asp-action="Create">
+                                        <i class="bi bi-plus-circle me-2"></i>Thêm nhà cung cấp mới
+                                    </a></li>
+                                <li><a class="dropdown-item" asp-controller="NhaCungCap" asp-action="Stats">
+                                        <i class="bi bi-graph-up me-2"></i>Thống kê nhà cung cấp
+                                    </a></li>
+                            </ul>
+                        </li>
+
+                        <!-- Thông tin -->
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home"
-                                asp-action="Privacy">Privacy</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">
+                                <i class="bi bi-info-circle me-1"></i>Thông tin
+                            </a>
                         </li>
                     </ul>
                 </div>
@@ -85,7 +166,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2025 - BTL.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2025 - Nhóm 23 - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

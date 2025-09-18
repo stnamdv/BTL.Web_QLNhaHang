@@ -4,6 +4,7 @@ namespace BTL.Web.Models
 {
     public class LoaiNhanVienDetails
     {
+        public int loai_nv_id { get; set; }
         public string loai_nv { get; set; } = string.Empty;
         public decimal luong_co_ban { get; set; }
         public int total_employees { get; set; }
@@ -35,9 +36,4 @@ namespace BTL.Web.Models
         public int active_employee_count { get; set; }
     }
 
-    public class LoaiNhanVienValidation
-    {
-        public bool is_valid { get; set; }
-        public string message { get; set; } = string.Empty;
-    }
 }
