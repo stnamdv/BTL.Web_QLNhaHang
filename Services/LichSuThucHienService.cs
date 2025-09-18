@@ -86,5 +86,31 @@ namespace BTL.Web.Services
             var allLichSu = await _repository.GetAllPagedAsync(1, 1000);
             return allLichSu.Items.Where(x => x.nv_id == nvId && x.trang_thai == TrangThaiThucHien.CHUA_BAT_DAU);
         }
+
+        public async Task<IEnumerable<LichSuThucHienWithDetails>> GetByOrderAsync(int orderId)
+        {
+            return await _repository.GetByOrderAsync(orderId);
+        }
+
+        public async Task<bool> UpdateStepStatusAsync(int orderId, int stepId, int employeeId, string action)
+        {
+            try
+            {
+                Console.WriteLine($"=== UpdateStepStatusAsync called ===");
+                Console.WriteLine($"OrderId: {orderId}, StepId: {stepId}, EmployeeId: {employeeId}, Action: {action}");
+
+                // Use stored procedure for better performance and atomicity
+                var result = await _repository.UpdateStepStatusForOrderAsync(orderId, stepId, employeeId, action);
+
+                Console.WriteLine($"UpdateStepStatusAsync result: {result}");
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in UpdateStepStatusAsync: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                return false;
+            }
+        }
     }
 }

@@ -399,3 +399,41 @@ BEGIN
     ORDER BY lnv.loai_nv, nv.ho_ten;
 END
 GO
+
+-- =========================================================
+-- 12. sp_LichSuThucHien_GetByOrder - Lấy lịch sử theo đơn hàng
+-- =========================================================
+CREATE OR ALTER PROCEDURE dbo.sp_LichSuThucHien_GetByOrder
+    @OrderId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        lsh.lich_su_id,
+        lsh.order_item_id,
+        oi.order_id,
+        oi.mon_id,
+        m.ten_mon,
+        m.ma_mon,
+        lsh.buoc_id,
+        bx.ten_buoc,
+        bx.thu_tu,
+        lsh.nv_id,
+        nv.ho_ten as nv_ho_ten,
+        lnv.loai_nv,
+        lsh.trang_thai,
+        lsh.thoi_diem_bat_dau,
+        lsh.thoi_diem_ket_thuc,
+        lsh.ghi_chu,
+        lsh.thoi_diem_tao
+    FROM dbo.LichSuThucHien lsh
+    JOIN dbo.OrderItem oi ON oi.order_item_id = lsh.order_item_id
+    JOIN dbo.Mon m ON m.mon_id = oi.mon_id
+    JOIN dbo.BuocXuLy bx ON bx.buoc_id = lsh.buoc_id
+    JOIN dbo.NhanVien nv ON nv.nv_id = lsh.nv_id
+    JOIN dbo.LoaiNhanVien lnv ON lnv.loai_nv_id = nv.loai_nv_id
+    WHERE oi.order_id = @OrderId
+    ORDER BY bx.thu_tu, lsh.thoi_diem_tao;
+END
+GO

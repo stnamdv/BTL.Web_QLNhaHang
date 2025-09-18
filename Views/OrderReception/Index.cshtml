@@ -1,0 +1,290 @@
+@model IEnumerable<BTL.Web.Models.Order>
+
+@{
+    ViewData["Title"] = "Tiếp nhận đơn hàng";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-clipboard-list"></i>
+                        Danh sách đơn hàng chờ tiếp nhận
+                    </h3>
+                </div>
+                <div class="card-body">
+                    @if (Model != null && Model.Any())
+                    {
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-striped" id="ordersTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Mã đơn</th>
+                                                <th>Loại</th>
+                                                <th>Bàn</th>
+                                                <th>Số khách</th>
+                                                <th>Khách hàng</th>
+                                                <th>Số món</th>
+                                                <th>Thời gian đặt</th>
+                                                <th>Thao tác</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var order in Model)
+                                            {
+                                                        <tr data-order-id="@order.order_id">
+                                                            <td>#@order.order_id</td>
+                                                            <td>
+                                                                @if (order.la_mang_ve)
+                                                                {
+                                                                            <span class="badge badge-warning">
+                                                                                <i class="fas fa-shopping-bag"></i> Mang về
+                                                                            </span>
+                                                                }
+                                                                else
+                                                                {
+                                                                            <span class="badge badge-info">
+                                                                                <i class="fas fa-utensils"></i> Tại chỗ
+                                                                            </span>
+                                                                }
+                                                            </td>
+                                                            <td>
+                                                                @if (order.ban_id.HasValue)
+                                                                {
+                                                                            <span class="badge badge-secondary">@order.ban_id</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                            <span class="text-muted">-</span>
+                                                                }
+                                                            </td>
+                                                            <td>
+                                                                @if (order.so_khach.HasValue)
+                                                                {
+                                                                            <span class="badge badge-primary">@order.so_khach người</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                            <span class="text-muted">-</span>
+                                                                }
+                                                            </td>
+                                                            <td>
+                                                                @if (!string.IsNullOrEmpty(order.KhachHang?.ho_ten))
+                                                                {
+                                                                            <div>
+                                                                                <strong>@order.KhachHang.ho_ten</strong>
+                                                                                @if (!string.IsNullOrEmpty(order.KhachHang.so_dien_thoai))
+                                                                                {
+                                                                                            <br>
+                                                        
+                                                                                            <small class="text-muted">@order.KhachHang.so_dien_thoai</small>
+                                                                                }
+                                                                            </div>
+                                                                }
+                                                                else
+                                                                {
+                                                                            <span class="text-muted">Khách vãng lai</span>
+                                                                }
+                                                            </td>
+                                                            <td>
+                                                                <span class="badge badge-success">@order.OrderItems?.Count() món</span>
+                                                            </td>
+                                                            <td>
+                                                                <small>@order.thoi_diem_dat.ToString("dd/MM/yyyy HH:mm")</small>
+                                                            </td>
+                                                            <td>
+                                                                <div class="btn-group" role="group">
+                                                                    <button type="button" class="btn btn-sm btn-primary" 
+                                                                            onclick="viewOrderDetails(@order.order_id)">
+                                                                        <i class="fas fa-eye"></i> Xem
+                                                                    </button>
+                                                                    <a href="/Order/Workflow/@order.order_id" class="btn btn-sm btn-info">
+                                                                        <i class="fas fa-tasks"></i> Workflow
+                                                                    </a>
+                                                                    <button type="button" class="btn btn-sm btn-success" 
+                                                                            onclick="confirmOrder(@order.order_id)">
+                                                                        <i class="fas fa-check"></i> Tiếp nhận
+                                                                    </button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                    }
+                    else
+                    {
+                                <div class="alert alert-info text-center">
+                                    <i class="fas fa-info-circle"></i>
+                                    Không có đơn hàng nào chờ tiếp nhận.
+                                </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal xem chi tiết đơn hàng -->
+<div class="modal fade" id="orderDetailsModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Chi tiết đơn hàng</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="orderDetailsContent">
+                <!-- Nội dung sẽ được load bằng AJAX -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-success" id="confirmOrderBtn">
+                    <i class="fas fa-check"></i> Tiếp nhận đơn hàng
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+            <script>
+                let currentOrderId = null;
+
+                function viewOrderDetails(orderId) {
+                    currentOrderId = orderId;
+            
+                    // Load chi tiết đơn hàng
+                    $.get('/OrderReception/GetOrderStatus/' + orderId)
+                        .done(function(response) {
+                            if (response.success) {
+                                displayOrderDetails(response.data);
+                                $('#orderDetailsModal').modal('show');
+                            } else {
+                                showAlert('Lỗi', response.message, 'error');
+                            }
+                        })
+                        .fail(function() {
+                            showAlert('Lỗi', 'Không thể tải chi tiết đơn hàng', 'error');
+                        });
+                }
+
+                function displayOrderDetails(order) {
+                    let html = `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6><strong>Thông tin đơn hàng</strong></h6>
+                                <p><strong>Mã đơn:</strong> #${order.order_id}</p>
+                                <p><strong>Loại:</strong> ${order.la_mang_ve ? 'Mang về' : 'Tại chỗ'}</p>
+                                <p><strong>Trạng thái:</strong> <span class="badge badge-warning">${order.trang_thai}</span></p>
+                                <p><strong>Thời gian đặt:</strong> ${new Date(order.thoi_diem_dat).toLocaleString('vi-VN')}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6><strong>Thông tin khách hàng</strong></h6>
+                                <p><strong>Tên:</strong> ${order.khach_hang_ten || 'Khách vãng lai'}</p>
+                                <p><strong>SĐT:</strong> ${order.khach_hang_sdt || '-'}</p>
+                                ${order.ban_so_hieu ? `<p><strong>Bàn:</strong> ${order.ban_so_hieu} (${order.ban_suc_chua} người)</p>` : ''}
+                                ${order.so_khach ? `<p><strong>Số khách:</strong> ${order.so_khach} người</p>` : ''}
+                            </div>
+                        </div>
+                        <hr>
+                        <h6><strong>Danh sách món ăn</strong></h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Mã món</th>
+                                        <th>Tên món</th>
+                                        <th>Loại</th>
+                                        <th>Số lượng</th>
+                                        <th>Giá</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+            
+                    if (order.orderItems && order.orderItems.length > 0) {
+                        order.orderItems.forEach(function(item) {
+                            html += `
+                                <tr>
+                                    <td>${item.ma_mon}</td>
+                                    <td>${item.ten_mon}</td>
+                                    <td><span class="badge badge-secondary">${item.loai_mon}</span></td>
+                                    <td>${item.so_luong}</td>
+                                    <td>${item.gia.toLocaleString('vi-VN')} VNĐ</td>
+                                </tr>
+                            `;
+                        });
+                    }
+            
+                    html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+            
+                    $('#orderDetailsContent').html(html);
+                }
+
+                function confirmOrder(orderId) {
+                    if (!orderId) orderId = currentOrderId;
+            
+                    // Lấy ID nhân viên hiện tại (có thể lưu trong session hoặc cookie)
+                    const employeeId = 1; // Tạm thời hardcode, cần lấy từ session
+            
+                    if (confirm('Bạn có chắc chắn muốn tiếp nhận đơn hàng này?')) {
+                        $.post('/OrderReception/ConfirmOrder', {
+                            orderId: orderId,
+                            employeeId: employeeId
+                        })
+                        .done(function(response) {
+                            if (response.success) {
+                                showAlert('Thành công', response.message, 'success');
+                                $('#orderDetailsModal').modal('hide');
+                                // Reload trang hoặc xóa dòng khỏi bảng
+                                location.reload();
+                            } else {
+                                showAlert('Lỗi', response.message, 'error');
+                            }
+                        })
+                        .fail(function() {
+                            showAlert('Lỗi', 'Không thể tiếp nhận đơn hàng', 'error');
+                        });
+                    }
+                }
+
+                function showAlert(title, message, type) {
+                    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+                    const alertHtml = `
+                        <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                            <strong>${title}:</strong> ${message}
+                            <button type="button" class="close" data-dismiss="alert">
+                                <span>&times;</span>
+                            </button>
+                        </div>
+                    `;
+            
+                    // Hiển thị alert ở đầu trang
+                    $('.container-fluid').prepend(alertHtml);
+            
+                    // Tự động ẩn sau 5 giây
+                    setTimeout(function() {
+                        $('.alert').fadeOut();
+                    }, 5000);
+                }
+
+                // Xử lý nút tiếp nhận trong modal
+                $('#confirmOrderBtn').click(function() {
+                    confirmOrder();
+                });
+
+                // Auto refresh mỗi 30 giây
+                setInterval(function() {
+                    location.reload();
+                }, 30000);
+            </script>
+}

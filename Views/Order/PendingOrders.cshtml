@@ -1,0 +1,168 @@
+@model IEnumerable<BTL.Web.Models.OrderWithDetails>
+@{
+    ViewData["Title"] = "Danh sách đơn hàng chưa hoàn thành";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/order-management.css" />
+}
+
+<div class="workflow-container">
+    <!-- Header -->
+    <div class="workflow-header">
+        <h1><i class="fas fa-list-alt"></i> Danh sách đơn hàng chưa hoàn thành</h1>
+        <p>Quản lý và theo dõi tất cả đơn hàng đang trong quá trình xử lý</p>
+    </div>
+
+    <!-- Orders List -->
+    <div class="orders-list">
+        @if (Model != null && Model.Any())
+        {
+            <div class="row">
+                @foreach (var order in Model)
+                {
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="order-card">
+                            <div class="order-header">
+                                <div class="order-id">Đơn hàng #@order.order_id</div>
+                                <div class="order-type @(order.la_mang_ve ? "takeaway" : "dine-in")">
+                                    @(order.la_mang_ve ? "Mang về" : "Ăn tại chỗ")
+                                </div>
+                            </div>
+
+                            <div class="order-status">
+                                <span class="status-badge status-@order.trang_thai.ToLower()">
+                                    @GetStatusText(order.trang_thai)
+                                </span>
+                            </div>
+
+                            <div class="order-details">
+                                <div class="order-detail">
+                                    <i class="fas fa-clock"></i>
+                                    <span>@order.thoi_diem_dat.ToString("dd/MM/yyyy HH:mm")</span>
+                                </div>
+                                <div class="order-detail">
+                                    <i class="fas fa-users"></i>
+                                    <span>@(order.so_khach ?? 0) khách</span>
+                                </div>
+                                @if (!string.IsNullOrEmpty(order.ban_so_hieu))
+                                {
+                                    <div class="order-detail">
+                                        <i class="fas fa-table"></i>
+                                        <span>Bàn @order.ban_so_hieu (@order.ban_suc_chua người)</span>
+                                    </div>
+                                }
+                                <div class="order-detail">
+                                    <i class="fas fa-money-bill"></i>
+                                    <span>@(order.tong_tien?.ToString("N0") ?? "0") VNĐ</span>
+                                </div>
+                            </div>
+
+                            <div class="order-items">
+                                <strong>Món ăn:</strong>
+                                <div class="order-item">
+                                    <span>@order.so_mon món</span>
+                                    <span>@order.tong_so_luong phần</span>
+                                </div>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(order.khach_hang_ten))
+                            {
+                                <div class="customer-info">
+                                    <strong>Khách hàng:</strong>
+                                    <div>@order.khach_hang_ten</div>
+                                    @if (!string.IsNullOrEmpty(order.khach_hang_sdt))
+                                    {
+                                        <div class="text-muted">@order.khach_hang_sdt</div>
+                                    }
+                                </div>
+                            }
+
+                            <div class="order-actions">
+                                <a href="/Order/Workflow/@order.order_id" class="btn btn-info btn-sm">
+                                    <i class="fas fa-tasks"></i> Xử lý
+                                </a>
+                                <button class="btn btn-primary btn-sm" onclick="viewOrderDetails(@order.order_id)">
+                                    <i class="fas fa-eye"></i> Chi tiết
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle"></i>
+                Không có đơn hàng nào đang trong quá trình xử lý.
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Order Details Modal -->
+<div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-labelledby="orderDetailsModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="orderDetailsModalLabel">
+                    <i class="fas fa-receipt"></i> Chi tiết đơn hàng
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="orderDetailsContent">
+                <!-- Order details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <a href="#" class="btn btn-info" id="goToWorkflowBtn">
+                    <i class="fas fa-tasks"></i> Xem Workflow
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function viewOrderDetails(orderId) {
+            // Load order details via AJAX
+            fetch(`/Order/Details/${orderId}`)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('orderDetailsContent').innerHTML = html;
+                    document.getElementById('goToWorkflowBtn').href = `/Order/Workflow/${orderId}`;
+
+                    const modal = new bootstrap.Modal(document.getElementById('orderDetailsModal'));
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error('Error loading order details:', error);
+                    alert('Không thể tải chi tiết đơn hàng');
+                });
+        }
+
+        // Auto refresh every 30 seconds
+        setInterval(function () {
+            location.reload();
+        }, 30000);
+    </script>
+}
+
+@functions {
+    string GetStatusText(string status)
+    {
+        return status switch
+        {
+            "pending" => "Chờ xử lý",
+            "confirmed" => "Đã xác nhận",
+            "preparing" => "Đang chuẩn bị",
+            "ready" => "Sẵn sàng",
+            "served" => "Đã phục vụ",
+            "close" => "Đã đóng",
+            _ => status
+        };
+    }
+}

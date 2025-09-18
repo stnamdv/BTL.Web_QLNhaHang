@@ -1,6 +1,7 @@
 using BTL.Web.Models;
 using BTL.Web.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace BTL.Web.Controllers
 {
@@ -47,11 +48,25 @@ namespace BTL.Web.Controllers
             return View("Index", phanCongs);
         }
 
-        // GET: PhanCongBuocXuLy/GetNhanVienChoBuoc/1
+        // GET: PhanCongBuocXuLy/GetNhanVienChoBuoc/1        
+        [Route("PhanCongBuocXuLy/GetNhanVienChoBuoc/{buocId}")]
         public async Task<IActionResult> GetNhanVienChoBuoc(int buocId)
         {
-            var nhanViens = await _phanCongService.GetNhanVienChoBuocAsync(buocId);
-            return Json(new { success = true, data = nhanViens });
+            try
+            {
+                Console.WriteLine($"buocId parameter: {buocId}");
+
+                // Sử dụng method mới để lấy nhân viên theo loại nhân viên của bước
+                var nhanViens = await _phanCongService.GetNhanVienTheoLoaiBuocAsync(buocId);
+                Console.WriteLine($"Found {nhanViens?.Count() ?? 0} employees for step {buocId}");
+
+                return Json(nhanViens);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetNhanVienChoBuoc: {ex.Message}");
+                return Json(new List<object>());
+            }
         }
 
         // GET: PhanCongBuocXuLy/GetBuocChuaPhanCong

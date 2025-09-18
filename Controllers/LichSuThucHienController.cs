@@ -166,6 +166,48 @@ namespace BTL.Web.Controllers
             }
         }
 
+        // GET: LichSuThucHien/GetByOrder/1
+        [Route("LichSuThucHien/GetByOrder/{orderId}")]
+        public async Task<IActionResult> GetByOrder(int orderId)
+        {
+            try
+            {
+                var lichSus = await _lichSuService.GetByOrderAsync(orderId);
+                return Json(new { success = true, data = lichSus });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // POST: LichSuThucHien/UpdateStepStatus
+        [HttpPost]
+        public async Task<IActionResult> UpdateStepStatus([FromBody] UpdateStepStatusRequest request)
+        {
+            try
+            {
+                Console.WriteLine($"=== UpdateStepStatus called ===");
+                Console.WriteLine($"OrderId: {request.OrderId}, StepId: {request.StepId}, EmployeeId: {request.EmployeeId}, Action: {request.Action}");
+
+                var result = await _lichSuService.UpdateStepStatusAsync(request.OrderId, request.StepId, request.EmployeeId, request.Action);
+
+                if (result)
+                {
+                    return Json(new { success = true, message = "Cập nhật trạng thái thành công" });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Không thể cập nhật trạng thái" });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in UpdateStepStatus: {ex.Message}");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
         // GET: LichSuThucHien/Dashboard
         public IActionResult Dashboard()
         {

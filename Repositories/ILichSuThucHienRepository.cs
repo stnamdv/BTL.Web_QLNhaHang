@@ -14,5 +14,10 @@ namespace BTL.Web.Repositories
         Task<IEnumerable<dynamic>> GetTrangThaiAsync(int orderItemId);
         Task<IEnumerable<ThongKeHieuSuat>> GetThongKeAsync(int? nvId = null, int? buocId = null, DateTime? tuNgay = null, DateTime? denNgay = null);
         Task<bool> ExistsByIdAsync(int id);
+        Task<IEnumerable<LichSuThucHienWithDetails>> GetByOrderAsync(int orderId);
+        Task<IEnumerable<OrderItem>> GetOrderItemsByOrderIdAsync(int orderId);
+        Task<bool> StartStepForOrderItemAsync(int orderItemId, int stepId, int employeeId);
+        Task<bool> CompleteStepForOrderItemAsync(int orderItemId, int stepId, int employeeId);
+        Task<bool> UpdateStepStatusForOrderAsync(int orderId, int stepId, int employeeId, string action);
     }
 }

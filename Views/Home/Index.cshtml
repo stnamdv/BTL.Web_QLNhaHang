@@ -2,53 +2,145 @@
     ViewData["Title"] = "Quản lý nhà hàng";
 }
 
+<style>
+</style>
+
 <div class="text-center">
     <h1 class="display-4">Hệ thống quản lý nhà hàng</h1>
-    <p>Chào mừng đến với hệ thống quản lý nhà hàng</p>
+    <p class="lead">Chào mừng đến với hệ thống quản lý nhà hàng</p>
 
-    <div class="row mt-4">
-        <div class="col-md-3">
-            <div class="card">
+
+
+    <!-- Chức năng chính - Quy trình đơn hàng tích hợp -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-8">
+            <div class="card border-info shadow-lg">
+                <div class="card-body text-center p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-clipboard-list fa-4x text-info"></i>
+                    </div>
+                    <h2 class="card-title text-info mb-3">Quản lý đơn hàng</h2>
+                    <p class="card-text lead mb-4">
+                        Quản lý đơn hàng
+                    </p>
+                    <div class="row text-center mb-4">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center justify-content-center mb-2">
+                                <i class="fas fa-plus-circle text-success me-2"></i>
+                                <span>Tạo đơn hàng mới</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center justify-content-center mb-2">
+                                <i class="fas fa-clipboard-check text-primary me-2"></i>
+                                <span>Tiếp nhận & xử lý</span>
+                            </div>
+                        </div>
+                    </div>
+                    <a asp-controller="Home" asp-action="OrderManagement" class="btn btn-info btn-lg">
+                        <i class="fas fa-rocket"></i> Bắt đầu quản lý đơn hàng
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Các chức năng quản lý khác -->
+    <h4 class="mb-4">Quản lý hệ thống</h4>
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title">
-                        <i class="bi bi-table"></i> Quản lý loại bàn
+                        <i class="fas fa-table"></i> Quản lý loại bàn
                     </h5>
                     <p class="card-text">Thêm, sửa, xóa các loại bàn trong nhà hàng</p>
-                    <a asp-controller="LoaiBan" asp-action="Index" class="btn btn-primary">Quản lý loại bàn</a>
+                    <a asp-controller="LoaiBan" asp-action="Index" class="btn btn-outline-primary">Quản lý loại bàn</a>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card">
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title">
-                        <i class="bi bi-grid-3x3-gap"></i> Quản lý bàn ăn
+                        <i class="fas fa-chair"></i> Quản lý bàn ăn
                     </h5>
                     <p class="card-text">Quản lý các bàn ăn theo loại</p>
-                    <a asp-controller="BanAn" asp-action="Index" class="btn btn-primary">Quản lý bàn ăn</a>
+                    <a asp-controller="BanAn" asp-action="Index" class="btn btn-outline-primary">Quản lý bàn ăn</a>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card">
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title">
-                        <i class="bi bi-people"></i> Quản lý loại nhân viên
+                        <i class="fas fa-users"></i> Quản lý loại nhân viên
                     </h5>
                     <p class="card-text">Thêm, sửa, xóa các loại nhân viên và lương cơ bản</p>
-                    <a asp-controller="LoaiNhanVien" asp-action="Index" class="btn btn-primary">Quản lý loại nhân
+                    <a asp-controller="LoaiNhanVien" asp-action="Index" class="btn btn-outline-primary">Quản lý loại
+                        nhân viên</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-utensils"></i> Quản lý món ăn
+                    </h5>
+                    <p class="card-text">Thêm, sửa, xóa các món ăn trong thực đơn</p>
+                    <a asp-controller="MonAn" asp-action="Index" class="btn btn-outline-primary">Quản lý món ăn</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thêm các chức năng khác -->
+    <div class="row mt-3">
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-list-alt"></i> Quản lý bước xử lý
+                    </h5>
+                    <p class="card-text">Cấu hình các bước trong quy trình xử lý đơn hàng</p>
+                    <a asp-controller="BuocXuLy" asp-action="Index" class="btn btn-outline-secondary">Quản lý bước xử
+                        lý</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-user-tie"></i> Quản lý nhân viên
+                    </h5>
+                    <p class="card-text">Quản lý thông tin nhân viên và phân quyền</p>
+                    <a asp-controller="NhanVien" asp-action="Index" class="btn btn-outline-secondary">Quản lý nhân
                         viên</a>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card">
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title">
-                        <i class="bi bi-egg-fried"></i> Quản lý món ăn
+                        <i class="fas fa-history"></i> Lịch sử thực hiện
                     </h5>
-                    <p class="card-text">Thêm, sửa, xóa các món ăn trong thực đơn</p>
-                    <a asp-controller="MonAn" asp-action="Index" class="btn btn-primary">Quản lý món ăn</a>
+                    <p class="card-text">Theo dõi tiến độ xử lý đơn hàng</p>
+                    <a asp-controller="LichSuThucHien" asp-action="Index" class="btn btn-outline-secondary">Xem lịch
+                        sử</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-cogs"></i> Cài đặt hệ thống
+                    </h5>
+                    <p class="card-text">Cấu hình và thiết lập hệ thống</p>
+                    <a href="#" class="btn btn-outline-secondary">Cài đặt</a>
                 </div>
             </div>
         </div>

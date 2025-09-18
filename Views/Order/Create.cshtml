@@ -1,0 +1,290 @@
+@model BTL.Web.Models.OrderCreateViewModel
+
+@{
+    ViewData["Title"] = "Tạo đơn hàng mới";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-plus-circle"></i>
+                        Tạo đơn hàng mới
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post" id="orderForm">
+                        <div class="row">
+                            <!-- Thông tin cơ bản -->
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title">Thông tin đơn hàng</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <!-- Loại đơn hàng -->
+                                        <div class="form-group mb-3">
+                                            <label class="form-label">Loại đơn hàng</label>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="LaMangVe" value="false" id="dineIn" checked>
+                                                <label class="form-check-label" for="dineIn">
+                                                    <i class="fas fa-utensils"></i> Ăn tại chỗ
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="LaMangVe" value="true" id="takeaway">
+                                                <label class="form-check-label" for="takeaway">
+                                                    <i class="fas fa-shopping-bag"></i> Mang về
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <!-- Bàn ăn (chỉ hiển thị khi ăn tại chỗ) -->
+                                        <div class="form-group mb-3" id="tableSection">
+                                            <label asp-for="BanId" class="form-label">Bàn ăn</label>
+                                            <select asp-for="BanId" class="form-select" id="banSelect">
+                                                <option value="">-- Chọn bàn --</option>
+                                                @if (ViewBag.AvailableTables != null)
+                                                {
+                                                            @foreach (var ban in (IEnumerable<BTL.Web.Models.BanAn>)ViewBag.AvailableTables)
+                                                            {
+                                                                        <option value="@ban.ban_id" data-capacity="@ban.LoaiBan?.suc_chua">
+                                                                            @ban.so_hieu (@ban.LoaiBan?.suc_chua người)
+                                                                        </option>
+                                                            }
+                                                }
+                                            </select>
+                                            <span asp-validation-for="BanId" class="text-danger"></span>
+                                        </div>
+
+                                        <!-- Số khách -->
+                                        <div class="form-group mb-3" id="customerCountSection">
+                                            <label asp-for="SoKhach" class="form-label">Số khách</label>
+                                            <input asp-for="SoKhach" class="form-control" type="number" min="1" max="20" />
+                                            <span asp-validation-for="SoKhach" class="text-danger"></span>
+                                        </div>
+
+                                        <!-- Thông tin khách hàng -->
+                                        <div class="form-group mb-3">
+                                            <label asp-for="KhachHangTen" class="form-label">Tên khách hàng</label>
+                                            <input asp-for="KhachHangTen" class="form-control" placeholder="Nhập tên khách hàng (tùy chọn)" />
+                                            <span asp-validation-for="KhachHangTen" class="text-danger"></span>
+                                        </div>
+
+                                        <div class="form-group mb-3">
+                                            <label asp-for="KhachHangSdt" class="form-label">Số điện thoại</label>
+                                            <input asp-for="KhachHangSdt" class="form-control" placeholder="Nhập số điện thoại (tùy chọn)" />
+                                            <span asp-validation-for="KhachHangSdt" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Danh sách món ăn -->
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h5 class="card-title mb-0">Danh sách món ăn</h5>
+                                        <button type="button" class="btn btn-sm btn-primary" onclick="addOrderItem()">
+                                            <i class="fas fa-plus"></i> Thêm món
+                                        </button>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="orderItemsContainer">
+                                            <!-- Order items sẽ được thêm động bằng JavaScript -->
+                                        </div>
+                                        <div class="text-center mt-3">
+                                            <button type="button" class="btn btn-primary" onclick="addOrderItem()">
+                                                <i class="fas fa-plus"></i> Thêm món ăn
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tóm tắt đơn hàng -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title">Tóm tắt đơn hàng</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="orderSummary">
+                                            <p class="text-muted">Chưa có món ăn nào được chọn</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nút submit -->
+                        <div class="row mt-4">
+                            <div class="col-12 text-center">
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="fas fa-check"></i> Tạo đơn hàng
+                                </button>
+                                <a asp-action="Index" class="btn btn-secondary btn-lg ms-2">
+                                    <i class="fas fa-times"></i> Hủy
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+                    <script>
+                let orderItemIndex = 0;
+                const monAnData = @Html.Raw(Json.Serialize(ViewBag.MonAn ?? new List<object>()));
+
+                        // Xử lý thay đổi loại đơn hàng
+                        $('input[name="LaMangVe"]').change(function() {
+                            const isTakeaway = $(this).val() === 'true';
+                            if (isTakeaway) {
+                                $('#tableSection').hide();
+                                $('#customerCountSection').hide();
+                                $('#banSelect').val('');
+                                $('#SoKhach').val('');
+                            } else {
+                                $('#tableSection').show();
+                                $('#customerCountSection').show();
+                            }
+                        });
+
+                        // Xử lý thay đổi bàn
+                        $('#banSelect').change(function() {
+                            const selectedOption = $(this).find('option:selected');
+                            const capacity = selectedOption.data('capacity');
+                            if (capacity) {
+                                $('#SoKhach').attr('max', capacity);
+                            }
+                        });
+
+                        // Thêm món ăn
+                        function addOrderItem() {
+                            const container = $('#orderItemsContainer');
+                            const itemHtml = `
+                                <div class="order-item mb-3 p-3 border rounded" data-index="${orderItemIndex}">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Món ăn</label>
+                                            <select name="OrderItems[${orderItemIndex}].MonId" class="form-select mon-select" required>
+                                                <option value="">-- Chọn món --</option>
+                                                ${monAnData.map(mon => 
+                                                    `<option value="${mon.mon_id}" data-price="${mon.gia}" data-name="${mon.ten_mon}" data-code="${mon.ma_mon}">
+                                                        ${mon.ma_mon} - ${mon.ten_mon} (${mon.gia.toLocaleString('vi-VN')} VNĐ)
+                                                    </option>`
+                                                ).join('')}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Số lượng</label>
+                                            <input type="number" name="OrderItems[${orderItemIndex}].SoLuong" class="form-control quantity-input" 
+                                                   min="1" max="10" value="1" required>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label">Thành tiền</label>
+                                            <input type="text" class="form-control total-price" readonly>
+                                        </div>
+                                        <div class="col-md-1">
+                                            <label class="form-label">&nbsp;</label>
+                                            <button type="button" class="btn btn-danger btn-sm w-100" onclick="removeOrderItem(${orderItemIndex})">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            container.append(itemHtml);
+                            orderItemIndex++;
+                            updateOrderSummary();
+                        }
+
+                        // Xóa món ăn
+                        function removeOrderItem(index) {
+                            $(`.order-item[data-index="${index}"]`).remove();
+                            updateOrderSummary();
+                        }
+
+                        // Cập nhật tổng tiền khi thay đổi món hoặc số lượng
+                        $(document).on('change', '.mon-select, .quantity-input', function() {
+                            const item = $(this).closest('.order-item');
+                            const monSelect = item.find('.mon-select');
+                            const quantityInput = item.find('.quantity-input');
+                            const totalPriceInput = item.find('.total-price');
+            
+                            const selectedOption = monSelect.find('option:selected');
+                            const price = parseFloat(selectedOption.data('price')) || 0;
+                            const quantity = parseInt(quantityInput.val()) || 0;
+                            const total = price * quantity;
+            
+                            totalPriceInput.val(total.toLocaleString('vi-VN') + ' VNĐ');
+                            updateOrderSummary();
+                        });
+
+                        // Cập nhật tóm tắt đơn hàng
+                        function updateOrderSummary() {
+                            let totalItems = 0;
+                            let totalAmount = 0;
+            
+                            $('.order-item').each(function() {
+                                const monSelect = $(this).find('.mon-select');
+                                const quantityInput = $(this).find('.quantity-input');
+                
+                                if (monSelect.val()) {
+                                    const selectedOption = monSelect.find('option:selected');
+                                    const price = parseFloat(selectedOption.data('price')) || 0;
+                                    const quantity = parseInt(quantityInput.val()) || 0;
+                    
+                                    totalItems += quantity;
+                                    totalAmount += price * quantity;
+                                }
+                            });
+            
+                            const summaryHtml = `
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <strong>Tổng số món:</strong> ${totalItems}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>Tổng tiền:</strong> <span class="text-success">${totalAmount.toLocaleString('vi-VN')} VNĐ</span>
+                                    </div>
+                                </div>
+                            `;
+            
+                            $('#orderSummary').html(summaryHtml);
+                        }
+
+                        // Thêm món đầu tiên khi load trang
+                        $(document).ready(function() {
+                            addOrderItem();
+                        });
+
+                        // Validation form
+                        $('#orderForm').submit(function(e) {
+                            const orderItems = $('.order-item').length;
+                            if (orderItems === 0) {
+                                e.preventDefault();
+                                alert('Vui lòng thêm ít nhất một món ăn');
+                                return false;
+                            }
+            
+                            const hasValidItems = $('.order-item').filter(function() {
+                                return $(this).find('.mon-select').val() && $(this).find('.quantity-input').val();
+                            }).length > 0;
+            
+                            if (!hasValidItems) {
+                                e.preventDefault();
+                                alert('Vui lòng chọn món ăn và số lượng hợp lệ');
+                                return false;
+                            }
+                        });
+                    </script>
+}

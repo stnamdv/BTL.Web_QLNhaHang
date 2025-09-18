@@ -50,6 +50,23 @@ namespace BTL.Web.Repositories
                 commandType: CommandType.StoredProcedure);
         }
 
+        public async Task<IEnumerable<dynamic>> GetAllActiveEmployeesAsync()
+        {
+            using var connection = _context.CreateConnection();
+            return await connection.QueryAsync<dynamic>(
+                "sp_PhanCongBuocXuLy_GetAllActiveEmployees",
+                commandType: CommandType.StoredProcedure);
+        }
+
+        public async Task<IEnumerable<dynamic>> GetNhanVienTheoLoaiBuocAsync(int buocId)
+        {
+            using var connection = _context.CreateConnection();
+            return await connection.QueryAsync<dynamic>(
+                "sp_PhanCongBuocXuLy_GetNhanVienTheoLoaiBuoc",
+                new { BuocId = buocId },
+                commandType: CommandType.StoredProcedure);
+        }
+
         public async Task<PhanCongBuocXuLy> CreateAsync(PhanCongBuocXuLy phanCong)
         {
             using var connection = _context.CreateConnection();

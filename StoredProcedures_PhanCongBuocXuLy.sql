@@ -286,3 +286,68 @@ BEGIN
     ORDER BY lnv.loai_nv;
 END
 GO
+
+-- =========================================================
+-- 8. sp_PhanCongBuocXuLy_GetAllActiveEmployees - Lấy tất cả nhân viên active
+-- =========================================================
+CREATE OR ALTER PROCEDURE dbo.sp_PhanCongBuocXuLy_GetAllActiveEmployees
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        nv.nv_id,
+        nv.ho_ten,
+        lnv.loai_nv,
+        nv.trang_thai
+    FROM dbo.NhanVien nv
+    JOIN dbo.LoaiNhanVien lnv ON nv.loai_nv_id = lnv.loai_nv_id
+    WHERE nv.trang_thai = 'ACTIVE'
+    ORDER BY lnv.loai_nv, nv.ho_ten;
+END
+GO
+
+-- =========================================================
+-- 9. sp_PhanCongBuocXuLy_GetNhanVienTheoLoaiBuoc - Lấy nhân viên theo loại nhân viên của bước
+-- =========================================================
+CREATE OR ALTER PROCEDURE dbo.sp_PhanCongBuocXuLy_GetNhanVienTheoLoaiBuoc
+    @BuocId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Lấy loại nhân viên được phân công cho bước này
+    DECLARE @LoaiNvId INT;
+    SELECT @LoaiNvId = loai_nv_id 
+    FROM dbo.PhanCongBuocXuLy 
+    WHERE buoc_id = @BuocId AND trang_thai = 'ACTIVE';
+    
+    -- Nếu có phân công, lấy nhân viên theo loại đó
+    IF @LoaiNvId IS NOT NULL
+    BEGIN
+        SELECT 
+            nv.nv_id,
+            nv.ho_ten,
+            lnv.loai_nv,
+            nv.trang_thai
+        FROM dbo.NhanVien nv
+        JOIN dbo.LoaiNhanVien lnv ON nv.loai_nv_id = lnv.loai_nv_id
+        WHERE nv.loai_nv_id = @LoaiNvId 
+          AND nv.trang_thai = 'ACTIVE'
+        ORDER BY nv.ho_ten;
+    END
+    ELSE
+    BEGIN
+        -- Nếu không có phân công, trả về tất cả nhân viên active
+        SELECT 
+            nv.nv_id,
+            nv.ho_ten,
+            lnv.loai_nv,
+            nv.trang_thai
+        FROM dbo.NhanVien nv
+        JOIN dbo.LoaiNhanVien lnv ON nv.loai_nv_id = lnv.loai_nv_id
+        WHERE nv.trang_thai = 'ACTIVE'
+        ORDER BY lnv.loai_nv, nv.ho_ten;
+    END
+END
+GO

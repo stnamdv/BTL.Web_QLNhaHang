@@ -1,0 +1,214 @@
+@model BTL.Web.Models.OrderWithDetails
+@{
+    ViewData["Title"] = "Quy trình xử lý đơn hàng";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/order-management.css" />
+}
+
+@section Scripts {
+    <script src="~/js/order-workflow.js"></script>
+}
+
+<div class="workflow-container">
+    <!-- Header -->
+    <div class="workflow-header">
+        <h1><i class="fas fa-tasks"></i> Quy trình xử lý đơn hàng</h1>
+        <div class="order-info">
+            <div class="info-item">
+                <i class="fas fa-hashtag"></i>
+                <span data-order-id="#@Model.order_id">Đơn hàng #@Model.order_id</span>
+            </div>
+            <div class="info-item">
+                <i class="fas fa-clock"></i>
+                <span data-order-time="@Model.thoi_diem_dat.ToString("dd/MM/yyyy HH:mm")">@Model.thoi_diem_dat.ToString("dd/MM/yyyy HH:mm")</span>
+            </div>
+            <div class="info-item">
+                <i class="fas fa-users"></i>
+                <span data-customer-count="@Model.so_khach khách">@Model.so_khach khách</span>
+            </div>
+            <div class="info-item">
+                <i class="fas fa-money-bill-wave"></i>
+                <span data-total-amount="@Model.tong_tien?.ToString("N0") VNĐ">@Model.tong_tien?.ToString("N0") VNĐ</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Details -->
+    <div class="order-details">
+        <h3><i class="fas fa-list-alt"></i> Chi tiết đơn hàng</h3>
+        <div class="order-summary">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="info-group">
+                        <h5><i class="fas fa-info-circle"></i> Thông tin đơn hàng</h5>
+                        <div class="info-item">
+                            <span class="label">Mã đơn hàng:</span>
+                            <span class="value">#@Model.order_id</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Thời gian đặt:</span>
+                            <span class="value">@Model.thoi_diem_dat.ToString("dd/MM/yyyy HH:mm")</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Loại đơn:</span>
+                            <span class="value">@(Model.la_mang_ve ? "Mang về" : "Ăn tại chỗ")</span>
+                        </div>
+                        @if (!Model.la_mang_ve && Model.BanAn != null)
+                        {
+                            <div class="info-item">
+                                <span class="label">Bàn:</span>
+                                <span class="value">@Model.BanAn.so_hieu (@Model.BanAn.LoaiBan.suc_chua chỗ)</span>
+                            </div>
+                        }
+                        <div class="info-item">
+                            <span class="label">Số khách:</span>
+                            <span class="value">@Model.so_khach</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-group">
+                        <h5><i class="fas fa-user"></i> Thông tin khách hàng</h5>
+                        <div class="info-item">
+                            <span class="label">Tên khách hàng:</span>
+                            <span class="value">@(Model.khach_hang_ten ?? "Khách vãng lai")</span>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.khach_hang_sdt))
+                        {
+                            <div class="info-item">
+                                <span class="label">Số điện thoại:</span>
+                                <span class="value">@Model.khach_hang_sdt</span>
+                            </div>
+                        }
+                        <div class="info-item">
+                            <span class="label">Tổng tiền:</span>
+                            <span class="value total-amount">@Model.tong_tien?.ToString("N0") VNĐ</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="order-items">
+            <h5><i class="fas fa-utensils"></i> Danh sách món ăn</h5>
+            @foreach (var item in Model.OrderItems)
+            {
+                <div class="order-item">
+                                    <div class="item-info">
+                                        <div class="item-name">@item.Mon.ten_mon</div>
+                                        <div class="item-quantity">Số lượng: @item.so_luong</div>
+                                        <div class="item-type">Loại: @item.Mon.loai_mon</div>
+                                    </div>
+                    <div class="item-price">@((item.so_luong * item.Mon.gia).ToString("N0")) VNĐ</div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Workflow Instructions -->
+    <div class="workflow-instructions">
+        <div class="alert alert-info">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-info-circle fa-2x me-3"></i>
+                <div>
+                    <h5 class="alert-heading mb-1">Hướng dẫn sử dụng quy trình</h5>
+                    <p class="mb-0">
+                        Quy trình xử lý đơn hàng bắt đầu từ bước đầu tiên. 
+                        Nhấn <strong>"Bắt đầu xử lý"</strong> ở bước đầu tiên để bắt đầu quy trình, 
+                        sau đó chọn nhân viên phù hợp để thực hiện từng bước.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="timeline-container">
+        <div class="timeline-line"></div>
+        
+        <!-- Processing Steps will be loaded here -->
+        <div id="processingSteps">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Đang tải quy trình xử lý...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Employee Selection Modal -->
+<div class="modal fade" id="employeeModal" tabindex="-1" aria-labelledby="employeeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="employeeModalLabel">
+                    <i class="fas fa-user-check"></i> Chọn nhân viên xử lý
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="employeeSelectionContent">
+                    <!-- Employee selection content will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" id="confirmEmployeeSelection">
+                    <i class="fas fa-check"></i> Xác nhận
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+    <!-- Toasts will be dynamically added here -->
+</div>
+
+<style>
+.step-completed-info {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.step-time-summary {
+    background-color: #ffffff;
+    border-radius: 6px;
+    padding: 10px;
+    border: 1px solid #dee2e6;
+}
+
+.step-time-summary .row {
+    margin: 0;
+}
+
+.step-time-summary .col-6 {
+    padding: 5px;
+}
+
+.step-employee-info {
+    background-color: #e3f2fd;
+    border: 1px solid #bbdefb;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.step-timer {
+    background-color: #fff3e0;
+    border: 1px solid #ffcc02;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.elapsed-time {
+    font-weight: bold;
+    color: #f57c00;
+}
+</style>

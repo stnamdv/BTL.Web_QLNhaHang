@@ -32,6 +32,16 @@ namespace BTL.Web.Services
             return await _repository.GetNhanVienChoBuocAsync(buocId);
         }
 
+        public async Task<IEnumerable<dynamic>> GetAllActiveEmployeesAsync()
+        {
+            return await _repository.GetAllActiveEmployeesAsync();
+        }
+
+        public async Task<IEnumerable<dynamic>> GetNhanVienTheoLoaiBuocAsync(int buocId)
+        {
+            return await _repository.GetNhanVienTheoLoaiBuocAsync(buocId);
+        }
+
         public async Task<PhanCongBuocXuLy> CreateAsync(PhanCongBuocXuLy phanCong)
         {
             return await _repository.CreateAsync(phanCong);

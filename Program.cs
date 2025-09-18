@@ -12,12 +12,13 @@ builder.Services.AddScoped<BTL.Web.Repositories.IBanAnRepository, BTL.Web.Reposi
 builder.Services.AddScoped<BTL.Web.Repositories.IMonRepository, BTL.Web.Repositories.MonRepository>();
 builder.Services.AddScoped<BTL.Web.Repositories.INguyenLieuRepository, BTL.Web.Repositories.NguyenLieuRepository>();
 builder.Services.AddScoped<BTL.Web.Repositories.INhaCungCapRepository, BTL.Web.Repositories.NhaCungCapRepository>();
-builder.Services.AddScoped<BTL.Web.Repositories.ILayoutRepository, BTL.Web.Repositories.LayoutRepository>();
 builder.Services.AddScoped<BTL.Web.Repositories.ILoaiNhanVienRepository, BTL.Web.Repositories.LoaiNhanVienRepository>();
 builder.Services.AddScoped<BTL.Web.Repositories.INhanVienRepository, BTL.Web.Repositories.NhanVienRepository>();
 builder.Services.AddScoped<BTL.Web.Repositories.IBuocXuLyRepository, BTL.Web.Repositories.BuocXuLyRepository>();
 builder.Services.AddScoped<BTL.Web.Repositories.IPhanCongBuocXuLyRepository, BTL.Web.Repositories.PhanCongBuocXuLyRepository>();
 builder.Services.AddScoped<BTL.Web.Repositories.ILichSuThucHienRepository, BTL.Web.Repositories.LichSuThucHienRepository>();
+builder.Services.AddScoped<BTL.Web.Repositories.IOrderReceptionRepository, BTL.Web.Repositories.OrderReceptionRepository>();
+builder.Services.AddScoped<BTL.Web.Repositories.IOrderRepository, BTL.Web.Repositories.OrderRepository>();
 
 // Register services
 builder.Services.AddScoped<BTL.Web.Services.ILoaiBanService, BTL.Web.Services.LoaiBanService>();
@@ -25,12 +26,13 @@ builder.Services.AddScoped<BTL.Web.Services.IMonService, BTL.Web.Services.MonSer
 builder.Services.AddScoped<BTL.Web.Services.INguyenLieuService, BTL.Web.Services.NguyenLieuService>();
 builder.Services.AddScoped<BTL.Web.Services.INhaCungCapService, BTL.Web.Services.NhaCungCapService>();
 builder.Services.AddScoped<BTL.Web.Services.IBanAnService, BTL.Web.Services.BanAnService>();
-builder.Services.AddScoped<BTL.Web.Services.ILayoutService, BTL.Web.Services.LayoutService>();
 builder.Services.AddScoped<BTL.Web.Services.ILoaiNhanVienService, BTL.Web.Services.LoaiNhanVienService>();
 builder.Services.AddScoped<BTL.Web.Services.INhanVienService, BTL.Web.Services.NhanVienService>();
 builder.Services.AddScoped<BTL.Web.Services.IBuocXuLyService, BTL.Web.Services.BuocXuLyService>();
 builder.Services.AddScoped<BTL.Web.Services.IPhanCongBuocXuLyService, BTL.Web.Services.PhanCongBuocXuLyService>();
 builder.Services.AddScoped<BTL.Web.Services.ILichSuThucHienService, BTL.Web.Services.LichSuThucHienService>();
+builder.Services.AddScoped<BTL.Web.Services.IOrderReceptionService, BTL.Web.Services.OrderReceptionService>();
+builder.Services.AddScoped<BTL.Web.Services.IOrderService, BTL.Web.Services.OrderService>();
 
 var app = builder.Build();
 

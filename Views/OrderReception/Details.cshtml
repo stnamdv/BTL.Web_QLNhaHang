@@ -1,0 +1,195 @@
+@model BTL.Web.Models.Order
+
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-receipt"></i>
+                        Chi tiết đơn hàng #@Model.order_id
+                    </h3>
+                    <div class="card-tools">
+                        <a href="@Url.Action("Index")" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">Thông tin đơn hàng</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><strong>Mã đơn hàng:</strong></td>
+                                            <td>#@Model.order_id</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Loại đơn hàng:</strong></td>
+                                            <td>
+                                                @if (Model.la_mang_ve)
+                                                {
+                                                                    <span class="badge badge-warning">
+                                                                        <i class="fas fa-shopping-bag"></i> Mang về
+                                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                                    <span class="badge badge-info">
+                                                                        <i class="fas fa-utensils"></i> Ăn tại chỗ
+                                                                    </span>
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Trạng thái:</strong></td>
+                                            <td>
+                                                <span class="badge badge-@(Model.trang_thai == "confirmed" ? "success" : "warning")">
+                                                    @Model.trang_thai
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Thời gian đặt:</strong></td>
+                                            <td>@Model.thoi_diem_dat.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                                        </tr>
+                                        @if (Model.tong_tien.HasValue)
+                                        {
+                                                            <tr>
+                                                                <td><strong>Tổng tiền:</strong></td>
+                                                                <td><strong class="text-success">@Model.tong_tien.Value.ToString("N0") VNĐ</strong></td>
+                                                            </tr>
+                                        }
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">Thông tin khách hàng & Bàn</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-borderless">
+                                        @if (Model.KhachHang != null)
+                                        {
+                                                            <tr>
+                                                                <td><strong>Tên khách hàng:</strong></td>
+                                                                <td>@Model.KhachHang.ho_ten</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><strong>Số điện thoại:</strong></td>
+                                                                <td>@Model.KhachHang.so_dien_thoai</td>
+                                                            </tr>
+                                        }
+                                        else
+                                        {
+                                                            <tr>
+                                                                <td><strong>Khách hàng:</strong></td>
+                                                                <td><span class="text-muted">Khách vãng lai</span></td>
+                                                            </tr>
+                                        }
+                                        @if (!Model.la_mang_ve && Model.BanAn != null)
+                                        {
+                                                            <tr>
+                                                                <td><strong>Bàn:</strong></td>
+                                                                <td>
+                                                                    <span class="badge badge-secondary">@Model.BanAn.so_hieu</span>
+                                                                    <small class="text-muted">(@Model.BanAn.LoaiBan.suc_chua người)</small>
+                                                                </td>
+                                                            </tr>
+                                        }
+                                        @if (Model.so_khach.HasValue)
+                                        {
+                                                            <tr>
+                                                                <td><strong>Số khách:</strong></td>
+                                                                <td><span class="badge badge-primary">@Model.so_khach người</span></td>
+                                                            </tr>
+                                        }
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">Danh sách món ăn</h5>
+                                </div>
+                                <div class="card-body">
+                                    @if (Model.OrderItems != null && Model.OrderItems.Any())
+                                    {
+                                                        <div class="table-responsive">
+                                                            <table class="table table-bordered">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>Mã món</th>
+                                                                        <th>Tên món</th>
+                                                                        <th>Loại</th>
+                                                                        <th>Số lượng</th>
+                                                                        <th>Giá</th>
+                                                                        <th>Thành tiền</th>
+                                                                        <th>Thời gian đặt</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    @foreach (var item in Model.OrderItems)
+                                                                    {
+                                                                                        <tr>
+                                                                                            <td>@item.Mon.ma_mon</td>
+                                                                                            <td>@item.Mon.ten_mon</td>
+                                                                                            <td>
+                                                                                                <span class="badge badge-secondary">@item.Mon.loai_mon</span>
+                                                                                            </td>
+                                                                                            <td>@item.so_luong</td>
+                                                                                            <td>@item.Mon.gia.ToString("N0") VNĐ</td>
+                                                                                            <td><strong>@((item.so_luong * item.Mon.gia).ToString("N0")) VNĐ</strong></td>
+                                                                                            <td>@item.t_dat.ToString("HH:mm:ss")</td>
+                                                                                        </tr>
+                                                                    }
+                                                                </tbody>
+                                                                <tfoot>
+                                                                    <tr class="table-success">
+                                                                        <th colspan="5">Tổng cộng:</th>
+                                                                        <th>@Model.OrderItems.Sum(x => x.so_luong * x.Mon.gia).ToString("N0") VNĐ</th>
+                                                                        <th></th>
+                                                                    </tr>
+                                                                </tfoot>
+                                                            </table>
+                                                        </div>
+                                    }
+                                    else
+                                    {
+                                                        <div class="alert alert-warning">
+                                                            <i class="fas fa-exclamation-triangle"></i>
+                                                            Đơn hàng không có món ăn nào.
+                                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                Lịch sử xử lý sẽ được hiển thị sau khi đơn hàng được tiếp nhận.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

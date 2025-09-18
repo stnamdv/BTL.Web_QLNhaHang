@@ -19,5 +19,7 @@ namespace BTL.Web.Services
         Task<IEnumerable<LichSuThucHienWithDetails>> GetDangXuLyAsync();
         Task<IEnumerable<LichSuThucHienWithDetails>> GetChoXuLyAsync(int nvId);
         Task<IEnumerable<dynamic>> GetNhanVienChoBuocAsync(int buocId);
+        Task<IEnumerable<LichSuThucHienWithDetails>> GetByOrderAsync(int orderId);
+        Task<bool> UpdateStepStatusAsync(int orderId, int stepId, int employeeId, string action);
     }
 }

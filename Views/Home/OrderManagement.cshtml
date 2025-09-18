@@ -1,0 +1,108 @@
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/order-management.css" />
+}
+
+@section Scripts {
+    <script src="~/js/order-management.js"></script>
+}
+
+
+<div class="step-container">
+    <div class="step-header">
+        <h1><i class="fas fa-clipboard-list"></i> Quản lý đơn hàng</h1>
+        <p>Quy trình tích hợp tạo đơn hàng và tiếp nhận xử lý</p>
+    </div>
+
+    <div class="step-tabs">
+        <button class="step-tab active" data-step="create">
+            <i class="fas fa-plus-circle"></i> Tạo đơn hàng
+        </button>
+    </div>
+
+    <div class="step-content">
+        <!-- Step 1: Tạo đơn hàng -->
+        <div class="step-panel active" id="create-panel">
+            <form id="createOrderForm">
+                @Html.AntiForgeryToken()
+                <div class="form-section">
+                    <h4><i class="fas fa-info-circle"></i> Thông tin cơ bản</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="orderType">Loại đơn hàng</label>
+                            <select id="orderType" name="LaMangVe" class="form-control" required>
+                                <option value="false">Ăn tại chỗ</option>
+                                <option value="true">Mang về</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="tableGroup">
+                            <label for="tableId">Bàn ăn <span class="text-danger">*</span></label>
+                            <select id="tableId" name="BanId" class="form-control" required>
+                                <option value="">Chọn bàn</option>
+                                @foreach (var table in ViewBag.AvailableTables as IEnumerable<BanAn>)
+                                {
+                                    <option value="@table.ban_id" data-capacity="@table.LoaiBan?.suc_chua">
+                                        Bàn @table.so_hieu - Sức chứa: @table.LoaiBan?.suc_chua
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="customerCount">Số khách <span class="text-danger">*</span></label>
+                            <input type="number" id="customerCount" name="SoKhach" class="form-control" min="1" max="20"
+                                required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customerName">Tên khách hàng</label>
+                            <input type="text" id="customerName" name="KhachHangTen" class="form-control"
+                                maxlength="120">
+                        </div>
+                        <div class="form-group">
+                            <label for="customerPhone">Số điện thoại</label>
+                            <input type="tel" id="customerPhone" name="KhachHangSdt" class="form-control"
+                                maxlength="20">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4><i class="fas fa-utensils"></i> Chọn món ăn</h4>
+                    <div class="menu-grid" id="menuGrid">
+                        @foreach (var mon in ViewBag.MonAn as IEnumerable<Mon>)
+                        {
+                            <div class="menu-item" data-mon-id="@mon.mon_id" data-price="@mon.gia">
+                                <h6>@mon.ten_mon</h6>
+                                <p class="text-muted">@mon.ma_mon</p>
+                                <p class="price">@mon.gia.ToString("N0") VNĐ</p>
+                                <div class="quantity-controls">
+                                    <button type="button" class="quantity-btn"
+                                        onclick="decreaseQuantity(@mon.mon_id)">-</button>
+                                    <input type="number" class="quantity-input" id="qty-@mon.mon_id" value="0" min="0"
+                                        max="10">
+                                    <button type="button" class="quantity-btn"
+                                        onclick="increaseQuantity(@mon.mon_id)">+</button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Tổng tiền:</strong> <span id="totalAmount">0</span> VNĐ
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check"></i> Tạo đơn hàng
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>

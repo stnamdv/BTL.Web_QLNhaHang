@@ -152,5 +152,125 @@ namespace BTL.Web.Repositories
                 new { id });
             return count > 0;
         }
+
+        public async Task<IEnumerable<LichSuThucHienWithDetails>> GetByOrderAsync(int orderId)
+        {
+            using var connection = _context.CreateConnection();
+            return await connection.QueryAsync<LichSuThucHienWithDetails>(
+                "sp_LichSuThucHien_GetByOrder",
+                new { OrderId = orderId },
+                commandType: CommandType.StoredProcedure);
+        }
+
+        public async Task<IEnumerable<OrderItem>> GetOrderItemsByOrderIdAsync(int orderId)
+        {
+            using var connection = _context.CreateConnection();
+            return await connection.QueryAsync<OrderItem>(
+                "SELECT * FROM dbo.OrderItem WHERE order_id = @orderId",
+                new { orderId });
+        }
+
+        public async Task<bool> StartStepForOrderItemAsync(int orderItemId, int stepId, int employeeId)
+        {
+            try
+            {
+                using var connection = _context.CreateConnection();
+
+                // Check if LichSuThucHien already exists for this order item and step
+                var existing = await connection.QuerySingleOrDefaultAsync<int>(
+                    "SELECT COUNT(*) FROM dbo.LichSuThucHien WHERE order_item_id = @orderItemId AND buoc_id = @stepId",
+                    new { orderItemId, stepId });
+
+                if (existing > 0)
+                {
+                    // Update existing record
+                    await connection.ExecuteAsync(
+                        "UPDATE dbo.LichSuThucHien SET nv_id = @employeeId, trang_thai = @status, thoi_diem_bat_dau = @startTime WHERE order_item_id = @orderItemId AND buoc_id = @stepId",
+                        new
+                        {
+                            employeeId,
+                            status = TrangThaiThucHien.DANG_THUC_HIEN,
+                            startTime = DateTime.Now,
+                            orderItemId,
+                            stepId
+                        });
+                }
+                else
+                {
+                    // Create new record
+                    await connection.ExecuteAsync(
+                        "INSERT INTO dbo.LichSuThucHien (order_item_id, buoc_id, nv_id, trang_thai, thoi_diem_bat_dau, thoi_diem_tao) VALUES (@orderItemId, @stepId, @employeeId, @status, @startTime, @createTime)",
+                        new
+                        {
+                            orderItemId,
+                            stepId,
+                            employeeId,
+                            status = TrangThaiThucHien.DANG_THUC_HIEN,
+                            startTime = DateTime.Now,
+                            createTime = DateTime.Now
+                        });
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in StartStepForOrderItemAsync: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<bool> CompleteStepForOrderItemAsync(int orderItemId, int stepId, int employeeId)
+        {
+            try
+            {
+                using var connection = _context.CreateConnection();
+
+                // Update the existing record to mark as completed
+                var rowsAffected = await connection.ExecuteAsync(
+                    "UPDATE dbo.LichSuThucHien SET trang_thai = @status, thoi_diem_ket_thuc = @endTime WHERE order_item_id = @orderItemId AND buoc_id = @stepId AND nv_id = @employeeId",
+                    new
+                    {
+                        status = TrangThaiThucHien.HOAN_THANH,
+                        endTime = DateTime.Now,
+                        orderItemId,
+                        stepId,
+                        employeeId
+                    });
+
+                return rowsAffected > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in CompleteStepForOrderItemAsync: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<bool> UpdateStepStatusForOrderAsync(int orderId, int stepId, int employeeId, string action)
+        {
+            try
+            {
+                using var connection = _context.CreateConnection();
+
+                var result = await connection.QuerySingleOrDefaultAsync<int>(
+                    "sp_LichSuThucHien_UpdateStepStatus",
+                    new
+                    {
+                        OrderId = orderId,
+                        StepId = stepId,
+                        EmployeeId = employeeId,
+                        Action = action
+                    },
+                    commandType: CommandType.StoredProcedure);
+
+                return result == 1;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in UpdateStepStatusForOrderAsync: {ex.Message}");
+                return false;
+            }
+        }
     }
 }
