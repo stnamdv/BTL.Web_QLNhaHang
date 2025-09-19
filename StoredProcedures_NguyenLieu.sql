@@ -13,6 +13,7 @@ CREATE OR ALTER PROCEDURE dbo.sp_NguyenLieu_Create
     @Ten NVARCHAR(160),
     @DonVi NVARCHAR(20),
     @NguonGoc NVARCHAR(MAX),
+    @GiaNhap DECIMAL(18,2),
     @NccId INT,
     @NlId INT OUTPUT
 AS
@@ -61,9 +62,25 @@ BEGIN
             RETURN;
         END
         
+        -- Validation 6: Kiểm tra giá nhập phải dương
+        IF @GiaNhap <= 0
+        BEGIN
+            RAISERROR(N'Giá nhập nguyên liệu phải lớn hơn 0.', 16, 1);
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+        
+        -- Validation 7: Kiểm tra nhà cung cấp có tồn tại không
+        IF NOT EXISTS (SELECT 1 FROM dbo.NhaCungCap WHERE ncc_id = @NccId)
+        BEGIN
+            RAISERROR(N'Nhà cung cấp không tồn tại.', 16, 1);
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+        
         -- Tạo nguyên liệu mới
-        INSERT INTO dbo.NguyenLieu (ten, don_vi, nguon_goc, ncc_id)
-        VALUES (@Ten, @DonVi, @NguonGoc, @NccId);
+        INSERT INTO dbo.NguyenLieu (ten, don_vi, nguon_goc, gia_nhap, ncc_id)
+        VALUES (@Ten, @DonVi, @NguonGoc, @GiaNhap, @NccId);
         
         SET @NlId = SCOPE_IDENTITY();
         
@@ -85,6 +102,7 @@ CREATE OR ALTER PROCEDURE dbo.sp_NguyenLieu_Update
     @Ten NVARCHAR(160),
     @DonVi NVARCHAR(20),
     @NguonGoc NVARCHAR(MAX),
+    @GiaNhap DECIMAL(18,2),
     @NccId INT
 AS
 BEGIN
@@ -140,7 +158,15 @@ BEGIN
             RETURN;
         END
         
-        -- Validation 7: Kiểm tra nhà cung cấp có tồn tại không
+        -- Validation 7: Kiểm tra giá nhập phải dương
+        IF @GiaNhap <= 0
+        BEGIN
+            RAISERROR(N'Giá nhập nguyên liệu phải lớn hơn 0.', 16, 1);
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+        
+        -- Validation 8: Kiểm tra nhà cung cấp có tồn tại không
         IF NOT EXISTS (SELECT 1 FROM dbo.NhaCungCap WHERE ncc_id = @NccId)
         BEGIN
             RAISERROR(N'Nhà cung cấp không tồn tại.', 16, 1);
@@ -148,7 +174,7 @@ BEGIN
             RETURN;
         END
         
-        -- Validation 7: Kiểm tra nguyên liệu có đang được sử dụng trong công thức không
+        -- Validation 9: Kiểm tra nguyên liệu có đang được sử dụng trong công thức không
         IF EXISTS (SELECT 1 FROM dbo.CongThuc WHERE nl_id = @NlId)
         BEGIN
             RAISERROR(N'Không thể cập nhật nguyên liệu đang được sử dụng trong công thức món ăn.', 16, 1);
@@ -161,6 +187,7 @@ BEGIN
         SET ten = @Ten,
             don_vi = @DonVi,
             nguon_goc = @NguonGoc,
+            gia_nhap = @GiaNhap,
             ncc_id = @NccId
         WHERE nl_id = @NlId;
         
@@ -201,14 +228,6 @@ BEGIN
             RETURN;
         END
         
-        -- Validation 3: Kiểm tra nguyên liệu có trong phiếu nhập không
-        IF EXISTS (SELECT 1 FROM dbo.NL_NCC WHERE nl_id = @NlId)
-        BEGIN
-            RAISERROR(N'Không thể xóa nguyên liệu đã có lịch sử nhập kho.', 16, 1);
-            ROLLBACK TRANSACTION;
-            RETURN;
-        END
-        
         -- Xóa nguyên liệu
         DELETE FROM dbo.NguyenLieu WHERE nl_id = @NlId;
         
@@ -244,6 +263,7 @@ BEGIN
         nl.ten,
         nl.don_vi,
         nl.nguon_goc,
+        nl.gia_nhap,
         nl.ncc_id,
         ncc.ten AS ncc_ten,
         ncc.dia_chi AS ncc_dia_chi,
@@ -282,18 +302,14 @@ BEGIN
             nl.nl_id,
             nl.ten,
             nl.don_vi,
+            nl.gia_nhap,
             nl.ncc_id,
             ncc.ten AS ncc_ten,
-            COUNT(DISTINCT ct.mon_id) AS so_mon_su_dung,
-            COUNT(DISTINCT nl_ncc.phieu_nhap_id) AS so_lan_nhap,
-            ISNULL(SUM(nl_ncc.so_luong), 0) AS tong_so_luong_nhap,
-            ISNULL(AVG(nl_ncc.don_gia), 0) AS gia_trung_binh,
-            MAX(nl_ncc.ngay_nhap) AS lan_nhap_cuoi
+            COUNT(DISTINCT ct.mon_id) AS so_mon_su_dung
         FROM dbo.NguyenLieu nl
         JOIN dbo.NhaCungCap ncc ON ncc.ncc_id = nl.ncc_id
         LEFT JOIN dbo.CongThuc ct ON ct.nl_id = nl.nl_id
-        LEFT JOIN dbo.NL_NCC nl_ncc ON nl_ncc.nl_id = nl.nl_id
-        GROUP BY nl.nl_id, nl.ten, nl.don_vi, nl.ncc_id, ncc.ten
+        GROUP BY nl.nl_id, nl.ten, nl.don_vi, nl.gia_nhap, nl.ncc_id, ncc.ten
         ORDER BY so_mon_su_dung DESC, nl.ten;
     END
     ELSE
@@ -311,22 +327,17 @@ BEGIN
             nl.ten,
             nl.don_vi,
             nl.nguon_goc,
+            nl.gia_nhap,
             nl.ncc_id,
             ncc.ten AS ncc_ten,
             ncc.dia_chi AS ncc_dia_chi,
             ncc.sdt AS ncc_sdt,
-            COUNT(DISTINCT ct.mon_id) AS so_mon_su_dung,
-            COUNT(DISTINCT nl_ncc.phieu_nhap_id) AS so_lan_nhap,
-            ISNULL(SUM(nl_ncc.so_luong), 0) AS tong_so_luong_nhap,
-            ISNULL(AVG(nl_ncc.don_gia), 0) AS gia_trung_binh,
-            MAX(nl_ncc.ngay_nhap) AS lan_nhap_cuoi,
-            MIN(nl_ncc.ngay_nhap) AS lan_nhap_dau
+            COUNT(DISTINCT ct.mon_id) AS so_mon_su_dung
         FROM dbo.NguyenLieu nl
         JOIN dbo.NhaCungCap ncc ON ncc.ncc_id = nl.ncc_id
         LEFT JOIN dbo.CongThuc ct ON ct.nl_id = nl.nl_id
-        LEFT JOIN dbo.NL_NCC nl_ncc ON nl_ncc.nl_id = nl.nl_id
         WHERE nl.nl_id = @NlId
-        GROUP BY nl.nl_id, nl.ten, nl.don_vi, nl.nguon_goc, nl.ncc_id, ncc.ten, ncc.dia_chi, ncc.sdt;
+        GROUP BY nl.nl_id, nl.ten, nl.don_vi, nl.nguon_goc, nl.gia_nhap, nl.ncc_id, ncc.ten, ncc.dia_chi, ncc.sdt;
         
         -- Danh sách món sử dụng nguyên liệu này
         SELECT 
@@ -372,6 +383,7 @@ BEGIN
         nl.ten,
         nl.don_vi,
         nl.nguon_goc,
+        nl.gia_nhap,
         nl.ncc_id,
         ncc.ten AS ncc_ten,
         COUNT(DISTINCT ct.mon_id) AS so_mon_su_dung
@@ -381,7 +393,7 @@ BEGIN
     WHERE (@SearchTerm IS NULL OR nl.ten LIKE N'%' + @SearchTerm + N'%')
       AND (@DonVi IS NULL OR nl.don_vi = @DonVi)
       AND (@NguonGoc IS NULL OR nl.nguon_goc LIKE N'%' + @NguonGoc + N'%')
-    GROUP BY nl.nl_id, nl.ten, nl.don_vi, nl.nguon_goc, nl.ncc_id, ncc.ten
+    GROUP BY nl.nl_id, nl.ten, nl.don_vi, nl.nguon_goc, nl.gia_nhap, nl.ncc_id, ncc.ten
     ORDER BY nl.ten
     OFFSET @Offset ROWS
     FETCH NEXT @PageSize ROWS ONLY;
@@ -462,22 +474,17 @@ BEGIN
         nl.ten,
         nl.don_vi,
         nl.nguon_goc,
+        nl.gia_nhap,
         nl.ncc_id,
         ncc.ten AS ncc_ten,
         ncc.dia_chi AS ncc_dia_chi,
         ncc.sdt AS ncc_sdt,
-        COUNT(DISTINCT ct.mon_id) AS so_mon_su_dung,
-        COUNT(DISTINCT nl_ncc.phieu_nhap_id) AS so_lan_nhap,
-        ISNULL(SUM(nl_ncc.so_luong), 0) AS tong_so_luong_nhap,
-        ISNULL(AVG(nl_ncc.don_gia), 0) AS gia_trung_binh,
-        MAX(nl_ncc.ngay_nhap) AS lan_nhap_cuoi,
-        MIN(nl_ncc.ngay_nhap) AS lan_nhap_dau
+        COUNT(DISTINCT ct.mon_id) AS so_mon_su_dung
     FROM dbo.NguyenLieu nl
     JOIN dbo.NhaCungCap ncc ON ncc.ncc_id = nl.ncc_id
     LEFT JOIN dbo.CongThuc ct ON ct.nl_id = nl.nl_id
-    LEFT JOIN dbo.NL_NCC nl_ncc ON nl_ncc.nl_id = nl.nl_id
     WHERE (@SearchTerm IS NULL OR nl.ten LIKE N'%' + @SearchTerm + N'%')
-    GROUP BY nl.nl_id, nl.ten, nl.don_vi, nl.nguon_goc, nl.ncc_id, ncc.ten, ncc.dia_chi, ncc.sdt
+    GROUP BY nl.nl_id, nl.ten, nl.don_vi, nl.nguon_goc, nl.gia_nhap, nl.ncc_id, ncc.ten, ncc.dia_chi, ncc.sdt
     ORDER BY nl.ten
     OFFSET @Offset ROWS
     FETCH NEXT @PageSize ROWS ONLY;

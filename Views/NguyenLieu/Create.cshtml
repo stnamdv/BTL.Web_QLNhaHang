@@ -64,6 +64,18 @@
                                         </div>
 
                                         <div class="mb-3">
+                                            <label asp-for="gia_nhap" class="form-label">Giá nhập <span
+                                                    class="text-danger">*</span></label>
+                                            <div class="input-group">
+                                                <input asp-for="gia_nhap" class="form-control" type="number" step="0.01"
+                                                    min="0" required />
+                                                <span class="input-group-text">VNĐ</span>
+                                            </div>
+                                            <span asp-validation-for="gia_nhap" class="text-danger"></span>
+                                            <div class="form-text">Giá nhập nguyên liệu (phải lớn hơn 0)</div>
+                                        </div>
+
+                                        <div class="mb-3">
                                             <label asp-for="ncc_id" class="form-label">Nhà cung cấp <span
                                                     class="text-danger">*</span></label>
                                             <select asp-for="ncc_id" class="form-select" required>
@@ -120,6 +132,13 @@
                                             <li>Chọn đơn vị phù hợp</li>
                                             <li>Ví dụ: kg, g, l, ml</li>
                                             <li>Tối đa 20 ký tự</li>
+                                        </ul>
+
+                                        <h6 class="text-primary">Giá nhập:</h6>
+                                        <ul class="small">
+                                            <li>Giá nhập nguyên liệu</li>
+                                            <li>Phải lớn hơn 0</li>
+                                            <li>Đơn vị: VNĐ</li>
                                         </ul>
 
                                         <h6 class="text-primary">Nhà cung cấp:</h6>
@@ -203,12 +222,19 @@
             $('#createForm').submit(function (e) {
                 const ten = $('#ten').val().trim();
                 const donVi = $('#don_vi').val().trim();
+                const giaNhap = $('#gia_nhap').val();
                 const nccId = $('#ncc_id').val();
                 const nguonGoc = $('#nguon_goc').val().trim();
 
-                if (!ten || !donVi || !nccId || !nguonGoc) {
+                if (!ten || !donVi || !giaNhap || !nccId || !nguonGoc) {
                     e.preventDefault();
                     alert('Vui lòng điền đầy đủ thông tin bắt buộc');
+                    return false;
+                }
+
+                if (parseFloat(giaNhap) <= 0) {
+                    e.preventDefault();
+                    alert('Giá nhập phải lớn hơn 0');
                     return false;
                 }
 

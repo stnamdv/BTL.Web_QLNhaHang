@@ -103,6 +103,7 @@ namespace BTL.Web.Repositories
             parameters.Add("@Ten", nguyenLieu.ten);
             parameters.Add("@DonVi", nguyenLieu.don_vi);
             parameters.Add("@NguonGoc", nguyenLieu.nguon_goc);
+            parameters.Add("@GiaNhap", nguyenLieu.gia_nhap);
             parameters.Add("@NccId", nguyenLieu.ncc_id);
             parameters.Add("@NlId", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
@@ -126,6 +127,7 @@ namespace BTL.Web.Repositories
             parameters.Add("@Ten", nguyenLieu.ten);
             parameters.Add("@DonVi", nguyenLieu.don_vi);
             parameters.Add("@NguonGoc", nguyenLieu.nguon_goc);
+            parameters.Add("@GiaNhap", nguyenLieu.gia_nhap);
             parameters.Add("@NccId", nguyenLieu.ncc_id);
 
             await connection.ExecuteAsync(
@@ -194,16 +196,6 @@ namespace BTL.Web.Repositories
             if (congThucCount > 0)
             {
                 return (false, "Không thể xóa nguyên liệu đang được sử dụng trong công thức món ăn.");
-            }
-
-            // Kiểm tra nguyên liệu có trong phiếu nhập không
-            var phieuNhapCount = await connection.QuerySingleAsync<int>(
-                "SELECT COUNT(*) FROM dbo.NL_NCC WHERE nl_id = @id",
-                new { id });
-
-            if (phieuNhapCount > 0)
-            {
-                return (false, "Không thể xóa nguyên liệu đã có lịch sử nhập kho.");
             }
 
             return (true, string.Empty);

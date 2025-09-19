@@ -62,6 +62,7 @@
                                     <tr>
                                         <th>Tên nguyên liệu</th>
                                         <th>Đơn vị</th>
+                                        <th>Giá nhập</th>
                                         <th>Nhà cung cấp</th>
                                         <th>Nguồn gốc</th>
                                         <th class="text-center">Thao tác</th>
@@ -76,6 +77,11 @@
                                             </td>
                                             <td>
                                                 <span class="badge bg-secondary">@item.don_vi</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-success">
+                                                    @item.gia_nhap.ToString("N0") VNĐ
+                                                </span>
                                             </td>
                                             <td>
                                                 <div class="d-flex flex-column">

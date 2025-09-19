@@ -144,18 +144,6 @@ namespace BTL.Web.Repositories
 
         public async Task<(bool can_delete, string message)> CanDeleteAsync(int id)
         {
-            using var connection = _context.CreateConnection();
-
-            // Kiểm tra nhà cung cấp có trong phiếu nhập không
-            var phieuNhapCount = await connection.QuerySingleAsync<int>(
-                "SELECT COUNT(*) FROM dbo.NL_NCC WHERE ncc_id = @id",
-                new { id });
-
-            if (phieuNhapCount > 0)
-            {
-                return (false, "Không thể xóa nhà cung cấp đã có lịch sử cung cấp nguyên liệu.");
-            }
-
             return (true, string.Empty);
         }
 

@@ -255,6 +255,12 @@ namespace BTL.Web.Services
                 throw new ArgumentException("Đơn vị không được vượt quá 20 ký tự");
             }
 
+            // Validate giá nhập
+            if (nguyenLieu.gia_nhap <= 0)
+            {
+                throw new ArgumentException("Giá nhập nguyên liệu phải lớn hơn 0");
+            }
+
             // Validate nguồn gốc (yêu cầu nghiệp vụ)
             var (isValid, errorMessage) = await ValidateNguonGocAsync(nguyenLieu.nguon_goc);
             if (!isValid)

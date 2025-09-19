@@ -353,13 +353,8 @@ BEGIN
         nl.don_vi,
         nl.nguon_goc,
         ct.dinh_luong,
-        -- Tính tổng giá trị nguyên liệu (nếu có thông tin nhập kho)
-        ISNULL((
-            SELECT TOP 1 nl_ncc.don_gia 
-            FROM dbo.NL_NCC nl_ncc 
-            WHERE nl_ncc.nl_id = nl.nl_id 
-            ORDER BY nl_ncc.ngay_nhap DESC
-        ), 0) AS gia_nguyen_lieu
+        -- Lấy giá nhập nguyên liệu
+        nl.gia_nhap AS gia_nguyen_lieu
     FROM dbo.CongThuc ct
     JOIN dbo.NguyenLieu nl ON nl.nl_id = ct.nl_id
     WHERE ct.mon_id = @MonId

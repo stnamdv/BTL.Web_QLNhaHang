@@ -17,7 +17,5 @@ namespace BTL.Web.Models
         [StringLength(20)]
         public string? sdt { get; set; }
 
-        // Navigation properties
-        public virtual ICollection<NlNcc> NlNccs { get; set; } = new List<NlNcc>();
     }
 }
