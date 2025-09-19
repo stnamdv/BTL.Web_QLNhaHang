@@ -1,4 +1,4 @@
-@model List<BTL.Web.Models.ThongKeNhaCungCap>
+@model List<BTL.Web.Models.ThongKeNhaCungCapNguyenLieu>
 @{
     ViewData["Title"] = "Thống kê Nhà cung cấp";
     var danhSachNhaCungCap = ViewBag.DanhSachNhaCungCap as List<BTL.Web.Models.NhaCungCap>;
@@ -90,16 +90,8 @@
                                             <tr>
                                                 <th>STT</th>
                                                 <th>Nhà cung cấp</th>
-                                                <th>Địa chỉ</th>
-                                                <th>SĐT</th>
-                                                <th>Số NL</th>
-                                                <th>Số món</th>
-                                                <th>Lượng theo đơn vị</th>
-                                                <th>Giá trị sử dụng (VNĐ)</th>
-                                                <th>Số đơn hàng</th>
-                                                <th>Số món đặt</th>
-                                                <th>TB lượng/NL (kg)</th>
-                                                <th>TB lượng/Món (kg)</th>
+                                                <th>Đơn vị</th>
+                                                <th>Tổng sử dụng</th>
                                                 <th>Thao tác</th>
                                             </tr>
                                         </thead>
@@ -112,59 +104,15 @@
                                                         <tr>
                                                             <td>@stt</td>
                                                             <td>
-                                                                <strong>@item.ten_nha_cung_cap</strong>
-                                                            </td>
-                                                            <td>@(item.dia_chi ?? "N/A")</td>
-                                                            <td>@(item.sdt ?? "N/A")</td>
-                                                            <td>
-                                                                <span class="badge badge-info">@item.tong_so_nguyen_lieu</span>
+                                                                <strong>@item.ten</strong>
                                                             </td>
                                                             <td>
-                                                                <span class="badge badge-success">@item.tong_so_mon_su_dung</span>
-                                                            </td>
-                                                            <td>
-                                                                @if (item.LuongTheoDonVi != null && item.LuongTheoDonVi.Any())
-                                                                {
-                                                                    <div class="d-flex flex-wrap gap-1">
-                                                                        @foreach (var luong in item.LuongTheoDonVi.Take(3))
-                                                                        {
-                                                                            <span class="badge badge-info">
-                                                                                @luong.tong_luong_theo_don_vi.ToString("N2") @luong.don_vi
-                                                                            </span>
-                                                                        }
-                                                                        @if (item.LuongTheoDonVi.Count > 3)
-                                                                        {
-                                                                            <span class="badge badge-secondary">
-                                                                                +@(item.LuongTheoDonVi.Count - 3) đơn vị khác
-                                                                            </span>
-                                                                        }
-                                                                    </div>
-                                                                }
-                                                                else
-                                                                {
-                                                                    <span class="text-muted">-</span>
-                                                                }
+                                                                <span class="badge badge-info">@item.don_vi</span>
                                                             </td>
                                                             <td>
                                                                 <span class="text-success font-weight-bold">
-                                                                    @item.tong_gia_tri_su_dung.ToString("N0") VNĐ
+                                                                    @item.tong_su_dung.ToString("N2")
                                                                 </span>
-                                                            </td>
-                                                            <td>
-                                                                <span class="badge badge-warning">@item.tong_so_don_hang</span>
-                                                            </td>
-                                                            <td>
-                                                                <span class="badge badge-secondary">@item.tong_so_mon_duoc_dat</span>
-                                                            </td>
-                                                            <td>
-                                                                <small class="text-muted">
-                                                                    @item.trung_binh_luong_su_dung_per_nguyen_lieu.ToString("N2") kg
-                                                                </small>
-                                                            </td>
-                                                            <td>
-                                                                <small class="text-muted">
-                                                                    @item.trung_binh_luong_su_dung_per_mon.ToString("N2") kg
-                                                                </small>
                                                             </td>
                                                             <td>
                                                                 <a href="@Url.Action("ChiTiet", new { id = item.ncc_id, thang = thangHienTai, nam = namHienTai })" 
@@ -189,69 +137,47 @@
                                                     Tổng kết tháng @thangHienTai/@namHienTai
                                                 </h5>
                                                 <div class="row">
-                                                    <div class="col-md-2">
+                                                    <div class="col-md-3">
                                                         <div class="info-box">
                                                             <span class="info-box-icon bg-info">
                                                                 <i class="fas fa-building"></i>
                                                             </span>
                                                             <div class="info-box-content">
                                                                 <span class="info-box-text">Tổng NCC</span>
-                                                                <span class="info-box-number">@Model.Count</span>
+                                                                <span class="info-box-number">@Model.Select(x => x.ncc_id).Distinct().Count()</span>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="col-md-2">
+                                                    <div class="col-md-3">
                                                         <div class="info-box">
                                                             <span class="info-box-icon bg-success">
-                                                                <i class="fas fa-boxes"></i>
+                                                                <i class="fas fa-list"></i>
                                                             </span>
                                                             <div class="info-box-content">
-                                                                <span class="info-box-text">Tổng NL</span>
-                                                                <span class="info-box-number">@Model.Sum(x => x.tong_so_nguyen_lieu) loại</span>
+                                                                <span class="info-box-text">Tổng đơn vị</span>
+                                                                <span class="info-box-number">@Model.Select(x => x.don_vi).Distinct().Count() loại</span>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="col-md-2">
-                                                        <div class="info-box">
-                                                            <span class="info-box-icon bg-warning">
-                                                                <i class="fas fa-utensils"></i>
-                                                            </span>
-                                                            <div class="info-box-content">
-                                                                <span class="info-box-text">Tổng món</span>
-                                                                <span class="info-box-number">@Model.Sum(x => x.tong_so_mon_su_dung) món</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-2">
+                                                    <div class="col-md-3">
                                                         <div class="info-box">
                                                             <span class="info-box-icon bg-primary">
                                                                 <i class="fas fa-weight"></i>
                                                             </span>
                                                             <div class="info-box-content">
                                                                 <span class="info-box-text">Tổng lượng</span>
-                                                                <span class="info-box-number">@Model.Sum(x => x.tong_luong_su_dung).ToString("N2")</span>
+                                                                <span class="info-box-number">@Model.Sum(x => x.tong_su_dung).ToString("N2")</span>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="col-md-2">
+                                                    <div class="col-md-3">
                                                         <div class="info-box">
-                                                            <span class="info-box-icon bg-secondary">
-                                                                <i class="fas fa-list"></i>
+                                                            <span class="info-box-icon bg-warning">
+                                                                <i class="fas fa-chart-bar"></i>
                                                             </span>
                                                             <div class="info-box-content">
-                                                                <span class="info-box-text">Đơn vị</span>
-                                                                <span class="info-box-number">@Model.SelectMany(x => x.LuongTheoDonVi).Select(x => x.don_vi).Distinct().Count() loại</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-2">
-                                                        <div class="info-box">
-                                                            <span class="info-box-icon bg-danger">
-                                                                <i class="fas fa-dollar-sign"></i>
-                                                            </span>
-                                                            <div class="info-box-content">
-                                                                <span class="info-box-text">Tổng giá trị</span>
-                                                                <span class="info-box-number">@Model.Sum(x => x.tong_gia_tri_su_dung).ToString("N0") VNĐ</span>
+                                                                <span class="info-box-text">Tổng bản ghi</span>
+                                                                <span class="info-box-number">@Model.Count</span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -269,7 +195,7 @@
                                 </div>
                     }
                 </div>
-                <div class="card-footer">
+                @* <div class="card-footer">
                     <div class="row">
                         <div class="col-md-6">
                             <a href="@Url.Action("Dashboard")" class="btn btn-success">
@@ -288,7 +214,7 @@
                             </small>
                         </div>
                     </div>
-                </div>
+                </div> *@
             </div>
         </div>
     </div>
@@ -303,9 +229,9 @@
                             "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Vietnamese.json"
                         },
                         "pageLength": 25,
-                        "order": [[6, "desc"]], // Sắp xếp theo lượng sử dụng giảm dần
+                        "order": [[3, "desc"]], // Sắp xếp theo tổng sử dụng giảm dần
                         "columnDefs": [
-                            { "orderable": false, "targets": 12 } // Cột thao tác không sắp xếp
+                            { "orderable": false, "targets": 4 } // Cột thao tác không sắp xếp
                         ]
                     });
                 });

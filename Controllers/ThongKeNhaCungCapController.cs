@@ -28,7 +28,7 @@ namespace BTL.Web.Controllers
                     Nam = currentYear
                 };
 
-                var thongKe = await _thongKeNhaCungCapService.GetThongKeNhaCungCapTheoSoLuongNguyenLieuAsync(request);
+                var thongKe = await _thongKeNhaCungCapService.GetThongKeNhaCungCapNguyenLieuAsync(request);
                 var danhSachNhaCungCap = await _thongKeNhaCungCapService.GetDanhSachNhaCungCapAsync();
 
                 ViewBag.DanhSachNhaCungCap = danhSachNhaCungCap;
@@ -40,7 +40,7 @@ namespace BTL.Web.Controllers
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = $"Lỗi khi tải dữ liệu: {ex.Message}";
-                return View(new List<ThongKeNhaCungCap>());
+                return View(new List<ThongKeNhaCungCapNguyenLieu>());
             }
         }
 
@@ -56,10 +56,10 @@ namespace BTL.Web.Controllers
                     ViewBag.DanhSachNhaCungCap = danhSachNhaCungCap;
                     ViewBag.ThangHienTai = request.Thang ?? DateTime.Now.Month;
                     ViewBag.NamHienTai = request.Nam ?? DateTime.Now.Year;
-                    return View("Index", new List<ThongKeNhaCungCap>());
+                    return View("Index", new List<ThongKeNhaCungCapNguyenLieu>());
                 }
 
-                var thongKe = await _thongKeNhaCungCapService.GetThongKeNhaCungCapTheoSoLuongNguyenLieuAsync(request);
+                var thongKe = await _thongKeNhaCungCapService.GetThongKeNhaCungCapNguyenLieuAsync(request);
                 var danhSachNhaCungCapFilter = await _thongKeNhaCungCapService.GetDanhSachNhaCungCapAsync();
 
                 ViewBag.DanhSachNhaCungCap = danhSachNhaCungCapFilter;
@@ -76,7 +76,7 @@ namespace BTL.Web.Controllers
                 ViewBag.DanhSachNhaCungCap = danhSachNhaCungCap;
                 ViewBag.ThangHienTai = request.Thang ?? DateTime.Now.Month;
                 ViewBag.NamHienTai = request.Nam ?? DateTime.Now.Year;
-                return View("Index", new List<ThongKeNhaCungCap>());
+                return View("Index", new List<ThongKeNhaCungCapNguyenLieu>());
             }
         }
 
@@ -92,7 +92,7 @@ namespace BTL.Web.Controllers
                     Nam = nam ?? DateTime.Now.Year
                 };
 
-                var thongKe = await _thongKeNhaCungCapService.GetThongKeNhaCungCapTheoSoLuongNguyenLieuAsync(request);
+                var thongKe = await _thongKeNhaCungCapService.GetThongKeNhaCungCapNguyenLieuAsync(request);
                 var chiTiet = await _thongKeNhaCungCapService.GetChiTietNguyenLieuNhaCungCapAsync(request);
                 var danhSachNhaCungCap = await _thongKeNhaCungCapService.GetDanhSachNhaCungCapAsync();
 

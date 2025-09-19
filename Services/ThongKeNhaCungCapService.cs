@@ -198,5 +198,29 @@ namespace BTL.Web.Services
                 throw new Exception($"Lỗi khi lấy danh sách nhà cung cấp: {ex.Message}", ex);
             }
         }
+
+        public async Task<List<ThongKeNhaCungCapNguyenLieu>> GetThongKeNhaCungCapNguyenLieuAsync(ThongKeNhaCungCapRequest request)
+        {
+            try
+            {
+                using var connection = new SqlConnection(_connectionString);
+
+                var parameters = new DynamicParameters();
+                parameters.Add("@Thang", request.Thang);
+                parameters.Add("@Nam", request.Nam);
+                parameters.Add("@NccId", request.NccId);
+
+                var result = await connection.QueryAsync<ThongKeNhaCungCapNguyenLieu>(
+                    "sp_ThongKe_NhaCungCapNguyenLieu",
+                    parameters,
+                    commandType: CommandType.StoredProcedure);
+
+                return result.ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi lấy thống kê nhà cung cấp nguyên liệu: {ex.Message}", ex);
+            }
+        }
     }
 }

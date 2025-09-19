@@ -159,4 +159,13 @@ namespace BTL.Web.Models
         public List<TopNhaCungCap> TopNhaCungCap { get; set; } = new();
         public List<TopNguyenLieu> TopNguyenLieu { get; set; } = new();
     }
+
+    // Model cho kết quả từ stored procedure sp_ThongKe_NhaCungCapNguyenLieu
+    public class ThongKeNhaCungCapNguyenLieu
+    {
+        public int ncc_id { get; set; }
+        public string ten { get; set; } = string.Empty;
+        public string don_vi { get; set; } = string.Empty;
+        public decimal tong_su_dung { get; set; }
+    }
 }

@@ -45,5 +45,12 @@ namespace BTL.Web.Services
         /// </summary>
         /// <returns>Danh sách nhà cung cấp</returns>
         Task<List<NhaCungCap>> GetDanhSachNhaCungCapAsync();
+
+        /// <summary>
+        /// Lấy thống kê nhà cung cấp nguyên liệu sử dụng stored procedure mới
+        /// </summary>
+        /// <param name="request">Thông tin tháng, năm và nhà cung cấp cần thống kê</param>
+        /// <returns>Danh sách thống kê nhà cung cấp nguyên liệu</returns>
+        Task<List<ThongKeNhaCungCapNguyenLieu>> GetThongKeNhaCungCapNguyenLieuAsync(ThongKeNhaCungCapRequest request);
     }
 }
