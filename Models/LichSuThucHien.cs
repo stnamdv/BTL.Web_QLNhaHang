@@ -5,19 +5,19 @@ namespace BTL.Web.Models
 {
     public static class TrangThaiThucHien
     {
-        public const string CHUA_BAT_DAU = "CHUA_BAT_DAU";
-        public const string DANG_THUC_HIEN = "DANG_THUC_HIEN";
+        public const string CHUA_HOAN_THANH = "CHUA_HOAN_THANH";
         public const string HOAN_THANH = "HOAN_THANH";
+        public const string DA_HUY = "DA_HUY";
 
-        public static readonly string[] All = { CHUA_BAT_DAU, DANG_THUC_HIEN, HOAN_THANH };
+        public static readonly string[] All = { CHUA_HOAN_THANH, HOAN_THANH, DA_HUY };
 
         public static string GetDisplayName(string trangThai)
         {
             return trangThai switch
             {
-                CHUA_BAT_DAU => "Chưa bắt đầu",
-                DANG_THUC_HIEN => "Đang thực hiện",
+                CHUA_HOAN_THANH => "Chưa bắt đầu",
                 HOAN_THANH => "Hoàn thành",
+                DA_HUY => "Đã hủy",
                 _ => trangThai
             };
         }
@@ -39,7 +39,7 @@ namespace BTL.Web.Models
 
         [Required]
         [StringLength(20)]
-        public string trang_thai { get; set; } = TrangThaiThucHien.CHUA_BAT_DAU;
+        public string trang_thai { get; set; } = TrangThaiThucHien.CHUA_HOAN_THANH;
 
         public DateTime? thoi_diem_bat_dau { get; set; }
 
@@ -50,6 +50,10 @@ namespace BTL.Web.Models
 
         [Required]
         public DateTime thoi_diem_tao { get; set; } = DateTime.Now;
+
+        // Properties from joins (for stored procedure results)
+        public string? ten_buoc { get; set; }
+        public string? nhan_vien_ten { get; set; }
 
         // Navigation properties
         [ForeignKey("order_id")]

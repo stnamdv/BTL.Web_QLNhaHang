@@ -180,7 +180,7 @@ namespace BTL.Web.Repositories
                         new
                         {
                             employeeId,
-                            status = TrangThaiThucHien.DANG_THUC_HIEN,
+                            status = TrangThaiThucHien.CHUA_HOAN_THANH,
                             startTime = DateTime.Now,
                             orderId,
                             stepId
@@ -196,7 +196,7 @@ namespace BTL.Web.Repositories
                             orderId,
                             stepId,
                             employeeId,
-                            status = TrangThaiThucHien.DANG_THUC_HIEN,
+                            status = TrangThaiThucHien.CHUA_HOAN_THANH,
                             startTime = DateTime.Now,
                             createTime = DateTime.Now
                         });

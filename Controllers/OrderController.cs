@@ -12,21 +12,24 @@ namespace BTL.Web.Controllers
         private readonly IBanAnService _banAnService;
         private readonly IMonService _monService;
         private readonly IOrderService _orderService;
+        private readonly IHoaDonService _hoaDonService;
 
         public OrderController(
             IOrderReceptionService orderReceptionService,
             IBanAnService banAnService,
             IMonService monService,
-            IOrderService orderService)
+            IOrderService orderService,
+            IHoaDonService hoaDonService)
         {
             _orderReceptionService = orderReceptionService;
             _banAnService = banAnService;
             _monService = monService;
             _orderService = orderService;
+            _hoaDonService = hoaDonService;
         }
 
         // GET: Order
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
             // Redirect to PendingOrders since Index view doesn't exist
             return RedirectToAction("PendingOrders");
@@ -146,11 +149,24 @@ namespace BTL.Web.Controllers
             return View(model);
         }
 
-        // GET: Order/Details/5
+        // GET: Order/Details/5 - Redirect to new Details view
         public async Task<IActionResult> Details(int id)
         {
-            // Redirect to Workflow since Details view doesn't exist
-            return RedirectToAction("Workflow", new { id = id });
+            try
+            {
+                var orderDetails = await _orderService.GetOrderDetailsAsync(id);
+                if (orderDetails == null)
+                {
+                    return NotFound();
+                }
+                return View(orderDetails);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in Details: {ex.Message}");
+                TempData["ErrorMessage"] = "Có lỗi xảy ra khi tải chi tiết đơn hàng.";
+                return RedirectToAction("AllOrders");
+            }
         }
 
         // GET: Order/Workflow/5
@@ -172,6 +188,118 @@ namespace BTL.Web.Controllers
         {
             var pendingOrders = await _orderReceptionService.GetAllPendingOrdersAsync();
             return View(pendingOrders);
+        }
+
+        // GET: Order/AllOrders - Danh sách tất cả đơn hàng với phân trang và tìm kiếm
+        public async Task<IActionResult> AllOrders(
+            int pageNumber = 1,
+            int pageSize = 10,
+            string? searchKeyword = null,
+            DateTime? fromDate = null,
+            DateTime? toDate = null,
+            string? filterType = null,
+            string? status = null)
+        {
+            try
+            {
+                var result = await _orderService.GetOrdersWithPaginationAsync(
+                    pageNumber, pageSize, searchKeyword, fromDate, toDate, filterType, status);
+
+                ViewBag.SearchKeyword = searchKeyword;
+                ViewBag.FromDate = fromDate;
+                ViewBag.ToDate = toDate;
+                ViewBag.FilterType = filterType;
+                ViewBag.Status = status;
+
+                return View(result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in AllOrders: {ex.Message}");
+                TempData["ErrorMessage"] = "Có lỗi xảy ra khi tải danh sách đơn hàng.";
+                return View(new PagedResult<OrderWithDetails>());
+            }
+        }
+
+
+        // POST: Order/Cancel/5 - Hủy đơn hàng
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Cancel(int id, string? reason = null)
+        {
+            try
+            {
+                // Validate order ID
+                if (id <= 0)
+                {
+                    TempData["ErrorMessage"] = "ID đơn hàng không hợp lệ.";
+                    return RedirectToAction("AllOrders");
+                }
+
+                // TODO: Get current employee ID from session/authentication
+                // For now, using a default employee ID
+                int employeeId = 1; // This should be replaced with actual employee ID from session
+
+                var (success, message) = await _orderService.CancelOrderAsync(id, employeeId, reason);
+
+                if (success)
+                {
+                    TempData["SuccessMessage"] = message;
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = message;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in Cancel: {ex.Message}");
+                TempData["ErrorMessage"] = "Có lỗi xảy ra khi hủy đơn hàng.";
+            }
+
+            return RedirectToAction("AllOrders");
+        }
+
+        // POST: Order/CancelAjax/5 - Hủy đơn hàng qua AJAX
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelAjax(int id, string? reason = null)
+        {
+            try
+            {
+                // Validate order ID
+                if (id <= 0)
+                {
+                    return Json(new { success = false, message = "ID đơn hàng không hợp lệ." });
+                }
+
+                // TODO: Get current employee ID from session/authentication
+                int employeeId = 1; // This should be replaced with actual employee ID from session
+
+                var (success, message) = await _orderService.CancelOrderAsync(id, employeeId, reason);
+
+                return Json(new { success = success, message = message });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in CancelAjax: {ex.Message}");
+                return Json(new { success = false, message = "Có lỗi xảy ra khi hủy đơn hàng." });
+            }
+        }
+
+        // GET: Order/Statistics - Thống kê đơn hàng
+        public async Task<IActionResult> Statistics(DateTime? fromDate = null, DateTime? toDate = null, string? filterType = null)
+        {
+            try
+            {
+                var statistics = await _orderService.GetOrderStatisticsAsync(fromDate, toDate, filterType);
+                return Json(statistics);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in Statistics: {ex.Message}");
+                return Json(new { error = "Có lỗi xảy ra khi tải thống kê." });
+            }
         }
 
         private async Task<int> CreateNewOrderAsync(OrderCreateViewModel model)
@@ -229,6 +357,58 @@ namespace BTL.Web.Controllers
             {
                 Console.WriteLine($"Lỗi trong CreateOrderWithStoredProcedureAsync: {ex.Message}");
                 throw;
+            }
+        }
+
+        // POST: Order/XuatHoaDonAjax/5 - Xuất hoá đơn cho đơn hàng qua AJAX
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> XuatHoaDonAjax(int id, string? phuongThuc = "Tiền mặt")
+        {
+            try
+            {
+                // Kiểm tra đơn hàng có tồn tại không
+                var orderDetails = await _orderService.GetOrderDetailsAsync(id);
+                if (orderDetails == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy đơn hàng." });
+                }
+
+                // Kiểm tra xem đã có hoá đơn chưa
+                var existingHoaDon = await _hoaDonService.GetHoaDonByOrderIdAsync(id);
+                if (existingHoaDon != null)
+                {
+                    // Nếu đã có hoá đơn, lấy thông tin chi tiết
+                    var (hoaDon, orderDetailsWithItems) = await _hoaDonService.GetHoaDonWithOrderDetailsAsync(id);
+                    return Json(new
+                    {
+                        success = true,
+                        message = "Hoá đơn đã tồn tại.",
+                        hoaDon = hoaDon,
+                        orderDetails = orderDetailsWithItems,
+                        isExisting = true
+                    });
+                }
+
+                // Tạo hoá đơn mới
+                var newHoaDon = await _hoaDonService.CreateHoaDonAsync(id, phuongThuc);
+
+                // Lấy thông tin chi tiết hoá đơn vừa tạo
+                var (createdHoaDon, orderDetailsWithItemsNew) = await _hoaDonService.GetHoaDonWithOrderDetailsAsync(id);
+
+                return Json(new
+                {
+                    success = true,
+                    message = "Hoá đơn đã được tạo thành công.",
+                    hoaDon = createdHoaDon,
+                    orderDetails = orderDetailsWithItemsNew,
+                    isExisting = false
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in XuatHoaDonAjax: {ex.Message}");
+                return Json(new { success = false, message = $"Có lỗi xảy ra khi xuất hoá đơn: {ex.Message}" });
             }
         }
     }

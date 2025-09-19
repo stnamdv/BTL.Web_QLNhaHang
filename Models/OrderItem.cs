@@ -25,6 +25,11 @@ namespace BTL.Web.Models
 
         public DateTime? t_phuc_vu { get; set; }
 
+        // Properties from Mon table join (for stored procedure results)
+        public string? ten_mon { get; set; }
+        public string? loai_mon { get; set; }
+        public decimal? gia { get; set; }
+
         // Navigation properties
         [ForeignKey("order_id")]
         public virtual Order Order { get; set; } = null!;

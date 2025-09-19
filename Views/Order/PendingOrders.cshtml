@@ -128,7 +128,7 @@
 @section Scripts {
     <script>
         function viewOrderDetails(orderId) {
-            // Load order details via AJAX
+            @* // Load order details via AJAX
             fetch(`/Order/Details/${orderId}`)
                 .then(response => response.text())
                 .then(html => {
@@ -141,7 +141,8 @@
                 .catch(error => {
                     console.error('Error loading order details:', error);
                     alert('Không thể tải chi tiết đơn hàng');
-                });
+                }); *@
+                location.href = `/Order/Details/${orderId}`;
         }
 
         // Auto refresh every 30 seconds
@@ -156,12 +157,9 @@
     {
         return status switch
         {
-            "pending" => "Chờ xử lý",
-            "confirmed" => "Đã xác nhận",
-            "preparing" => "Đang chuẩn bị",
-            "ready" => "Sẵn sàng",
-            "served" => "Đã phục vụ",
-            "close" => "Đã đóng",
+            "CHUA_HOAN_THANH" => "Chờ xử lý",
+            "HOAN_THANH" => "Hoàn thành",
+            "DA_HUY" => "Đã hủy",
             _ => status
         };
     }

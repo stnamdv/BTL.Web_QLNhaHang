@@ -32,5 +32,32 @@ namespace BTL.Web.Services
         {
             return await _repository.UpdateOrderStatusAsync(orderId, status);
         }
+
+        public async Task<PagedResult<OrderWithDetails>> GetOrdersWithPaginationAsync(
+            int pageNumber = 1,
+            int pageSize = 10,
+            string? searchKeyword = null,
+            DateTime? fromDate = null,
+            DateTime? toDate = null,
+            string? filterType = null,
+            string? status = null)
+        {
+            return await _repository.GetOrdersWithPaginationAsync(pageNumber, pageSize, searchKeyword, fromDate, toDate, filterType, status);
+        }
+
+        public async Task<OrderWithDetails?> GetOrderDetailsAsync(int orderId)
+        {
+            return await _repository.GetOrderDetailsAsync(orderId);
+        }
+
+        public async Task<(bool Success, string Message)> CancelOrderAsync(int orderId, int employeeId, string? reason = null)
+        {
+            return await _repository.CancelOrderAsync(orderId, employeeId, reason);
+        }
+
+        public async Task<object> GetOrderStatisticsAsync(DateTime? fromDate = null, DateTime? toDate = null, string? filterType = null)
+        {
+            return await _repository.GetOrderStatisticsAsync(fromDate, toDate, filterType);
+        }
     }
 }

@@ -37,7 +37,7 @@
                             </div>
                         </div>
                     </div>
-                    <a asp-controller="Home" asp-action="OrderManagement" class="btn btn-info btn-lg">
+                    <a asp-controller="Order" asp-action="AllOrders" class="btn btn-info btn-lg">
                         <i class="fas fa-rocket"></i> Bắt đầu quản lý đơn hàng
                     </a>
                 </div>
@@ -137,10 +137,11 @@
             <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title">
-                        <i class="fas fa-cogs"></i> Cài đặt hệ thống
+                        <i class="fas fa-money-bill-wave"></i> Quản lý lương
                     </h5>
-                    <p class="card-text">Cấu hình và thiết lập hệ thống</p>
-                    <a href="#" class="btn btn-outline-secondary">Cài đặt</a>
+                    <p class="card-text">Tính lương nhân viên theo tháng với tiền thưởng</p>
+                    <a asp-controller="LuongNhanVien" asp-action="Index" class="btn btn-outline-success">Quản lý
+                        lương</a>
                 </div>
             </div>
         </div>

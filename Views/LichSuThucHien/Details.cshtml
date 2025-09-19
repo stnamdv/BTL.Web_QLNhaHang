@@ -58,14 +58,14 @@
                                 <dd class="col-sm-8">
                                     @switch (Model.trang_thai)
                                     {
-                                        case "CHUA_BAT_DAU":
-                                            <span class="badge bg-secondary">Chưa bắt đầu</span>
-                                            break;
-                                        case "DANG_THUC_HIEN":
-                                            <span class="badge bg-warning">Đang thực hiện</span>
+                                        case "CHUA_HOAN_THANH":
+                                            <span class="badge bg-secondary">Chưa hoàn thành</span>
                                             break;
                                         case "HOAN_THANH":
-                                            <span class="badge bg-success">Hoàn thành</span>
+                                            <span class="badge bg-warning">Hoàn thành</span>
+                                            break;
+                                        case "DA_HUY":
+                                            <span class="badge bg-success">Đã hủy</span>
                                             break;
                                         default:
                                             <span class="badge bg-light text-dark">@Model.trang_thai</span>
@@ -134,12 +134,12 @@
                                 </div>
                             </div>
 
-                            @if (Model.trang_thai == "CHUA_BAT_DAU")
+                            @if (Model.trang_thai == "CHUA_HOAN_THANH")
                             {
                                 <div class="card bg-warning text-dark mt-3">
                                     <div class="card-header">
                                         <h6 class="card-title mb-0">
-                                            <i class="fas fa-clock"></i> Chờ thực hiện
+                                            <i class="fas fa-clock"></i> Chưa hoàn thành
                                         </h6>
                                     </div>
                                     <div class="card-body">
@@ -154,7 +154,7 @@
                                     </div>
                                 </div>
                             }
-                            else if (Model.trang_thai == "DANG_THUC_HIEN")
+                            else if (Model.trang_thai == "HOAN_THANH")
                             {
                                 <div class="card bg-info text-white mt-3">
                                     <div class="card-header">
@@ -174,7 +174,7 @@
                                     </div>
                                 </div>
                             }
-                            else if (Model.trang_thai == "HOAN_THANH")
+                            else if (Model.trang_thai == "DA_HUY")
                             {
                                 <div class="card bg-success text-white mt-3">
                                     <div class="card-header">

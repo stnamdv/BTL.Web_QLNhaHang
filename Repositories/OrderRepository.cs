@@ -102,5 +102,100 @@ namespace BTL.Web.Repositories
 
             return affectedRows > 0;
         }
+
+        public async Task<PagedResult<OrderWithDetails>> GetOrdersWithPaginationAsync(
+            int pageNumber = 1,
+            int pageSize = 10,
+            string? searchKeyword = null,
+            DateTime? fromDate = null,
+            DateTime? toDate = null,
+            string? filterType = null,
+            string? status = null)
+        {
+            using var connection = _context.CreateConnection();
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@PageNumber", pageNumber);
+            parameters.Add("@PageSize", pageSize);
+            parameters.Add("@SearchKeyword", searchKeyword);
+            parameters.Add("@FromDate", fromDate);
+            parameters.Add("@ToDate", toDate);
+            parameters.Add("@FilterType", filterType);
+            parameters.Add("@Status", status);
+            parameters.Add("@TotalCount", dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+            var orders = await connection.QueryAsync<OrderWithDetails>(
+                "sp_Order_GetOrdersWithPagination",
+                parameters,
+                commandType: CommandType.StoredProcedure);
+
+            var totalCount = parameters.Get<int>("@TotalCount");
+
+            return new PagedResult<OrderWithDetails>(orders, totalCount, pageNumber, pageSize);
+        }
+
+        public async Task<OrderWithDetails?> GetOrderDetailsAsync(int orderId)
+        {
+            using var connection = _context.CreateConnection();
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@OrderId", orderId);
+
+            using var multi = await connection.QueryMultipleAsync(
+                "sp_Order_GetOrderDetails",
+                parameters,
+                commandType: CommandType.StoredProcedure);
+
+            var order = await multi.ReadFirstOrDefaultAsync<OrderWithDetails>();
+            if (order != null)
+            {
+                var orderItems = await multi.ReadAsync<OrderItem>();
+                var orderHistory = await multi.ReadAsync<LichSuThucHien>();
+
+                order.OrderItems = orderItems.ToList();
+                order.LichSuThucHiens = orderHistory.ToList();
+            }
+
+            return order;
+        }
+
+        public async Task<(bool Success, string Message)> CancelOrderAsync(int orderId, int employeeId, string? reason = null)
+        {
+            using var connection = _context.CreateConnection();
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@OrderId", orderId);
+            parameters.Add("@EmployeeId", employeeId);
+            parameters.Add("@Reason", reason);
+            parameters.Add("@Success", dbType: DbType.Boolean, direction: ParameterDirection.Output);
+            parameters.Add("@Message", dbType: DbType.String, size: 500, direction: ParameterDirection.Output);
+
+            await connection.ExecuteAsync(
+                "sp_Order_CancelOrder",
+                parameters,
+                commandType: CommandType.StoredProcedure);
+
+            var success = parameters.Get<bool>("@Success");
+            var message = parameters.Get<string>("@Message") ?? "";
+
+            return (success, message);
+        }
+
+        public async Task<object> GetOrderStatisticsAsync(DateTime? fromDate = null, DateTime? toDate = null, string? filterType = null)
+        {
+            using var connection = _context.CreateConnection();
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@FromDate", fromDate);
+            parameters.Add("@ToDate", toDate);
+            parameters.Add("@FilterType", filterType);
+
+            var statistics = await connection.QueryFirstOrDefaultAsync(
+                "sp_Order_GetStatistics",
+                parameters,
+                commandType: CommandType.StoredProcedure);
+
+            return statistics ?? new { };
+        }
     }
 }

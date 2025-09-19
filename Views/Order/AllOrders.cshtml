@@ -1,0 +1,488 @@
+@model BTL.Web.Models.PagedResult<BTL.Web.Models.OrderWithDetails>
+@{
+    ViewData["Title"] = "Danh sách đơn hàng";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/order-management.css" />
+    <style>
+        .search-filters {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .btn-cancel {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+            color: white;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 500;
+        }
+
+        .status-chua_hoan_thanh {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        .status-hoan_thanh {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .status-da_huy {
+            background-color: #dc3545;
+            color: #fff;
+        }
+    </style>
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="fas fa-list-alt"></i> Danh sách đơn hàng</h1>
+            <p class="text-muted">Quản lý và theo dõi tất cả đơn hàng trong hệ thống</p>
+        </div>
+        <div>
+            <a href="/Order/Create" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Tạo đơn hàng mới
+            </a>
+        </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="search-filters">
+        <form method="get" action="/Order/AllOrders">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="searchKeyword" class="form-label">Tìm kiếm</label>
+                    <input type="text" class="form-control" id="searchKeyword" name="searchKeyword"
+                        value="@ViewBag.SearchKeyword" placeholder="Mã đơn hàng, tên khách hàng, SĐT, bàn...">
+                </div>
+
+                <div class="filter-group">
+                    <label for="status" class="form-label">Trạng thái</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="CHUA_HOAN_THANH" selected="@(ViewBag.Status == "CHUA_HOAN_THANH")">Chưa hoàn
+                            thành</option>
+                        <option value="HOAN_THANH" selected="@(ViewBag.Status == "HOAN_THANH")">Hoàn thành</option>
+                        <option value="DA_HUY" selected="@(ViewBag.Status == "DA_HUY")">Đã hủy</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filterType" class="form-label">Lọc theo</label>
+                    <select class="form-select" id="filterType" name="filterType">
+                        <option value="">Tùy chọn</option>
+                        <option value="w" selected="@(ViewBag.FilterType == "w")">Tuần này</option>
+                        <option value="m" selected="@(ViewBag.FilterType == "m")">Tháng này</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="fromDate" class="form-label">Từ ngày</label>
+                    <input type="date" class="form-control" id="fromDate" name="fromDate"
+                        value="@(ViewBag.FromDate?.ToString("yyyy-MM-dd"))">
+                </div>
+
+                <div class="filter-group">
+                    <label for="toDate" class="form-label">Đến ngày</label>
+                    <input type="date" class="form-control" id="toDate" name="toDate"
+                        value="@(ViewBag.ToDate?.ToString("yyyy-MM-dd"))">
+                </div>
+
+                <div class="filter-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Tìm kiếm
+                    </button>
+                    <a href="/Order/AllOrders" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Xóa bộ lọc
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results Summary -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <p class="text-muted">
+                Hiển thị @((Model.PageNumber - 1) * Model.PageSize + 1) - @(Math.Min(Model.PageNumber * Model.PageSize,
+                Model.TotalItems))
+                trong tổng số @Model.TotalItems đơn hàng
+            </p>
+        </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="card">
+        <div class="card-body">
+            @if (Model.Items != null && Model.Items.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Mã đơn hàng</th>
+                                <th>Thời gian</th>
+                                <th>Khách hàng</th>
+                                <th>Bàn</th>
+                                <th>Loại</th>
+                                <th>Trạng thái</th>
+                                <th>Tổng tiền</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in Model.Items)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>#@order.order_id</strong>
+                                    </td>
+                                    <td>
+                                        @order.thoi_diem_dat.ToString("dd/MM/yyyy HH:mm")
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(order.khach_hang_ten))
+                                        {
+                                            <div>@order.khach_hang_ten</div>
+                                            @if (!string.IsNullOrEmpty(order.khach_hang_sdt))
+                                            {
+                                                <small class="text-muted">@order.khach_hang_sdt</small>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(order.ban_so_hieu))
+                                        {
+                                            <span>Bàn @order.ban_so_hieu</span>
+                                            @if (order.ban_suc_chua.HasValue)
+                                            {
+                                                <br>
+
+                                                <small class="text-muted">(@order.ban_suc_chua người)</small>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge @(order.la_mang_ve ? "bg-info" : "bg-success")">
+                                            @(order.la_mang_ve ? "Mang về" : "Ăn tại chỗ")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge status-@order.trang_thai.ToLower()">
+                                            @GetStatusText(order.trang_thai)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <strong>@(order.tong_tien?.ToString("N0") ?? "0") VNĐ</strong>
+                                    </td>
+                                    <td>
+                                        <div class="order-actions">
+                                            <a href="/Order/Details/@order.order_id" class="btn btn-sm btn-outline-primary"
+                                                title="Xem chi tiết">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            @if (order.trang_thai != "HOAN_THANH" && order.trang_thai != "DA_HUY")
+                                            {
+                                                <a href="/Order/Workflow/@order.order_id" class="btn btn-sm btn-outline-info"
+                                                    title="Xử lý">
+                                                    <i class="fas fa-tasks"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-cancel"
+                                                    onclick="showCancelModal(@order.order_id)" title="Hủy đơn hàng">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                @if (Model.TotalPages > 1)
+                {
+                    <div class="pagination-container">
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination">
+                                @if (Model.HasPreviousPage)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@BuildPaginationUrl(1)">Đầu</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="@BuildPaginationUrl(Model.PageNumber - 1)">Trước</a>
+                                    </li>
+                                }
+
+                                @for (int i = Model.StartPage; i <= Model.EndPage; i++)
+                                {
+                                    <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                                        <a class="page-link" href="@BuildPaginationUrl(i)">@i</a>
+                                    </li>
+                                }
+
+                                @if (Model.HasNextPage)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@BuildPaginationUrl(Model.PageNumber + 1)">Sau</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="@BuildPaginationUrl(Model.TotalPages)">Cuối</a>
+                                    </li>
+                                }
+                            </ul>
+                        </nav>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Không tìm thấy đơn hàng nào</h5>
+                    <p class="text-muted">Thử thay đổi bộ lọc tìm kiếm hoặc tạo đơn hàng mới.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Order Modal -->
+<div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="cancelOrderModalLabel">
+                    <i class="fas fa-exclamation-triangle"></i> Xác nhận hủy đơn hàng
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="cancelOrderForm" method="post">
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Lưu ý:</strong> Hành động này không thể hoàn tác. Đơn hàng sẽ được đánh dấu là "Đã hủy"
+                        và không thể tiếp tục xử lý.
+                    </div>
+
+                    <p class="mb-3">Bạn có chắc chắn muốn hủy đơn hàng này không?</p>
+
+                    <div class="mb-3">
+                        <label for="cancelReason" class="form-label">
+                            <i class="fas fa-comment"></i> Lý do hủy (tùy chọn)
+                        </label>
+                        <textarea class="form-control" id="cancelReason" name="reason" rows="3"
+                            placeholder="Nhập lý do hủy đơn hàng (ví dụ: Khách hàng yêu cầu hủy, Hết nguyên liệu, v.v.)..."></textarea>
+                        <div class="form-text">Lý do hủy sẽ được lưu trong lịch sử xử lý đơn hàng.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Không hủy
+                    </button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-ban"></i> Xác nhận hủy đơn hàng
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function showCancelModal(orderId) {
+            const form = document.getElementById('cancelOrderForm');
+            form.action = `/Order/Cancel/${orderId}`;
+
+            // Clear previous reason
+            document.getElementById('cancelReason').value = '';
+
+            const modal = new bootstrap.Modal(document.getElementById('cancelOrderModal'));
+            modal.show();
+        }
+
+        // Handle form submission with AJAX
+        document.getElementById('cancelOrderForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const form = this;
+            const formData = new FormData(form);
+            const orderId = form.action.split('/').pop();
+            const reason = formData.get('reason');
+
+            // Show loading state
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+            submitBtn.disabled = true;
+
+            // Send AJAX request
+            fetch(`/Order/CancelAjax/${orderId}`, {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success message
+                        showAlert('success', data.message);
+
+                        // Close modal
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('cancelOrderModal'));
+                        modal.hide();
+
+                        // Reload page after a short delay
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        // Show error message
+                        showAlert('danger', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('danger', 'Có lỗi xảy ra khi hủy đơn hàng.');
+                })
+                .finally(() => {
+                    // Restore button state
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                });
+        });
+
+        // Auto-submit form when filter type changes
+        document.getElementById('filterType').addEventListener('change', function () {
+            if (this.value) {
+                document.querySelector('form').submit();
+            }
+        });
+
+        // Function to show alerts
+        function showAlert(type, message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+
+            // Insert at the top of the container
+            const container = document.querySelector('.container-fluid');
+            container.insertBefore(alertDiv, container.firstChild);
+
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
+        // Show temp data messages if any
+        @if (TempData["SuccessMessage"] != null)
+            {
+                <text>
+                    showAlert('success', '@Html.Raw(TempData["SuccessMessage"])');
+                </text>
+        }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <text>
+                    showAlert('danger', '@Html.Raw(TempData["ErrorMessage"])');
+                </text>
+        }
+    </script>
+}
+
+@functions {
+    string GetStatusText(string status)
+    {
+        return status switch
+        {
+            "CHUA_HOAN_THANH" => "Chưa hoàn thành",
+            "HOAN_THANH" => "Hoàn thành",
+            "DA_HUY" => "Đã hủy",
+            _ => status
+        };
+    }
+
+    string BuildPaginationUrl(int pageNumber)
+    {
+        var queryParams = new List<string>();
+
+        if (!string.IsNullOrEmpty(ViewBag.SearchKeyword))
+            queryParams.Add($"searchKeyword={Uri.EscapeDataString(ViewBag.SearchKeyword)}");
+
+        if (ViewBag.FromDate != null)
+            queryParams.Add($"fromDate={ViewBag.FromDate:yyyy-MM-dd}");
+
+        if (ViewBag.ToDate != null)
+            queryParams.Add($"toDate={ViewBag.ToDate:yyyy-MM-dd}");
+
+        if (!string.IsNullOrEmpty(ViewBag.FilterType))
+            queryParams.Add($"filterType={ViewBag.FilterType}");
+
+        if (!string.IsNullOrEmpty(ViewBag.Status))
+            queryParams.Add($"status={ViewBag.Status}");
+
+        queryParams.Add($"pageNumber={pageNumber}");
+
+        return $"/Order/AllOrders?{string.Join("&", queryParams)}";
+    }
+}

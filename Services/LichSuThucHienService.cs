@@ -78,13 +78,13 @@ namespace BTL.Web.Services
         public async Task<IEnumerable<LichSuThucHienWithDetails>> GetDangXuLyAsync()
         {
             var allLichSu = await _repository.GetAllPagedAsync(1, 1000);
-            return allLichSu.Items.Where(x => x.trang_thai == TrangThaiThucHien.DANG_THUC_HIEN);
+            return allLichSu.Items.Where(x => x.trang_thai == TrangThaiThucHien.CHUA_HOAN_THANH);
         }
 
         public async Task<IEnumerable<LichSuThucHienWithDetails>> GetChoXuLyAsync(int nvId)
         {
             var allLichSu = await _repository.GetAllPagedAsync(1, 1000);
-            return allLichSu.Items.Where(x => x.nv_id == nvId && x.trang_thai == TrangThaiThucHien.CHUA_BAT_DAU);
+            return allLichSu.Items.Where(x => x.nv_id == nvId && x.trang_thai == TrangThaiThucHien.CHUA_HOAN_THANH);
         }
 
         public async Task<bool> UpdateStepStatusAsync(int orderId, int stepId, int employeeId, string action)

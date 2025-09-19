@@ -83,14 +83,14 @@
                                                             <td>
                                                                 @switch (item.trang_thai)
                                                                 {
-                                                                            case "CHUA_BAT_DAU":
-                                                                                        <span class="badge bg-secondary">Chưa bắt đầu</span>
-                                                                                        break;
-                                                                            case "DANG_THUC_HIEN":
-                                                                                        <span class="badge bg-warning">Đang thực hiện</span>
+                                                                            case "CHUA_HOAN_THANH":
+                                                                                        <span class="badge bg-secondary">Chưa hoàn thành</span>
                                                                                         break;
                                                                             case "HOAN_THANH":
-                                                                                        <span class="badge bg-success">Hoàn thành</span>
+                                                                                        <span class="badge bg-warning">Hoàn thành</span>
+                                                                                        break;
+                                                                            case "DA_HUY":
+                                                                                        <span class="badge bg-success">Đã hủy</span>
                                                                                         break;
                                                                             default:
                                                                                         <span class="badge bg-light text-dark">@item.trang_thai</span>
@@ -124,13 +124,13 @@
                                                                     <a asp-action="Details" asp-route-id="@item.lich_su_id" class="btn btn-sm btn-info">
                                                                         <i class="fas fa-eye"></i>
                                                                     </a>
-                                                                    @if (item.trang_thai == "CHUA_BAT_DAU")
+                                                                    @if (item.trang_thai == "CHUA_HOAN_THANH")
                                                                     {
                                                                                 <button class="btn btn-sm btn-success" onclick="batDau(@item.lich_su_id)">
                                                                                     <i class="fas fa-play"></i>
                                                                                 </button>
                                                                     }
-                                                                    @if (item.trang_thai == "DANG_THUC_HIEN")
+                                                                    @if (item.trang_thai == "HOAN_THANH")
                                                                     {
                                                                                 <button class="btn btn-sm btn-warning" onclick="hoanThanh(@item.lich_su_id)">
                                                                                     <i class="fas fa-check"></i>

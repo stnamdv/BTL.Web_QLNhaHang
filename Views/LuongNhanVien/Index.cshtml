@@ -1,0 +1,245 @@
+@model BTL.Web.Models.LuongNhanVienViewModel
+@{
+    ViewData["Title"] = "Quản lý lương nhân viên";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-money-bill-wave"></i> Quản lý lương nhân viên
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Thông báo -->
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                            <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                        </div>
+                    }
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                            <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                        </div>
+                    }
+
+                    <!-- Form chọn tháng/năm -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-calendar-alt"></i> Chọn tháng/năm tính lương
+                                    </h5>
+                                    <form asp-action="TinhLuongTheoThang" method="post" class="row g-3">
+                                        <div class="col-md-3">
+                                            <label for="thang" class="form-label">Tháng</label>
+                                            <select class="form-select" id="thang" name="thang" required>
+                                                @for (int i = 1; i <= 12; i++)
+                                                {
+                                                            <option value="@i" selected="@(i == Model.Thang)">Tháng @i</option>
+                                                }
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label for="nam" class="form-label">Năm</label>
+                                            <select class="form-select" id="nam" name="nam" required>
+                                                @for (int i = DateTime.Now.Year - 2; i <= DateTime.Now.Year + 1; i++)
+                                                {
+                                                            <option value="@i" selected="@(i == Model.Nam)">@i</option>
+                                                }
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 d-flex align-items-end">
+                                            <button type="submit" class="btn btn-primary me-2">
+                                                <i class="fas fa-calculator"></i> Tính lương
+                                            </button>
+                                            <a asp-action="ThangHienTai" class="btn btn-success">
+                                                <i class="fas fa-calendar-day"></i> Tháng hiện tại
+                                            </a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Thông tin tổng quan -->
+                    @if (Model.ThongTinTongQuan != null)
+                    {
+                                        <div class="row mb-4">
+                                            <div class="col-md-12">
+                                                <div class="card border-info">
+                                                    <div class="card-header bg-info text-white">
+                                                        <h5 class="card-title mb-0">
+                                                            <i class="fas fa-chart-bar"></i> Thông tin tổng quan tháng @Model.ThongTinTongQuan.thang/@Model.ThongTinTongQuan.nam
+                                                        </h5>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="row">
+                                                            <div class="col-md-2">
+                                                                <div class="text-center">
+                                                                    <h6 class="text-muted">Tổng số khách</h6>
+                                                                    <h4 class="text-primary">@Model.ThongTinTongQuan.tong_so_khach_trong_thang</h4>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-2">
+                                                                <div class="text-center">
+                                                                    <h6 class="text-muted">Số lần thưởng</h6>
+                                                                    <h4 class="text-success">@Model.ThongTinTongQuan.so_lan_thuong</h4>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-2">
+                                                                <div class="text-center">
+                                                                    <h6 class="text-muted">% Thưởng tối đa</h6>
+                                                                    <h4 class="text-warning">@Model.ThongTinTongQuan.phan_tram_thuong_toi_da%</h4>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <div class="text-center">
+                                                                    <h6 class="text-muted">Số nhân viên</h6>
+                                                                    <h4 class="text-info">@Model.ThongTinTongQuan.so_nhan_vien_duoc_tinh_luong</h4>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <div class="text-center">
+                                                                    <h6 class="text-muted">Tổng lương</h6>
+                                                                    <h4 class="text-danger">@Model.DanhSachLuong.Sum(x => x.tong_luong).ToString("N0") VNĐ</h4>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                    }
+
+                    <!-- Bảng danh sách lương -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-list"></i> Danh sách lương nhân viên
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    @if (Model.DanhSachLuong != null && Model.DanhSachLuong.Any())
+                                    {
+                                                        <div class="table-responsive">
+                                                            <table class="table table-striped table-hover">
+                                                                <thead class="table-dark">
+                                                                    <tr>
+                                                                        <th>STT</th>
+                                                                        <th>Mã NV</th>
+                                                                        <th>Họ tên</th>
+                                                                        <th>Loại NV</th>
+                                                                        <th>Lương cơ bản</th>
+                                                                        <th>% Thưởng</th>
+                                                                        <th>Tiền thưởng</th>
+                                                                        <th>Tổng lương</th>
+                                                                        <th>Ngày vào làm</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    @{
+                                                                                        int stt = 1;
+                                                                    }
+                                                                    @foreach (var luong in Model.DanhSachLuong)
+                                                                    {
+                                                                                        <tr>
+                                                                                            <td>@stt</td>
+                                                                                            <td>
+                                                                                                <span class="badge bg-primary">@luong.ma_nv</span>
+                                                                                            </td>
+                                                                                            <td>
+                                                                                                <strong>@luong.ho_ten</strong>
+                                                                                            </td>
+                                                                                            <td>
+                                                                                                <span class="badge bg-secondary">@luong.loai_nv</span>
+                                                                                            </td>
+                                                                                            <td class="text-end">
+                                                                                                <strong>@luong.luong_co_ban.ToString("N0") VNĐ</strong>
+                                                                                            </td>
+                                                                                            <td class="text-center">
+                                                                                                @if (luong.phan_tram_thuong > 0)
+                                                                                                {
+                                                                                                                    <span class="badge bg-success">+@luong.phan_tram_thuong%</span>
+                                                                                                }
+                                                                                                else
+                                                                                                {
+                                                                                                                    <span class="badge bg-secondary">0%</span>
+                                                                                                }
+                                                                                            </td>
+                                                                                            <td class="text-end">
+                                                                                                @if (luong.tien_thuong > 0)
+                                                                                                {
+                                                                                                                    <span class="text-success">+@luong.tien_thuong.ToString("N0") VNĐ</span>
+                                                                                                }
+                                                                                                else
+                                                                                                {
+                                                                                                                    <span class="text-muted">0 VNĐ</span>
+                                                                                                }
+                                                                                            </td>
+                                                                                            <td class="text-end">
+                                                                                                <strong class="text-primary">@luong.tong_luong.ToString("N0") VNĐ</strong>
+                                                                                            </td>
+                                                                                            <td>
+                                                                                                @if (luong.ngay_vao_lam.HasValue)
+                                                                                                {
+                                                                                                                    @luong.ngay_vao_lam.Value.ToString("dd/MM/yyyy")
+                                                                                                }
+                                                                                                else
+                                                                                                {
+                                                                                                                    <span class="text-muted">-</span>
+                                                                                                }
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                        stt++;
+                                                                    }
+                                                                </tbody>
+                                                                <tfoot class="table-light">
+                                                                    <tr>
+                                                                        <th colspan="4" class="text-end">TỔNG CỘNG:</th>
+                                                                        <th class="text-end">@Model.DanhSachLuong.Sum(x => x.luong_co_ban).ToString("N0") VNĐ</th>
+                                                                        <th></th>
+                                                                        <th class="text-end">@Model.DanhSachLuong.Sum(x => x.tien_thuong).ToString("N0") VNĐ</th>
+                                                                        <th class="text-end text-primary">@Model.DanhSachLuong.Sum(x => x.tong_luong).ToString("N0") VNĐ</th>
+                                                                        <th></th>
+                                                                    </tr>
+                                                                </tfoot>
+                                                            </table>
+                                                        </div>
+                                    }
+                                    else
+                                    {
+                                                        <div class="text-center py-5">
+                                                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                                            <h5 class="text-muted">Không có dữ liệu lương</h5>
+                                                            <p class="text-muted">Vui lòng chọn tháng/năm để tính lương nhân viên.</p>
+                                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+                    <script>
+                        // Auto dismiss alerts after 5 seconds
+                        setTimeout(function() {
+                            $('.alert').fadeOut('slow');
+                        }, 5000);
+                    </script>
+}
