@@ -1,6 +1,7 @@
 using BTL.Web.Data;
 using BTL.Web.Models;
 using Dapper;
+using System.Data;
 using Microsoft.Data.SqlClient;
 using System.Linq;
 
@@ -126,7 +127,7 @@ namespace BTL.Web.Repositories
                 "EXEC sp_BanAn_CanUpdate @ban_id, @loai_ban_id, @so_hieu",
                 new { ban_id = id, loai_ban_id = loaiBanId, so_hieu = soHieu });
 
-            return (result.can_update, result.message);
+            return (result?.can_update ?? false, result?.message ?? "Không thể cập nhật");
         }
 
         public async Task<(bool can_delete, string message)> CanDeleteAsync(int id)
@@ -136,7 +137,7 @@ namespace BTL.Web.Repositories
                 "EXEC sp_BanAn_CanDelete @Id",
                 new { Id = id });
 
-            return (result.can_delete, result.message);
+            return (result?.can_delete ?? false, result?.message ?? "Không thể xóa");
         }
 
         public async Task<IEnumerable<BanAnWithLoaiBan>> GetAvailableAsync(int? capacity = null)
@@ -153,6 +154,35 @@ namespace BTL.Web.Repositories
             return await connection.QuerySingleAsync<int>(
                 "SELECT COUNT(*) FROM dbo.BanAn WHERE loai_ban_id = @LoaiBanId",
                 new { LoaiBanId = loaiBanId });
+        }
+
+        public async Task<PagedResult<BanAnWithLoaiBan>> SearchPagedAsync(string? searchTerm, int? loaiBanId, int? capacity, int page, int pageSize)
+        {
+            using var connection = _context.CreateConnection();
+            var parameters = new DynamicParameters();
+            parameters.Add("@PageNumber", page);
+            parameters.Add("@PageSize", pageSize);
+            parameters.Add("@SearchTerm", searchTerm);
+            parameters.Add("@LoaiBanId", loaiBanId);
+            parameters.Add("@Capacity", capacity);
+            parameters.Add("@TotalCount", dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+            var items = await connection.QueryAsync<BanAnWithLoaiBan>(
+                "sp_BanAn_SearchWithPagination",
+                parameters,
+                commandType: CommandType.StoredProcedure);
+
+            var totalCount = parameters.Get<int>("@TotalCount");
+
+            return new PagedResult<BanAnWithLoaiBan>(items, totalCount, page, pageSize);
+        }
+
+        public async Task<IEnumerable<dynamic>> GetTableStatusAsync()
+        {
+            using var connection = _context.CreateConnection();
+            return await connection.QueryAsync(
+                "sp_BanAn_GetTableStatus",
+                commandType: CommandType.StoredProcedure);
         }
     }
 }

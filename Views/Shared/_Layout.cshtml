@@ -49,6 +49,12 @@
                                 <li><a class="dropdown-item" asp-controller="BanAn" asp-action="Layout">
                                         <i class="bi bi-grid-3x3-gap me-2"></i>Layout nhà hàng
                                     </a></li>
+                                <li><a class="dropdown-item" asp-controller="BanAn" asp-action="Status">
+                                        <i class="bi bi-info-circle me-2"></i>Trạng thái bàn ăn
+                                    </a></li>
+                                <li><a class="dropdown-item" asp-controller="BanAn" asp-action="GetAvailable">
+                                        <i class="bi bi-check-circle me-2"></i>Bàn trống
+                                    </a></li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
@@ -209,6 +215,9 @@
                                 <li><a class="dropdown-item" asp-controller="ThongKeBanAn" asp-action="Index">
                                         <i class="bi bi-table me-2"></i>Thống kê bàn ăn
                                     </a></li>
+                                <li><a class="dropdown-item" asp-controller="ThongKeMonAn" asp-action="Index">
+                                        <i class="bi bi-egg-fried me-2"></i>Thống kê món ăn
+                                    </a></li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
@@ -222,6 +231,9 @@
                                 <li><a class="dropdown-item" asp-controller="ThongKeBanAn" asp-action="Dashboard">
                                         <i class="bi bi-speedometer2 me-2"></i>Dashboard bàn ăn
                                     </a></li>
+                                <li><a class="dropdown-item" asp-controller="ThongKeMonAn" asp-action="Dashboard">
+                                        <i class="bi bi-speedometer2 me-2"></i>Dashboard món ăn
+                                    </a></li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
@@ -234,6 +246,9 @@
                                     </a></li>
                                 <li><a class="dropdown-item" asp-controller="ThongKeBanAn" asp-action="SoSanh">
                                         <i class="bi bi-arrow-left-right me-2"></i>So sánh bàn ăn
+                                    </a></li>
+                                <li><a class="dropdown-item" asp-controller="ThongKeMonAn" asp-action="SoSanh">
+                                        <i class="bi bi-arrow-left-right me-2"></i>So sánh món ăn
                                     </a></li>
                             </ul>
                         </li>

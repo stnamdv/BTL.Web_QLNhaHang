@@ -19,5 +19,7 @@ namespace BTL.Web.Services
         Task<(bool can_delete, string message)> CanDeleteAsync(int id);
         Task<IEnumerable<BanAnWithLoaiBan>> GetAvailableAsync(int? capacity = null);
         Task<int> GetCountByLoaiBanIdAsync(int loaiBanId);
+        Task<PagedResult<BanAnWithLoaiBan>> SearchPagedAsync(string? searchTerm, int? loaiBanId, int? capacity, int page, int pageSize);
+        Task<IEnumerable<dynamic>> GetTableStatusAsync();
     }
 }

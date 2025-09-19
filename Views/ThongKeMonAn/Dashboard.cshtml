@@ -1,0 +1,327 @@
+@model BTL.Web.Models.ThongKeMonAnDashboard
+@{
+    ViewData["Title"] = "Dashboard thống kê món ăn";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-tachometer-alt text-primary"></i> Dashboard thống kê món ăn</h2>
+                <div class="btn-group">
+                    <a asp-action="Index" asp-route-thang="@Model.Thang" asp-route-nam="@Model.Nam" class="btn btn-secondary">
+                        <i class="fas fa-utensils"></i> Thống kê chính
+                    </a>
+                    <a asp-action="ChiTiet" asp-route-thang="@Model.Thang" asp-route-nam="@Model.Nam" class="btn btn-info">
+                        <i class="fas fa-list"></i> Chi tiết
+                    </a>
+                    <a asp-action="TopMonAn" asp-route-thang="@Model.Thang" asp-route-nam="@Model.Nam" class="btn btn-success">
+                        <i class="fas fa-trophy"></i> Top món ăn
+                    </a>
+                    <a asp-action="TheoLoai" asp-route-thang="@Model.Thang" asp-route-nam="@Model.Nam" class="btn btn-warning">
+                        <i class="fas fa-tags"></i> Theo loại
+                    </a>
+                </div>
+            </div>
+
+            <!-- Thông tin tháng -->
+            <div class="alert alert-primary">
+                <h5><i class="fas fa-calendar-alt"></i> Dashboard tháng @Model.Thang/@Model.Nam</h5>
+                <p class="mb-0">Tổng quan thống kê tần suất món ăn</p>
+            </div>
+
+            <!-- Các chỉ số tổng quan -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-utensils fa-2x mb-2"></i>
+                            <h5 class="card-title">Tổng số món</h5>
+                            <h2>@Model.TongSoMon</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-check-circle fa-2x mb-2"></i>
+                            <h5 class="card-title">Món có đặt</h5>
+                            <h2>@Model.TongSoMonCoDat</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-shopping-cart fa-2x mb-2"></i>
+                            <h5 class="card-title">Tổng lần đặt</h5>
+                            <h2>@Model.TongSoLanDat</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-danger text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-percentage fa-2x mb-2"></i>
+                            <h5 class="card-title">Tỷ lệ món có đặt</h5>
+                            <h2>@Model.TyLeMonCoDat.ToString("F1")%</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Biểu đồ và bảng thống kê -->
+            <div class="row">
+                <!-- Biểu đồ cột - Top món ăn -->
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-chart-column"></i> Top 10 món ăn được đặt nhiều nhất</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="topMonAnChart" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bảng top món ăn -->
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-trophy"></i> Top món ăn</h5>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.TopMonAn.Any())
+                            {
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Món ăn</th>
+                                                    <th>Số lần</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var item in Model.TopMonAn.Take(5))
+                                                {
+                                                        <tr>
+                                                            <td>
+                                                                @if (item.xep_hang_so_lan_dat == 1)
+                                                                {
+                                                                        <i class="fas fa-crown text-warning"></i>
+                                                                }
+                                                                else if (item.xep_hang_so_lan_dat == 2)
+                                                                {
+                                                                        <i class="fas fa-medal text-secondary"></i>
+                                                                }
+                                                                else if (item.xep_hang_so_lan_dat == 3)
+                                                                {
+                                                                        <i class="fas fa-award text-warning"></i>
+                                                                }
+                                                                else
+                                                                {
+                                                                        <span class="badge bg-primary">@item.xep_hang_so_lan_dat</span>
+                                                                }
+                                                            </td>
+                                                            <td>@item.ten_mon</td>
+                                                            <td>
+                                                                <span class="badge bg-success">@item.so_lan_duoc_dat</span>
+                                                            </td>
+                                                        </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                            }
+                            else
+                            {
+                                    <div class="alert alert-warning text-center">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        <p class="mb-0">Không có dữ liệu</p>
+                                    </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Biểu đồ tròn và đường -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Phân bố theo loại món</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="loaiMonChart" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-chart-line"></i> Xu hướng doanh thu món ăn</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="doanhThuChart" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bảng chi tiết -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-list"></i> Chi tiết thống kê</h5>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.ThongKeTanSuat.Any())
+                            {
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover">
+                                            <thead class="table-dark">
+                                                <tr>
+                                                    <th>Xếp hạng</th>
+                                                    <th>Tên món</th>
+                                                    <th>Loại món</th>
+                                                    <th>Số lần đặt</th>
+                                                    <th>Tổng số lượng</th>
+                                                    <th>Doanh thu</th>
+                                                    <th>Tần suất/ngày</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var item in Model.ThongKeTanSuat.Take(10))
+                                                {
+                                                        <tr>
+                                                            <td>
+                                                                <span class="badge bg-primary">#@item.xep_hang_so_lan_dat</span>
+                                                            </td>
+                                                            <td><strong>@item.ten_mon</strong></td>
+                                                            <td>
+                                                                <span class="badge bg-info">@item.loai_mon</span>
+                                                            </td>
+                                                            <td>
+                                                                <span class="badge bg-success">@item.so_lan_duoc_dat</span>
+                                                            </td>
+                                                            <td>@item.tong_so_luong_dat</td>
+                                                            <td>
+                                                                <span class="badge bg-danger">@item.tong_doanh_thu_mon.ToString("N0")</span>
+                                                            </td>
+                                                            <td>
+                                                                <span class="badge @(item.tan_suat_trung_binh_ngay > 5 ? "bg-success" : item.tan_suat_trung_binh_ngay > 2 ? "bg-warning" : "bg-secondary")">
+                                                                    @item.tan_suat_trung_binh_ngay.ToString("F2")
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            $(document).ready(function() {
+                // Dữ liệu cho biểu đồ
+                const topMonAnData = @Html.Raw(Json.Serialize(Model.TopMonAn.Take(10)));
+                const loaiMonData = @Html.Raw(Json.Serialize(Model.ThongKeTheoLoai));
+            
+                // Biểu đồ cột - Top món ăn
+                const topMonAnCtx = document.getElementById('topMonAnChart').getContext('2d');
+                new Chart(topMonAnCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: topMonAnData.map(item => item.ten_mon),
+                        datasets: [{
+                            label: 'Số lần được đặt',
+                            data: topMonAnData.map(item => item.so_lan_duoc_dat),
+                            backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+
+                // Biểu đồ tròn - Phân bố theo loại món
+                const loaiMonCtx = document.getElementById('loaiMonChart').getContext('2d');
+                new Chart(loaiMonCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: loaiMonData.map(item => item.loai_mon),
+                        datasets: [{
+                            data: loaiMonData.map(item => item.so_lan_duoc_dat),
+                            backgroundColor: [
+                                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
+                                '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+
+                // Biểu đồ đường - Doanh thu
+                const doanhThuCtx = document.getElementById('doanhThuChart').getContext('2d');
+                new Chart(doanhThuCtx, {
+                    type: 'line',
+                    data: {
+                        labels: topMonAnData.map(item => item.ten_mon),
+                        datasets: [{
+                            label: 'Doanh thu (VNĐ)',
+                            data: topMonAnData.map(item => item.tong_doanh_thu_mon),
+                            borderColor: '#FF6384',
+                            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value.toLocaleString('vi-VN') + ' VNĐ';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+        </script>
+}

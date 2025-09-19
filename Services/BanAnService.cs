@@ -209,5 +209,18 @@ namespace BTL.Web.Services
 
             return await _banAnRepository.GetCountByLoaiBanIdAsync(loaiBanId);
         }
+
+        public async Task<PagedResult<BanAnWithLoaiBan>> SearchPagedAsync(string? searchTerm, int? loaiBanId, int? capacity, int page, int pageSize)
+        {
+            if (page < 1) page = 1;
+            if (pageSize < 1 || pageSize > 100) pageSize = 10;
+
+            return await _banAnRepository.SearchPagedAsync(searchTerm, loaiBanId, capacity, page, pageSize);
+        }
+
+        public async Task<IEnumerable<dynamic>> GetTableStatusAsync()
+        {
+            return await _banAnRepository.GetTableStatusAsync();
+        }
     }
 }

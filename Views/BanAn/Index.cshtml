@@ -13,15 +13,51 @@
                         <i class="bi bi-table"></i> Quản lý Bàn Ăn
                     </h3>
                     <div class="card-tools">
-                        <a asp-action="Layout" class="btn btn-success btn-sm me-2">
+                        @* <a asp-action="Layout" class="btn btn-success btn-sm me-2">
                             <i class="bi bi-grid-3x3-gap"></i> Layout Nhà Hàng
-                        </a>
+                        </a> *@
                         <a asp-action="Create" class="btn btn-light btn-sm">
                             <i class="bi bi-plus-circle"></i> Thêm Bàn Mới
                         </a>
                     </div>
                 </div>
                 <div class="card-body">
+                    <!-- Search Form -->
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <form asp-action="Search" method="get" class="d-flex gap-2">
+                                <input type="text" name="searchTerm" class="form-control" 
+                                       placeholder="Tìm kiếm theo số hiệu bàn..." 
+                                       value="@ViewBag.SearchTerm">
+                                <select name="loaiBanId" class="form-select" style="width: auto;">
+                                    <option value="">Tất cả loại bàn</option>
+                                    @if (ViewBag.LoaiBans != null)
+                                    {
+                                        @foreach (var loaiBan in ViewBag.LoaiBans as List<BTL.Web.Models.LoaiBan>)
+                                        {
+                                            <option value="@loaiBan.loai_ban_id" selected="@(ViewBag.LoaiBanId?.ToString() == loaiBan.loai_ban_id.ToString())">
+                                                Loại @loaiBan.loai_ban_id (@loaiBan.suc_chua người)
+                                            </option>
+                                        }
+                                    }
+                                </select>
+                                <input type="number" name="capacity" class="form-control" style="width: 120px;" 
+                                       placeholder="Sức chứa" value="@ViewBag.Capacity">
+                                <button type="submit" class="btn btn-outline-primary">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </form>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a asp-action="Status" class="btn btn-info me-2">
+                                <i class="bi bi-info-circle"></i> Trạng thái bàn
+                            </a>
+                            <a asp-action="GetAvailable" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Bàn trống
+                            </a>
+                        </div>
+                    </div>
+
                     @if (TempData["Message"] != null)
                     {
                         <div class="alert alert-success alert-dismissible fade show">

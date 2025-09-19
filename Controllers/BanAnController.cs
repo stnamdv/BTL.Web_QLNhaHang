@@ -320,5 +320,51 @@ namespace BTL.Web.Controllers
                 return RedirectToAction(nameof(Index));
             }
         }
+
+        // GET: BanAn/Search
+        public async Task<IActionResult> Search(string? searchTerm, int? loaiBanId = null, int? capacity = null, int page = 1, int pageSize = 10)
+        {
+            try
+            {
+                // Validate page parameters
+                if (page < 1) page = 1;
+                if (pageSize < 1 || pageSize > 100) pageSize = 10;
+
+                var pagedResult = await _banAnService.SearchPagedAsync(searchTerm, loaiBanId, capacity, page, pageSize);
+
+                // Lấy danh sách loại bàn để hiển thị trong dropdown
+                var loaiBans = await _loaiBanService.GetAllAsync();
+                ViewBag.LoaiBans = loaiBans;
+                ViewBag.SearchTerm = searchTerm;
+                ViewBag.LoaiBanId = loaiBanId;
+                ViewBag.Capacity = capacity;
+                ViewBag.CurrentPage = page;
+                ViewBag.PageSize = pageSize;
+                ViewBag.TotalPages = pagedResult.TotalPages;
+                ViewBag.TotalItems = pagedResult.TotalItems;
+
+                return View("Index", pagedResult.Items);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Lỗi: {ex.Message}";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        // GET: BanAn/Status
+        public async Task<IActionResult> Status()
+        {
+            try
+            {
+                var statusData = await _banAnService.GetTableStatusAsync();
+                return View(statusData);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Lỗi: {ex.Message}";
+                return RedirectToAction(nameof(Index));
+            }
+        }
     }
 }
