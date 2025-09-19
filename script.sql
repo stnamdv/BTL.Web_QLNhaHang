@@ -209,6 +209,7 @@ CREATE TABLE [dbo].[NguyenLieu](
 	[ten] [nvarchar](160) NOT NULL,
 	[don_vi] [nvarchar](20) NOT NULL,
 	[nguon_goc] [nvarchar](max) NOT NULL,
+	[gia_nhap] [decimal](18, 2) NOT NULL,
 	[ncc_id] [int] NOT NULL,
 PRIMARY KEY CLUSTERED 
 (

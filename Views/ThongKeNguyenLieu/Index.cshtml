@@ -1,0 +1,358 @@
+@model BTL.Web.Models.ThongKeNguyenLieuSearchModel
+@{
+    ViewData["Title"] = "Thống kê nguyên liệu sử dụng";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-bar"></i> Thống kê nguyên liệu sử dụng
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Form tìm kiếm -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <form asp-action="Search" method="post" class="form-inline">
+                                <div class="form-group me-3">
+                                    <label class="form-label me-2">Loại thống kê:</label>
+                                    <select asp-for="LoaiThongKe" class="form-select" id="loaiThongKe" onchange="toggleDateInputs()">
+                                        <option value="ngay_hien_tai">Ngày hiện tại</option>
+                                        <option value="ngay">Ngày cụ thể</option>
+                                        <option value="khoang_thoi_gian">Khoảng thời gian</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group me-3" id="ngayCuTheGroup" style="display: none;">
+                                    <label class="form-label me-2">Ngày:</label>
+                                    <input asp-for="NgayCuThe" type="date" class="form-control" />
+                                </div>
+                                
+                                <div class="form-group me-3" id="khoangThoiGianGroup" style="display: none;">
+                                    <label class="form-label me-2">Từ ngày:</label>
+                                    <input asp-for="TuNgay" type="date" class="form-control me-2" />
+                                    <label class="form-label me-2">Đến ngày:</label>
+                                    <input asp-for="DenNgay" type="date" class="form-control" />
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search"></i> Thống kê
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                            <div class="alert alert-danger">
+                                @TempData["ErrorMessage"]
+                            </div>
+                    }
+
+                    @{
+                            var loaiThongKe = ViewBag.LoaiThongKe as string;
+                            var chiTiet = ViewBag.ChiTiet as List<BTL.Web.Models.ThongKeNguyenLieuChiTiet>;
+                            var theoDonVi = ViewBag.TheoDonVi as List<BTL.Web.Models.ThongKeNguyenLieuTheoDonVi>;
+                            var monAn = ViewBag.MonAn as List<BTL.Web.Models.ThongKeMonAnSuDungNguyenLieu>;
+                            var tongQuan = ViewBag.TongQuan as BTL.Web.Models.ThongKeNguyenLieuKhoangThoiGian;
+                            var theoNgay = ViewBag.TheoNgay as List<BTL.Web.Models.ThongKeNguyenLieuTheoNgay>;
+                            var ngay = ViewBag.Ngay as DateTime?;
+                    }
+
+                    @if (loaiThongKe != null)
+                    {
+                            <!-- Thông tin tổng quan -->
+                            @if (loaiThongKe == "khoang_thoi_gian" && tongQuan != null)
+                            {
+                                    <div class="row mb-4">
+                                        <div class="col-12">
+                                            <div class="card bg-light">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Tổng quan khoảng thời gian</h5>
+                                                    <div class="row">
+                                                        <div class="col-md-3">
+                                                            <strong>Từ ngày:</strong> @tongQuan.TuNgay.ToString("dd/MM/yyyy")
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <strong>Đến ngày:</strong> @tongQuan.DenNgay.ToString("dd/MM/yyyy")
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <strong>Số ngày:</strong> @tongQuan.SoNgay
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <strong>Số loại nguyên liệu:</strong> @tongQuan.SoLoaiNguyenLieuSuDung
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mt-2">
+                                                        <div class="col-md-4">
+                                                            <strong>Tổng lượng sử dụng:</strong> @tongQuan.TongLuongNguyenLieuSuDung.ToString("N2")
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <strong>Tổng chi phí:</strong> @tongQuan.TongChiPhiNguyenLieu.ToString("N0") VNĐ
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <strong>Chi phí TB/ngày:</strong> @tongQuan.ChiPhiNguyenLieuTrungBinhNgay.ToString("N0") VNĐ
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                            }
+                            else if (ngay.HasValue)
+                            {
+                                    <div class="row mb-4">
+                                        <div class="col-12">
+                                            <div class="card bg-light">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Thống kê ngày @ngay.Value.ToString("dd/MM/yyyy")</h5>
+                                                    @if (chiTiet != null)
+                                                    {
+                                                            <div class="row">
+                                                                <div class="col-md-4">
+                                                                    <strong>Số loại nguyên liệu:</strong> @chiTiet.Count
+                                                                </div>
+                                                                <div class="col-md-4">
+                                                                    <strong>Tổng lượng sử dụng:</strong> @chiTiet.Sum(x => x.TongLuongSuDung).ToString("N2")
+                                                                </div>
+                                                                <div class="col-md-4">
+                                                                    <strong>Tổng chi phí:</strong> @chiTiet.Sum(x => x.TongChiPhiNguyenLieu).ToString("N0") VNĐ
+                                                                </div>
+                                                            </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                            }
+
+                            <!-- Thống kê theo đơn vị -->
+                            @if (theoDonVi != null && theoDonVi.Any())
+                            {
+                                    <div class="row mb-4">
+                                        <div class="col-12">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h5 class="card-title">
+                                                        <i class="fas fa-weight"></i> Thống kê theo đơn vị
+                                                    </h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-striped table-hover">
+                                                            <thead class="table-dark">
+                                                                <tr>
+                                                                    <th>Đơn vị</th>
+                                                                    <th>Số loại nguyên liệu</th>
+                                                                    <th>Tổng lượng sử dụng</th>
+                                                                    <th>Tổng chi phí</th>
+                                                                    <th>Tỷ lệ %</th>
+                                                                    @if (loaiThongKe == "khoang_thoi_gian")
+                                                                    {
+                                                                            <th>Chi phí TB/ngày</th>
+                                                                    }
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @foreach (var item in theoDonVi)
+                                                                {
+                                                                        <tr>
+                                                                            <td><strong>@item.DonVi</strong></td>
+                                                                            <td>@item.SoLoaiNguyenLieu</td>
+                                                                            <td>@item.TongLuongSuDung.ToString("N2")</td>
+                                                                            <td>@item.TongChiPhiTheoDonVi.ToString("N0") VNĐ</td>
+                                                                            <td>
+                                                                                <span class="badge bg-info">@item.TyLeChiPhiPhanTram.ToString("N1")%</span>
+                                                                            </td>
+                                                                            @if (loaiThongKe == "khoang_thoi_gian" && item.ChiPhiTrungBinhNgayTheoDonVi.HasValue)
+                                                                            {
+                                                                                    <td>@item.ChiPhiTrungBinhNgayTheoDonVi.Value.ToString("N0") VNĐ</td>
+                                                                            }
+                                                                        </tr>
+                                                                }
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                            }
+
+                            <!-- Chi tiết theo từng nguyên liệu -->
+                            @if (chiTiet != null && chiTiet.Any())
+                            {
+                                    <div class="row mb-4">
+                                        <div class="col-12">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h5 class="card-title">
+                                                        <i class="fas fa-list"></i> Chi tiết theo từng nguyên liệu
+                                                    </h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-striped table-hover">
+                                                            <thead class="table-dark">
+                                                                <tr>
+                                                                    <th>Tên nguyên liệu</th>
+                                                                    <th>Đơn vị</th>
+                                                                    <th>Nguồn gốc</th>
+                                                                    <th>Nhà cung cấp</th>
+                                                                    <th>Giá/đơn vị</th>
+                                                                    <th>Lượng sử dụng</th>
+                                                                    <th>Số món sử dụng</th>
+                                                                    <th>Chi phí</th>
+                                                                    <th>Tỷ lệ %</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @foreach (var item in chiTiet)
+                                                                {
+                                                                        <tr>
+                                                                            <td><strong>@item.TenNguyenLieu</strong></td>
+                                                                            <td>@item.DonVi</td>
+                                                                            <td>@item.NguonGoc</td>
+                                                                            <td>@item.NhaCungCap</td>
+                                                                            <td>@item.GiaDonVi.ToString("N0") VNĐ</td>
+                                                                            <td>@item.TongLuongSuDung.ToString("N2")</td>
+                                                                            <td>@item.SoMonSuDung</td>
+                                                                            <td>@item.TongChiPhiNguyenLieu.ToString("N0") VNĐ</td>
+                                                                            <td>
+                                                                                <span class="badge bg-primary">@item.TyLeChiPhiPhanTram.ToString("N1")%</span>
+                                                                            </td>
+                                                                        </tr>
+                                                                }
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                            }
+
+                            <!-- Chi tiết món ăn sử dụng nguyên liệu -->
+                            @if (monAn != null && monAn.Any())
+                            {
+                                    <div class="row mb-4">
+                                        <div class="col-12">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h5 class="card-title">
+                                                        <i class="fas fa-utensils"></i> Chi tiết món ăn sử dụng nguyên liệu
+                                                    </h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-striped table-hover">
+                                                            <thead class="table-dark">
+                                                                <tr>
+                                                                    <th>Nguyên liệu</th>
+                                                                    <th>Mã món</th>
+                                                                    <th>Tên món</th>
+                                                                    <th>Loại món</th>
+                                                                    <th>Định lượng/món</th>
+                                                                    <th>Số món đặt</th>
+                                                                    <th>Tổng lượng NL</th>
+                                                                    <th>Chi phí NL</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @foreach (var item in monAn)
+                                                                {
+                                                                        <tr>
+                                                                            <td><strong>@item.TenNguyenLieu</strong></td>
+                                                                            <td>@item.MaMon</td>
+                                                                            <td>@item.TenMon</td>
+                                                                            <td>
+                                                                                <span class="badge bg-secondary">@item.LoaiMon</span>
+                                                                            </td>
+                                                                            <td>@item.DinhLuongCho1Mon.ToString("N3")</td>
+                                                                            <td>@item.TongSoMonDuocDat</td>
+                                                                            <td>@item.TongLuongNguyenLieuChoMon.ToString("N2")</td>
+                                                                            <td>@item.ChiPhiNguyenLieuChoMon.ToString("N0") VNĐ</td>
+                                                                        </tr>
+                                                                }
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                            }
+
+                            <!-- Thống kê theo ngày (chỉ có trong khoảng thời gian) -->
+                            @if (loaiThongKe == "khoang_thoi_gian" && theoNgay != null && theoNgay.Any())
+                            {
+                                    <div class="row mb-4">
+                                        <div class="col-12">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h5 class="card-title">
+                                                        <i class="fas fa-calendar-day"></i> Thống kê theo ngày
+                                                    </h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-striped table-hover">
+                                                            <thead class="table-dark">
+                                                                <tr>
+                                                                    <th>Ngày</th>
+                                                                    <th>Số loại NL</th>
+                                                                    <th>Tổng lượng sử dụng</th>
+                                                                    <th>Chi phí ngày</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @foreach (var item in theoNgay)
+                                                                {
+                                                                        <tr>
+                                                                            <td><strong>@item.Ngay.ToString("dd/MM/yyyy")</strong></td>
+                                                                            <td>@item.SoLoaiNguyenLieuSuDung</td>
+                                                                            <td>@item.TongLuongNguyenLieuSuDung.ToString("N2")</td>
+                                                                            <td>@item.ChiPhiNguyenLieuNgay.ToString("N0") VNĐ</td>
+                                                                        </tr>
+                                                                }
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                            }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleDateInputs() {
+    var loaiThongKe = document.getElementById('loaiThongKe').value;
+    var ngayCuTheGroup = document.getElementById('ngayCuTheGroup');
+    var khoangThoiGianGroup = document.getElementById('khoangThoiGianGroup');
+    
+    // Ẩn tất cả các group
+    ngayCuTheGroup.style.display = 'none';
+    khoangThoiGianGroup.style.display = 'none';
+    
+    // Hiển thị group tương ứng
+    if (loaiThongKe === 'ngay') {
+        ngayCuTheGroup.style.display = 'block';
+    } else if (loaiThongKe === 'khoang_thoi_gian') {
+        khoangThoiGianGroup.style.display = 'block';
+    }
+}
+
+// Khởi tạo khi trang load
+document.addEventListener('DOMContentLoaded', function() {
+    toggleDateInputs();
+});
+</script>

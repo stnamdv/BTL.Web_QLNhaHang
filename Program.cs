@@ -36,6 +36,7 @@ builder.Services.AddScoped<BTL.Web.Services.IOrderReceptionService, BTL.Web.Serv
 builder.Services.AddScoped<BTL.Web.Services.IOrderService, BTL.Web.Services.OrderService>();
 builder.Services.AddScoped<BTL.Web.Services.IHoaDonService, BTL.Web.Services.HoaDonService>();
 builder.Services.AddScoped<BTL.Web.Services.ILuongNhanVienService, BTL.Web.Services.LuongNhanVienService>();
+builder.Services.AddScoped<BTL.Web.Services.IThongKeNguyenLieuService, BTL.Web.Services.ThongKeNguyenLieuService>();
 
 var app = builder.Build();
 

@@ -146,4 +146,56 @@
             </div>
         </div>
     </div>
+
+    <!-- Thêm hàng mới cho thống kê -->
+    <h4 class="mb-4 mt-5">Báo cáo & Thống kê</h4>
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-chart-bar"></i> Thống kê nguyên liệu
+                    </h5>
+                    <p class="card-text">Thống kê lượng nguyên liệu sử dụng theo ngày và khoảng thời gian</p>
+                    <a asp-controller="ThongKeNguyenLieu" asp-action="Index" class="btn btn-outline-info">Xem thống
+                        kê</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-calendar-day"></i> Thống kê hôm nay
+                    </h5>
+                    <p class="card-text">Xem thống kê nguyên liệu sử dụng ngày hiện tại</p>
+                    <a asp-controller="ThongKeNguyenLieu" asp-action="NgayHienTai" class="btn btn-outline-warning">Xem
+                        hôm nay</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-boxes"></i> Quản lý nguyên liệu
+                    </h5>
+                    <p class="card-text">Quản lý thông tin nguyên liệu và nhà cung cấp</p>
+                    <a asp-controller="NguyenLieu" asp-action="Index" class="btn btn-outline-secondary">Quản lý nguyên
+                        liệu</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-truck"></i> Quản lý nhà cung cấp
+                    </h5>
+                    <p class="card-text">Quản lý thông tin nhà cung cấp nguyên liệu</p>
+                    <a asp-controller="NhaCungCap" asp-action="Index" class="btn btn-outline-secondary">Quản lý NCC</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
