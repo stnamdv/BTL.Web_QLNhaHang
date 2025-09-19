@@ -1,0 +1,309 @@
+@model List<BTL.Web.Models.ThongKeBanAnTongHop>
+@{
+    ViewData["Title"] = "Tổng hợp thống kê bàn ăn";
+    var thang = ViewBag.Thang ?? DateTime.Now.Month;
+    var nam = ViewBag.Nam ?? DateTime.Now.Year;
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-chart-pie text-primary"></i> Tổng hợp thống kê bàn ăn</h2>
+                <div class="btn-group">
+                    <a asp-action="Index" asp-route-thang="@thang" asp-route-nam="@nam" class="btn btn-secondary">
+                        <i class="fas fa-chart-bar"></i> Thống kê chính
+                    </a>
+                    <a asp-action="Dashboard" asp-route-thang="@thang" asp-route-nam="@nam" class="btn btn-info">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                    <a asp-action="ChiTiet" asp-route-thang="@thang" asp-route-nam="@nam" class="btn btn-warning">
+                        <i class="fas fa-list"></i> Chi tiết
+                    </a>
+                </div>
+            </div>
+
+            <!-- Thông tin tháng -->
+            <div class="alert alert-success">
+                <h5><i class="fas fa-calendar-alt"></i> Tổng hợp thống kê tháng @thang/@nam</h5>
+                <p class="mb-0">Thống kê tổng hợp về việc sử dụng bàn ăn trong tháng</p>
+            </div>
+
+            @if (Model.Any())
+            {
+                        <!-- Bảng tổng hợp -->
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="fas fa-table"></i> Bảng tổng hợp</h5>
+                                <div>
+                                    <button class="btn btn-sm btn-success" onclick="exportToExcel()">
+                                        <i class="fas fa-file-excel"></i> Xuất Excel
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover" id="tongHopTable">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th>Loại bàn</th>
+                                                <th>Tổng bàn có sẵn</th>
+                                                <th>Bàn đã sử dụng</th>
+                                                <th>Tổng đơn hàng</th>
+                                                <th>Tổng khách hàng</th>
+                                                <th>TB khách/đơn</th>
+                                                <th>Số ngày hoạt động</th>
+                                                <th>Tỷ lệ bàn sử dụng (%)</th>
+                                                <th>TB đơn hàng/ngày</th>
+                                                <th>TB khách/ngày</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in Model)
+                                            {
+                                                        <tr>
+                                                            <td>
+                                                                <span class="badge bg-primary">@item.ten_loai_ban</span>
+                                                            </td>
+                                                            <td>
+                                                                <span class="badge bg-info">@item.tong_so_ban_co_san</span>
+                                                            </td>
+                                                            <td>
+                                                                <span class="badge bg-success">@item.so_ban_da_su_dung</span>
+                                                            </td>
+                                                            <td>@item.tong_so_don_hang</td>
+                                                            <td>@item.tong_so_khach</td>
+                                                            <td>@item.trung_binh_khach_moi_don.ToString("F2")</td>
+                                                            <td>@item.so_ngay_hoat_dong</td>
+                                                            <td>
+                                                                <div class="progress" style="height: 20px;">
+                                                                    <div class="progress-bar @(item.ty_le_ban_da_su_dung > 70 ? "bg-success" : item.ty_le_ban_da_su_dung > 40 ? "bg-warning" : "bg-danger")" 
+                                                                         role="progressbar" 
+                                                                         style="width: @(Math.Min(item.ty_le_ban_da_su_dung, 100))%"
+                                                                         aria-valuenow="@item.ty_le_ban_da_su_dung" 
+                                                                         aria-valuemin="0" 
+                                                                         aria-valuemax="100">
+                                                                        @item.ty_le_ban_da_su_dung.ToString("F1")%
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td>@item.trung_binh_don_hang_ngay.ToString("F2")</td>
+                                                            <td>@item.trung_binh_khach_ngay.ToString("F2")</td>
+                                                        </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Biểu đồ tổng hợp -->
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0"><i class="fas fa-chart-bar"></i> So sánh bàn có sẵn vs đã sử dụng</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas id="comparisonChart" height="200"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Phân bố tỷ lệ sử dụng</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas id="usageChart" height="200"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Thống kê tổng quan -->
+                        <div class="row mt-4">
+                            <div class="col-md-3">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-layer-group fa-2x mb-2"></i>
+                                        <h5 class="card-title">Tổng loại bàn</h5>
+                                        <h3>@Model.Count</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-table fa-2x mb-2"></i>
+                                        <h5 class="card-title">Tổng bàn có sẵn</h5>
+                                        <h3>@Model.Sum(x => x.tong_so_ban_co_san)</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                        <h5 class="card-title">Bàn đã sử dụng</h5>
+                                        <h3>@Model.Sum(x => x.so_ban_da_su_dung)</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-warning text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-percentage fa-2x mb-2"></i>
+                                        <h5 class="card-title">Tỷ lệ sử dụng TB</h5>
+                                        <h3>@(Model.Any() ? Model.Average(x => x.ty_le_ban_da_su_dung).ToString("F1") : "0")%</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Thống kê bổ sung -->
+                        <div class="row mt-4">
+                            <div class="col-md-3">
+                                <div class="card bg-danger text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-shopping-cart fa-2x mb-2"></i>
+                                        <h5 class="card-title">Tổng đơn hàng</h5>
+                                        <h3>@Model.Sum(x => x.tong_so_don_hang)</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-dark text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-users fa-2x mb-2"></i>
+                                        <h5 class="card-title">Tổng khách hàng</h5>
+                                        <h3>@Model.Sum(x => x.tong_so_khach)</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-secondary text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-calendar-day fa-2x mb-2"></i>
+                                        <h5 class="card-title">Ngày hoạt động TB</h5>
+                                        <h3>@(Model.Any() ? Model.Average(x => x.so_ngay_hoat_dong).ToString("F1") : "0")</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-light text-dark">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-user-friends fa-2x mb-2"></i>
+                                        <h5 class="card-title">TB khách/đơn</h5>
+                                        <h3>@(Model.Any() ? Model.Average(x => x.trung_binh_khach_moi_don).ToString("F1") : "0")</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+            }
+            else
+            {
+                        <div class="alert alert-warning text-center">
+                            <h5><i class="fas fa-exclamation-triangle"></i> Không có dữ liệu</h5>
+                            <p>Không tìm thấy dữ liệu tổng hợp cho tháng @thang/@nam</p>
+                        </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+                function exportToExcel() {
+                    const thang = @thang;
+                    const nam = @nam;
+            
+                    fetch(`/ThongKeBanAn/ExportExcel?thang=${thang}&nam=${nam}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('Xuất Excel thành công!');
+                            } else {
+                                alert('Lỗi: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Có lỗi xảy ra khi xuất Excel');
+                        });
+                }
+
+                $(document).ready(function() {
+                    // Khởi tạo DataTable
+                    $('#tongHopTable').DataTable({
+                        "language": {
+                            "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json"
+                        },
+                        "pageLength": 10,
+                        "order": [[ 0, "asc" ]]
+                    });
+
+                    // Dữ liệu cho biểu đồ
+                    const tongHopData = @Html.Raw(Json.Serialize(Model));
+            
+                    if (tongHopData.length > 0) {
+                        // Biểu đồ so sánh
+                        const comparisonCtx = document.getElementById('comparisonChart').getContext('2d');
+                        new Chart(comparisonCtx, {
+                            type: 'bar',
+                            data: {
+                                labels: tongHopData.map(item => item.ten_loai_ban),
+                                datasets: [{
+                                    label: 'Bàn có sẵn',
+                                    data: tongHopData.map(item => item.tong_so_ban_co_san),
+                                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                                    borderColor: 'rgba(54, 162, 235, 1)',
+                                    borderWidth: 1
+                                }, {
+                                    label: 'Bàn đã sử dụng',
+                                    data: tongHopData.map(item => item.so_ban_da_su_dung),
+                                    backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true
+                                    }
+                                }
+                            }
+                        });
+
+                        // Biểu đồ tỷ lệ sử dụng
+                        const usageCtx = document.getElementById('usageChart').getContext('2d');
+                        new Chart(usageCtx, {
+                            type: 'doughnut',
+                            data: {
+                                labels: tongHopData.map(item => item.ten_loai_ban),
+                                datasets: [{
+                                    data: tongHopData.map(item => item.ty_le_ban_da_su_dung),
+                                    backgroundColor: [
+                                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
+                                        '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF'
+                                    ]
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        position: 'bottom'
+                                    }
+                                }
+                            }
+                        });
+                    }
+                });
+            </script>
+}

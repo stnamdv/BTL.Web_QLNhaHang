@@ -262,4 +262,56 @@
             </div>
         </div>
     </div>
+
+    <!-- Thêm hàng mới cho thống kê bàn ăn -->
+    <div class="row mt-3">
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-table"></i> Thống kê bàn ăn
+                    </h5>
+                    <p class="card-text">Thống kê số lượng từng loại bàn được khách ngồi trung bình theo ngày trong
+                        tháng</p>
+                    <a asp-controller="ThongKeBanAn" asp-action="Index" class="btn btn-outline-primary">Xem thống kê</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard bàn ăn
+                    </h5>
+                    <p class="card-text">Dashboard tổng hợp thống kê bàn ăn với biểu đồ trực quan</p>
+                    <a asp-controller="ThongKeBanAn" asp-action="Dashboard" class="btn btn-outline-info">Xem
+                        dashboard</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-balance-scale"></i> So sánh bàn ăn
+                    </h5>
+                    <p class="card-text">So sánh thống kê bàn ăn giữa các tháng</p>
+                    <a asp-controller="ThongKeBanAn" asp-action="SoSanh" class="btn btn-outline-warning">So sánh
+                        tháng</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-chart-pie"></i> Tổng hợp bàn ăn
+                    </h5>
+                    <p class="card-text">Thống kê tổng hợp về việc sử dụng bàn ăn trong tháng</p>
+                    <a asp-controller="ThongKeBanAn" asp-action="TongHop" class="btn btn-outline-success">Xem tổng
+                        hợp</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

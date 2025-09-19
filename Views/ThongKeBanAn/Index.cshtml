@@ -1,0 +1,238 @@
+@model List<BTL.Web.Models.ThongKeBanAnTrungBinh>
+@{
+    ViewData["Title"] = "Thống kê bàn ăn";
+    var thongKe = ViewBag.ThongKe as List<BTL.Web.Models.ThongKeBanAnTrungBinh> ?? new
+    List<BTL.Web.Models.ThongKeBanAnTrungBinh>();
+    var thang = ViewBag.Thang ?? DateTime.Now.Month;
+    var nam = ViewBag.Nam ?? DateTime.Now.Year;
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-chart-bar text-primary"></i> Thống kê bàn ăn</h2>
+                <div class="btn-group">
+                    <a asp-action="Dashboard" asp-route-thang="@thang" asp-route-nam="@nam" class="btn btn-info">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                    <a asp-action="ChiTiet" asp-route-thang="@thang" asp-route-nam="@nam" class="btn btn-secondary">
+                        <i class="fas fa-list"></i> Chi tiết
+                    </a>
+                    <a asp-action="TongHop" asp-route-thang="@thang" asp-route-nam="@nam" class="btn btn-success">
+                        <i class="fas fa-chart-pie"></i> Tổng hợp
+                    </a>
+                </div>
+            </div>
+
+            <!-- Form lọc dữ liệu -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-filter"></i> Lọc dữ liệu</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Index" method="post" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="Thang" class="form-label">Tháng</label>
+                            <select name="Thang" id="Thang" class="form-select" required>
+                                @for (int i = 1; i <= 12; i++)
+                                {
+                                                if (i == thang)
+                                                {
+                                                                <option value="@i" selected>Tháng @i</option>
+                                                }
+                                                else
+                                                {
+                                                                <option value="@i">Tháng @i</option>
+                                                }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="Nam" class="form-label">Năm</label>
+                            <select name="Nam" id="Nam" class="form-select" required>
+                                @for (int i = DateTime.Now.Year - 5; i <= DateTime.Now.Year + 1; i++)
+                                {
+                                            if (i == nam)
+                                            {
+                                                        <option value="@i" selected>@i</option>
+                                            }
+                                            else
+                                            {
+                                                        <option value="@i">@i</option>
+                                            }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Xem thống kê
+                            </button>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <a asp-action="SoSanh" class="btn btn-warning">
+                                <i class="fas fa-balance-scale"></i> So sánh tháng
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Thông tin tháng được chọn -->
+            <div class="alert alert-info">
+                <h5><i class="fas fa-calendar-alt"></i> Thống kê tháng @thang/@nam</h5>
+                <p class="mb-0">Số lượng từng loại bàn được khách ngồi trung bình theo ngày trong tháng</p>
+            </div>
+
+            <!-- Bảng thống kê -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-table"></i> Kết quả thống kê</h5>
+                    <div>
+                        <button class="btn btn-sm btn-success" onclick="exportToExcel()">
+                            <i class="fas fa-file-excel"></i> Xuất Excel
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (thongKe.Any())
+                    {
+                                        <div class="table-responsive">
+                                            <table class="table table-striped table-hover" id="thongKeTable">
+                                                <thead class="table-dark">
+                                                    <tr>
+                                                        <th>Loại bàn</th>
+                                                        <th>Số ngày có đơn</th>
+                                                        <th>TB bàn sử dụng/ngày</th>
+                                                        <th>TB lần đặt bàn/ngày</th>
+                                                        <th>TB số khách/ngày</th>
+                                                        <th>Tổng bàn sử dụng tháng</th>
+                                                        <th>Tổng lần đặt bàn tháng</th>
+                                                        <th>Tổng số khách tháng</th>
+                                                        <th>Tỷ lệ sử dụng TB/ngày (%)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var item in thongKe)
+                                                    {
+                                                                        <tr>
+                                                                            <td>
+                                                                                <span class="badge bg-primary">@item.ten_loai_ban</span>
+                                                                            </td>
+                                                                            <td>
+                                                                                <span class="badge bg-info">@item.so_ngay_co_don_trong_thang</span>
+                                                                            </td>
+                                                                            <td>@item.trung_binh_ban_su_dung_ngay.ToString("F2")</td>
+                                                                            <td>@item.trung_binh_lan_dat_ban_ngay.ToString("F2")</td>
+                                                                            <td>@item.trung_binh_so_khach_ngay.ToString("F2")</td>
+                                                                            <td>
+                                                                                <span class="badge bg-success">@item.tong_ban_su_dung_thang</span>
+                                                                            </td>
+                                                                            <td>
+                                                                                <span class="badge bg-warning">@item.tong_lan_dat_ban_thang</span>
+                                                                            </td>
+                                                                            <td>
+                                                                                <span class="badge bg-danger">@item.tong_so_khach_thang</span>
+                                                                            </td>
+                                                                            <td>
+                                                                                <div class="progress" style="height: 20px;">
+                                                                                    <div class="progress-bar @(item.ty_le_su_dung_trung_binh_ngay > 70 ? "bg-success" : item.ty_le_su_dung_trung_binh_ngay > 40 ? "bg-warning" : "bg-danger")"
+                                                                                        role="progressbar"
+                                                                                        style="width: @(Math.Min(item.ty_le_su_dung_trung_binh_ngay, 100))%"
+                                                                                        aria-valuenow="@item.ty_le_su_dung_trung_binh_ngay" aria-valuemin="0"
+                                                                                        aria-valuemax="100">
+                                                                                        @item.ty_le_su_dung_trung_binh_ngay.ToString("F1")%
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <!-- Thống kê tổng hợp -->
+                                        <div class="row mt-4">
+                                            <div class="col-md-3">
+                                                <div class="card bg-primary text-white">
+                                                    <div class="card-body text-center">
+                                                        <h5 class="card-title">Tổng loại bàn</h5>
+                                                        <h3>@thongKe.Count</h3>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="card bg-success text-white">
+                                                    <div class="card-body text-center">
+                                                        <h5 class="card-title">Tổng bàn sử dụng</h5>
+                                                        <h3>@thongKe.Sum(x => x.tong_ban_su_dung_thang)</h3>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="card bg-warning text-white">
+                                                    <div class="card-body text-center">
+                                                        <h5 class="card-title">Tổng đơn hàng</h5>
+                                                        <h3>@thongKe.Sum(x => x.tong_lan_dat_ban_thang)</h3>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="card bg-danger text-white">
+                                                    <div class="card-body text-center">
+                                                        <h5 class="card-title">Tổng khách hàng</h5>
+                                                        <h3>@thongKe.Sum(x => x.tong_so_khach_thang)</h3>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                    }
+                    else
+                    {
+                                        <div class="alert alert-warning text-center">
+                                            <h5><i class="fas fa-exclamation-triangle"></i> Không có dữ liệu</h5>
+                                            <p>Không tìm thấy dữ liệu thống kê cho tháng @thang/@nam</p>
+                                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+                    <script>
+                        function exportToExcel() {
+                            const thang = document.getElementById('Thang').value;
+                            const nam = document.getElementById('Nam').value;
+
+                            fetch(`/ThongKeBanAn/ExportExcel?thang=${thang}&nam=${nam}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        alert('Xuất Excel thành công!');
+                                    } else {
+                                        alert('Lỗi: ' + data.message);
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    alert('Có lỗi xảy ra khi xuất Excel');
+                                });
+                        }
+
+                        // Khởi tạo DataTable
+                        $(document).ready(function () {
+                            $('#thongKeTable').DataTable({
+                                "language": {
+                                    "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json"
+                                },
+                                "pageLength": 10,
+                                "order": [[0, "asc"]],
+                                "columnDefs": [
+                                    { "orderable": false, "targets": -1 }
+                                ]
+                            });
+                        });
+                    </script>
+}

@@ -39,6 +39,7 @@ builder.Services.AddScoped<BTL.Web.Services.ILuongNhanVienService, BTL.Web.Servi
 builder.Services.AddScoped<BTL.Web.Services.IThongKeNguyenLieuService, BTL.Web.Services.ThongKeNguyenLieuService>();
 builder.Services.AddScoped<BTL.Web.Services.IThongKeDoanhThuChiPhiService, BTL.Web.Services.ThongKeDoanhThuChiPhiService>();
 builder.Services.AddScoped<BTL.Web.Services.IThongKeNhaCungCapService, BTL.Web.Services.ThongKeNhaCungCapService>();
+builder.Services.AddScoped<BTL.Web.Services.IThongKeBanAnService, BTL.Web.Services.ThongKeBanAnService>();
 
 var app = builder.Build();
 
