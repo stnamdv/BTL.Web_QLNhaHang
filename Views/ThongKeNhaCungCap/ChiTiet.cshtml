@@ -1,0 +1,299 @@
+@model dynamic
+@{
+    ViewData["Title"] = "Chi tiết Nhà cung cấp";
+    var thongKe = Model.ThongKe as BTL.Web.Models.ThongKeNhaCungCap;
+    var chiTiet = Model.ChiTiet as List<BTL.Web.Models.ChiTietNguyenLieuNhaCungCap>;
+    var nhaCungCap = ViewBag.NhaCungCap as BTL.Web.Models.NhaCungCap;
+    var thangHienTai = ViewBag.ThangHienTai as int? ?? DateTime.Now.Month;
+    var namHienTai = ViewBag.NamHienTai as int? ?? DateTime.Now.Year;
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="@Url.Action("Index", "ThongKeNhaCungCap")">Thống kê Nhà cung cấp</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Chi tiết</li>
+                </ol>
+            </nav>
+
+            <!-- Thông tin nhà cung cấp -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-building"></i>
+                        Thông tin Nhà cung cấp: @nhaCungCap?.ten
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Tên nhà cung cấp:</strong></td>
+                                    <td>@nhaCungCap?.ten</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Địa chỉ:</strong></td>
+                                    <td>@(nhaCungCap?.dia_chi ?? "N/A")</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Số điện thoại:</strong></td>
+                                    <td>@(nhaCungCap?.sdt ?? "N/A")</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Tháng thống kê:</strong></td>
+                                    <td>@thangHienTai/@namHienTai</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tổng nguyên liệu:</strong></td>
+                                    <td><span class="badge badge-info">@(thongKe?.tong_so_nguyen_lieu ?? 0)</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tổng món sử dụng:</strong></td>
+                                    <td><span class="badge badge-success">@(thongKe?.tong_so_mon_su_dung ?? 0)</span></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thống kê tổng quan -->
+            @if (thongKe != null)
+            {
+                        <div class="row mt-4">
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-primary">
+                                        <i class="fas fa-weight"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Tổng lượng sử dụng</span>
+                                        <span class="info-box-number">@thongKe.tong_luong_su_dung.ToString("N2") kg</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-success">
+                                        <i class="fas fa-dollar-sign"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Tổng giá trị sử dụng</span>
+                                        <span class="info-box-number">@thongKe.tong_gia_tri_su_dung.ToString("N0") VNĐ</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-warning">
+                                        <i class="fas fa-shopping-cart"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Tổng đơn hàng</span>
+                                        <span class="info-box-number">@thongKe.tong_so_don_hang đơn</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-info">
+                                        <i class="fas fa-utensils"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Tổng món đặt</span>
+                                        <span class="info-box-number">@thongKe.tong_so_mon_duoc_dat món</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+            }
+
+            <!-- Chi tiết nguyên liệu -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-list"></i>
+                        Chi tiết Nguyên liệu sử dụng trong tháng @thangHienTai/@namHienTai
+                    </h3>
+                </div>
+                <div class="card-body">
+                    @if (chiTiet != null && chiTiet.Any())
+                    {
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-striped table-hover">
+                                        <thead class="thead-dark">
+                                            <tr>
+                                                <th>STT</th>
+                                                <th>Tên nguyên liệu</th>
+                                                <th>Đơn vị</th>
+                                                <th>Giá nhập (VNĐ)</th>
+                                                <th>Số món sử dụng</th>
+                                                <th>Lượng sử dụng (kg)</th>
+                                                <th>Giá trị sử dụng (VNĐ)</th>
+                                                <th>Số đơn hàng</th>
+                                                <th>Số lần đặt</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @{
+                                                        int stt = 1;
+                                            }
+                                            @foreach (var item in chiTiet)
+                                            {
+                                                        <tr>
+                                                            <td>@stt</td>
+                                                            <td>
+                                                                <strong>@item.ten_nguyen_lieu</strong>
+                                                            </td>
+                                                            <td>
+                                                                <span class="badge badge-secondary">@item.don_vi</span>
+                                                            </td>
+                                                            <td>
+                                                                <span class="text-primary font-weight-bold">
+                                                                    @item.gia_nhap.ToString("N0") VNĐ
+                                                                </span>
+                                                            </td>
+                                                            <td>
+                                                                <span class="badge badge-info">@item.so_mon_su_dung</span>
+                                                            </td>
+                                                            <td>
+                                                                <span class="text-success font-weight-bold">
+                                                                    @item.luong_su_dung.ToString("N2") kg
+                                                                </span>
+                                                            </td>
+                                                            <td>
+                                                                <span class="text-warning font-weight-bold">
+                                                                    @item.gia_tri_su_dung.ToString("N0") VNĐ
+                                                                </span>
+                                                            </td>
+                                                            <td>
+                                                                <span class="badge badge-warning">@item.so_don_hang</span>
+                                                            </td>
+                                                            <td>
+                                                                <span class="badge badge-primary">@item.so_lan_dat</span>
+                                                            </td>
+                                                        </tr>
+                                                        stt++;
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Tổng kết chi tiết -->
+                                <div class="row mt-4">
+                                    <div class="col-md-12">
+                                        <div class="card bg-light">
+                                            <div class="card-body">
+                                                <h5 class="card-title">
+                                                    <i class="fas fa-chart-bar"></i>
+                                                    Tổng kết nguyên liệu
+                                                </h5>
+                                                <div class="row">
+                                                    <div class="col-md-3">
+                                                        <div class="info-box">
+                                                            <span class="info-box-icon bg-info">
+                                                                <i class="fas fa-boxes"></i>
+                                                            </span>
+                                                            <div class="info-box-content">
+                                                                <span class="info-box-text">Tổng NL</span>
+                                                                <span class="info-box-number">@chiTiet.Count</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <div class="info-box">
+                                                            <span class="info-box-icon bg-success">
+                                                                <i class="fas fa-weight"></i>
+                                                            </span>
+                                                            <div class="info-box-content">
+                                                                <span class="info-box-text">Tổng lượng</span>
+                                                                <span class="info-box-number">@chiTiet.Sum(x => x.luong_su_dung).ToString("N2")</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <div class="info-box">
+                                                            <span class="info-box-icon bg-warning">
+                                                                <i class="fas fa-dollar-sign"></i>
+                                                            </span>
+                                                            <div class="info-box-content">
+                                                                <span class="info-box-text">Tổng giá trị</span>
+                                                                <span class="info-box-number">@chiTiet.Sum(x => x.gia_tri_su_dung).ToString("C0")</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <div class="info-box">
+                                                            <span class="info-box-icon bg-primary">
+                                                                <i class="fas fa-shopping-cart"></i>
+                                                            </span>
+                                                            <div class="info-box-content">
+                                                                <span class="info-box-text">Tổng đơn hàng</span>
+                                                                <span class="info-box-number">@chiTiet.Sum(x => x.so_don_hang)</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                    }
+                    else
+                    {
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    Không có dữ liệu chi tiết nguyên liệu cho nhà cung cấp này trong tháng @thangHienTai/@namHienTai
+                                </div>
+                    }
+                </div>
+                <div class="card-footer">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <a href="@Url.Action("Index")" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Quay lại
+                            </a>
+                            <a href="@Url.Action("TopNguyenLieu", new { NccId = nhaCungCap?.ncc_id, Thang = thangHienTai, Nam = namHienTai })" 
+                               class="btn btn-info">
+                                <i class="fas fa-trophy"></i> Top nguyên liệu
+                            </a>
+                        </div>
+                        <div class="col-md-6 text-right">
+                            <small class="text-muted">
+                                Cập nhật lần cuối: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+            <script>
+                $(document).ready(function() {
+                    // Khởi tạo DataTable
+                    $('.table').DataTable({
+                        "language": {
+                            "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Vietnamese.json"
+                        },
+                        "pageLength": 25,
+                        "order": [[5, "desc"]], // Sắp xếp theo lượng sử dụng giảm dần
+                        "columnDefs": [
+                            { "orderable": false, "targets": 0 } // Cột STT không sắp xếp
+                        ]
+                    });
+                });
+            </script>
+}

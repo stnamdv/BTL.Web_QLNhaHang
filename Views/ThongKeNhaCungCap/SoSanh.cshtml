@@ -1,0 +1,374 @@
+@model List<BTL.Web.Models.SoSanhThongKeNhaCungCap>
+@{
+    ViewData["Title"] = "So sánh Thống kê Nhà cung cấp";
+    var danhSachNhaCungCap = ViewBag.DanhSachNhaCungCap as List<BTL.Web.Models.NhaCungCap>;
+    var thang1HienTai = ViewBag.Thang1HienTai as int? ?? DateTime.Now.Month;
+    var nam1HienTai = ViewBag.Nam1HienTai as int? ?? DateTime.Now.Year;
+    var thang2HienTai = ViewBag.Thang2HienTai as int? ?? DateTime.Now.Month;
+    var nam2HienTai = ViewBag.Nam2HienTai as int? ?? DateTime.Now.Year;
+    var nccIdSelected = ViewBag.NccIdSelected as int?;
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-balance-scale"></i>
+                        So sánh Thống kê Nhà cung cấp giữa các tháng
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Form lọc dữ liệu -->
+                    <form asp-action="SoSanh" method="post" class="mb-4">
+                        <div class="row">
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="Thang1">Tháng 1:</label>
+                                    <select name="Thang1" id="Thang1" class="form-control">
+                                        @for (int i = 1; i <= 12; i++)
+                                        {
+                                            <option value="@i" selected="@(i == thang1HienTai)">Tháng @i</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="Nam1">Năm 1:</label>
+                                    <select name="Nam1" id="Nam1" class="form-control">
+                                        @for (int i = DateTime.Now.Year - 2; i <= DateTime.Now.Year + 1; i++)
+                                        {
+                                            <option value="@i" selected="@(i == nam1HienTai)">@i</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="Thang2">Tháng 2:</label>
+                                    <select name="Thang2" id="Thang2" class="form-control">
+                                        @for (int i = 1; i <= 12; i++)
+                                        {
+                                            <option value="@i" selected="@(i == thang2HienTai)">Tháng @i</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="Nam2">Năm 2:</label>
+                                    <select name="Nam2" id="Nam2" class="form-control">
+                                        @for (int i = DateTime.Now.Year - 2; i <= DateTime.Now.Year + 1; i++)
+                                        {
+                                            <option value="@i" selected="@(i == nam2HienTai)">@i</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="NccId">Nhà cung cấp:</label>
+                                    <select name="NccId" id="NccId" class="form-control">
+                                        <option value="">-- Tất cả nhà cung cấp --</option>
+                                        @if (danhSachNhaCungCap != null)
+                                        {
+                                            @foreach (var ncc in danhSachNhaCungCap)
+                                            {
+                                                <option value="@ncc.ncc_id" selected="@(ncc.ncc_id == nccIdSelected)">@ncc.ten</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <div class="form-group">
+                                    <label>&nbsp;</label>
+                                    <button type="submit" class="btn btn-primary btn-block">
+                                        <i class="fas fa-search"></i> So sánh
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Thông báo lỗi -->
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            @TempData["ErrorMessage"]
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    }
+
+                    <!-- Bảng so sánh -->
+                    @if (Model != null && Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped table-hover">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>STT</th>
+                                        <th>Nhà cung cấp</th>
+                                        <th colspan="3" class="text-center">Tháng @thang1HienTai/@nam1HienTai</th>
+                                        <th colspan="3" class="text-center">Tháng @thang2HienTai/@nam2HienTai</th>
+                                        <th colspan="3" class="text-center">Chênh lệch</th>
+                                        <th colspan="2" class="text-center">% Thay đổi</th>
+                                    </tr>
+                                    <tr>
+                                        <th></th>
+                                        <th></th>
+                                        <th>Lượng (kg)</th>
+                                        <th>Giá trị (VNĐ)</th>
+                                        <th>Đơn hàng</th>
+                                        <th>Lượng (kg)</th>
+                                        <th>Giá trị (VNĐ)</th>
+                                        <th>Đơn hàng</th>
+                                        <th>Lượng (kg)</th>
+                                        <th>Giá trị (VNĐ)</th>
+                                        <th>Đơn hàng</th>
+                                        <th>Lượng (%)</th>
+                                        <th>Giá trị (%)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        int stt = 1;
+                                    }
+                                    @foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td>@stt</td>
+                                            <td>
+                                                <strong>@item.ten_nha_cung_cap</strong>
+                                            </td>
+                                            <td>
+                                                <span class="text-primary">@item.luong_su_dung_thang1.ToString("N2") kg</span>
+                                            </td>
+                                            <td>
+                                                <span class="text-success">@item.gia_tri_su_dung_thang1.ToString("N0") VNĐ</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-info">@item.so_don_hang_thang1</span>
+                                            </td>
+                                            <td>
+                                                <span class="text-primary">@item.luong_su_dung_thang2.ToString("N2") kg</span>
+                                            </td>
+                                            <td>
+                                                <span class="text-success">@item.gia_tri_su_dung_thang2.ToString("N0") VNĐ</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-info">@item.so_don_hang_thang2</span>
+                                            </td>
+                                            <td>
+                                                @if (item.chenh_lech_luong > 0)
+                                                {
+                                                    <span class="text-success">
+                                                        <i class="fas fa-arrow-up"></i> +@item.chenh_lech_luong.ToString("N2") kg
+                                                    </span>
+                                                }
+                                                else if (item.chenh_lech_luong < 0)
+                                                {
+                                                    <span class="text-danger">
+                                                        <i class="fas fa-arrow-down"></i> @item.chenh_lech_luong.ToString("N2") kg
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">0</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (item.chenh_lech_gia_tri > 0)
+                                                {
+                                                    <span class="text-success">
+                                                        <i class="fas fa-arrow-up"></i> +@item.chenh_lech_gia_tri.ToString("N0") VNĐ
+                                                    </span>
+                                                }
+                                                else if (item.chenh_lech_gia_tri < 0)
+                                                {
+                                                    <span class="text-danger">
+                                                        <i class="fas fa-arrow-down"></i> @item.chenh_lech_gia_tri.ToString("N0") VNĐ
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">0</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (item.chenh_lech_don_hang > 0)
+                                                {
+                                                    <span class="text-success">
+                                                        <i class="fas fa-arrow-up"></i> +@item.chenh_lech_don_hang
+                                                    </span>
+                                                }
+                                                else if (item.chenh_lech_don_hang < 0)
+                                                {
+                                                    <span class="text-danger">
+                                                        <i class="fas fa-arrow-down"></i> @item.chenh_lech_don_hang
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">0</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (item.phan_tram_tang_luong > 0)
+                                                {
+                                                    <span class="badge badge-success">
+                                                        +@item.phan_tram_tang_luong.ToString("N1")%
+                                                    </span>
+                                                }
+                                                else if (item.phan_tram_tang_luong < 0)
+                                                {
+                                                    <span class="badge badge-danger">
+                                                        @item.phan_tram_tang_luong.ToString("N1")%
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-secondary">0%</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (item.phan_tram_tang_gia_tri > 0)
+                                                {
+                                                    <span class="badge badge-success">
+                                                        +@item.phan_tram_tang_gia_tri.ToString("N1")%
+                                                    </span>
+                                                }
+                                                else if (item.phan_tram_tang_gia_tri < 0)
+                                                {
+                                                    <span class="badge badge-danger">
+                                                        @item.phan_tram_tang_gia_tri.ToString("N1")%
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-secondary">0%</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                        stt++;
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Tổng kết so sánh -->
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <i class="fas fa-chart-line"></i>
+                                            Tổng kết so sánh @thang1HienTai/@nam1HienTai vs @thang2HienTai/@nam2HienTai
+                                        </h5>
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="info-box">
+                                                    <span class="info-box-icon bg-info">
+                                                        <i class="fas fa-building"></i>
+                                                    </span>
+                                                    <div class="info-box-content">
+                                                        <span class="info-box-text">Tổng NCC</span>
+                                                        <span class="info-box-number">@Model.Count</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="info-box">
+                                                    <span class="info-box-icon bg-success">
+                                                        <i class="fas fa-arrow-up"></i>
+                                                    </span>
+                                                    <div class="info-box-content">
+                                                        <span class="info-box-text">NCC tăng trưởng</span>
+                                                        <span class="info-box-number">@Model.Count(x => x.phan_tram_tang_luong > 0)</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="info-box">
+                                                    <span class="info-box-icon bg-danger">
+                                                        <i class="fas fa-arrow-down"></i>
+                                                    </span>
+                                                    <div class="info-box-content">
+                                                        <span class="info-box-text">NCC giảm</span>
+                                                        <span class="info-box-number">@Model.Count(x => x.phan_tram_tang_luong < 0)</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="info-box">
+                                                    <span class="info-box-icon bg-warning">
+                                                        <i class="fas fa-minus"></i>
+                                                    </span>
+                                                    <div class="info-box-content">
+                                                        <span class="info-box-text">NCC không đổi</span>
+                                                        <span class="info-box-number">@Model.Count(x => x.phan_tram_tang_luong == 0)</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            Không có dữ liệu để so sánh giữa tháng @thang1HienTai/@nam1HienTai và tháng @thang2HienTai/@nam2HienTai
+                        </div>
+                    }
+                </div>
+                <div class="card-footer">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <a href="@Url.Action("Index")" class="btn btn-primary">
+                                <i class="fas fa-list"></i> Danh sách chi tiết
+                            </a>
+                            <a href="@Url.Action("Dashboard")" class="btn btn-success">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                            <a href="@Url.Action("TopNguyenLieu")" class="btn btn-info">
+                                <i class="fas fa-trophy"></i> Top nguyên liệu
+                            </a>
+                        </div>
+                        <div class="col-md-6 text-right">
+                            <small class="text-muted">
+                                Cập nhật lần cuối: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Khởi tạo DataTable
+            $('.table').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Vietnamese.json"
+                },
+                "pageLength": 25,
+                "order": [[8, "desc"]], // Sắp xếp theo chênh lệch lượng giảm dần
+                "scrollX": true,
+                "columnDefs": [
+                    { "orderable": false, "targets": 0 } // Cột STT không sắp xếp
+                ]
+            });
+        });
+    </script>
+}

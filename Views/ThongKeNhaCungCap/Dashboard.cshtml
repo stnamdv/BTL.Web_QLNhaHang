@@ -1,0 +1,478 @@
+@model BTL.Web.Models.ThongKeNhaCungCapTongHop
+@{
+    ViewData["Title"] = "Dashboard Thống kê Nhà cung cấp";
+    var thangHienTai = ViewBag.ThangHienTai as int? ?? DateTime.Now.Month;
+    var namHienTai = ViewBag.NamHienTai as int? ?? DateTime.Now.Year;
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Dashboard Thống kê Nhà cung cấp - Tháng @thangHienTai/@namHienTai
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Form lọc dữ liệu -->
+                    <form asp-action="Dashboard" method="post" class="mb-4">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="thang">Tháng:</label>
+                                    <select name="thang" id="thang" class="form-control">
+                                        @for (int i = 1; i <= 12; i++)
+                                        {
+                                            <option value="@i" selected="@(i == thangHienTai)">Tháng @i</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="nam">Năm:</label>
+                                    <select name="nam" id="nam" class="form-control">
+                                        @for (int i = DateTime.Now.Year - 2; i <= DateTime.Now.Year + 1; i++)
+                                        {
+                                            <option value="@i" selected="@(i == namHienTai)">@i</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label>&nbsp;</label>
+                                    <button type="submit" class="btn btn-primary btn-block">
+                                        <i class="fas fa-search"></i> Cập nhật
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Thông báo lỗi -->
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            @TempData["ErrorMessage"]
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    }
+
+                    <!-- Thống kê tổng hợp -->
+                    @if (Model?.TongHop != null)
+                    {
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-info">
+                                        <i class="fas fa-building"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Tổng Nhà cung cấp</span>
+                                        <span class="info-box-number">@Model.TongHop.tong_so_nha_cung_cap</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-success">
+                                        <i class="fas fa-boxes"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Tổng Nguyên liệu</span>
+                                        <span class="info-box-number">@Model.TongHop.tong_so_nguyen_lieu</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-warning">
+                                        <i class="fas fa-utensils"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Tổng Món ăn</span>
+                                        <span class="info-box-number">@Model.TongHop.tong_so_mon</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-primary">
+                                        <i class="fas fa-shopping-cart"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Tổng Đơn hàng</span>
+                                        <span class="info-box-number">@Model.TongHop.tong_so_don_hang</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-secondary">
+                                        <i class="fas fa-list"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Tổng Món đặt</span>
+                                        <span class="info-box-number">@Model.TongHop.tong_so_mon_duoc_dat</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-dark">
+                                        <i class="fas fa-weight"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Tổng Lượng sử dụng</span>
+                                        <span
+                                            class="info-box-number">@Model.TongHop.tong_luong_nguyen_lieu_su_dung.ToString("N2")</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-danger">
+                                        <i class="fas fa-dollar-sign"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Tổng Giá trị sử dụng</span>
+                                        <span
+                                            class="info-box-number">@Model.TongHop.tong_gia_tri_nguyen_lieu_su_dung.ToString("C0")</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-light">
+                                        <i class="fas fa-chart-line"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">TB Giá trị/Món</span>
+                                        <span
+                                            class="info-box-number">@Model.TongHop.trung_binh_gia_tri_su_dung_per_mon.ToString("C0")</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Top 5 Nhà cung cấp -->
+                    @if (Model?.TopNhaCungCap != null && Model.TopNhaCungCap.Any())
+                    {
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">
+                                            <i class="fas fa-trophy"></i>
+                                            Top 5 Nhà cung cấp có lượng sử dụng cao nhất
+                                        </h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Hạng</th>
+                                                        <th>Nhà cung cấp</th>
+                                                        <th>Lượng sử dụng (kg)</th>
+                                                        <th>Giá trị (VNĐ)</th>
+                                                        <th>Đơn hàng</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @{
+                                                        int hang = 1;
+                                                    }
+                                                    @foreach (var item in Model.TopNhaCungCap.Take(5))
+                                                    {
+                                                        <tr>
+                                                            <td>
+                                                                @if (hang == 1)
+                                                                {
+                                                                    <span class="badge badge-warning">🥇</span>
+                                                                }
+                                                                else if (hang == 2)
+                                                                {
+                                                                    <span class="badge badge-secondary">🥈</span>
+                                                                }
+                                                                else if (hang == 3)
+                                                                {
+                                                                    <span class="badge badge-warning">🥉</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="badge badge-info">@hang</span>
+                                                                }
+                                                            </td>
+                                                            <td>
+                                                                <strong>@item.ten_nha_cung_cap</strong>
+                                                            </td>
+                                                            <td>
+                                                                <span
+                                                                    class="text-primary">@item.luong_su_dung.ToString("N2") kg</span>
+                                                            </td>
+                                                            <td>
+                                                                <span
+                                                                    class="text-success">@item.gia_tri_su_dung.ToString("N0") VNĐ</span>
+                                                            </td>
+                                                            <td>
+                                                                <span class="badge badge-info">@item.so_don_hang</span>
+                                                            </td>
+                                                        </tr>
+                                                        hang++;
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Top 5 Nguyên liệu -->
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">
+                                            <i class="fas fa-star"></i>
+                                            Top 5 Nguyên liệu được sử dụng nhiều nhất
+                                        </h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Hạng</th>
+                                                        <th>Nguyên liệu</th>
+                                                        <th>Nhà cung cấp</th>
+                                                        <th>Lượng sử dụng (kg)</th>
+                                                        <th>Giá trị (VNĐ)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @{
+                                                        int hangNL = 1;
+                                                    }
+                                                    @foreach (var item in Model.TopNguyenLieu.Take(5))
+                                                    {
+                                                        <tr>
+                                                            <td>
+                                                                @if (hangNL == 1)
+                                                                {
+                                                                    <span class="badge badge-warning">🥇</span>
+                                                                }
+                                                                else if (hangNL == 2)
+                                                                {
+                                                                    <span class="badge badge-secondary">🥈</span>
+                                                                }
+                                                                else if (hangNL == 3)
+                                                                {
+                                                                    <span class="badge badge-warning">🥉</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="badge badge-info">@hangNL</span>
+                                                                }
+                                                            </td>
+                                                            <td>
+                                                                <strong>@item.ten_nguyen_lieu</strong>
+                                                            </td>
+                                                            <td>
+                                                                <small class="text-muted">@item.ten_nha_cung_cap</small>
+                                                            </td>
+                                                            <td>
+                                                                <span
+                                                                    class="text-primary">@item.luong_su_dung.ToString("N2") kg</span>
+                                                            </td>
+                                                            <td>
+                                                                <span
+                                                                    class="text-success">@item.gia_tri_su_dung.ToString("N0") VNĐ</span>
+                                                            </td>
+                                                        </tr>
+                                                        hangNL++;
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Biểu đồ (placeholder) -->
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-chart-pie"></i>
+                                        Biểu đồ thống kê
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <canvas id="supplierChart" width="400" height="200"></canvas>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <canvas id="ingredientChart" width="400" height="200"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <a href="@Url.Action("Index")" class="btn btn-primary">
+                                <i class="fas fa-list"></i> Danh sách chi tiết
+                            </a>
+                            <a href="@Url.Action("SoSanh")" class="btn btn-warning">
+                                <i class="fas fa-balance-scale"></i> So sánh tháng
+                            </a>
+                            <a href="@Url.Action("TopNguyenLieu")" class="btn btn-info">
+                                <i class="fas fa-trophy"></i> Top nguyên liệu
+                            </a>
+                        </div>
+                        <div class="col-md-6 text-right">
+                            <small class="text-muted">
+                                Cập nhật lần cuối: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Biểu đồ nhà cung cấp
+            @if (Model?.TopNhaCungCap != null && Model.TopNhaCungCap.Any())
+                {
+                    <text>
+                        var supplierCtx = document.getElementById('supplierChart').getContext('2d');
+                        var supplierChart = new Chart(supplierCtx, {
+                            type: 'bar',
+                        data: {
+                            labels: [
+                                            @foreach (var item in Model.TopNhaCungCap.Take(5))
+                        {
+                            <text>'@Html.Raw(item.ten_nha_cung_cap)',</text>
+                        }
+                        ],
+                        datasets: [{
+                            label: 'Lượng sử dụng',
+                        data: [
+                                                @foreach (var item in Model.TopNhaCungCap.Take(5))
+                        {
+                            <text>@item.luong_su_dung,</text>
+                        }
+                        ],
+                        backgroundColor: [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(255, 205, 86, 0.8)',
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(153, 102, 255, 0.8)'
+                        ],
+                        borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 205, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 1
+                                        }]
+                                    },
+                        options: {
+                            responsive: true,
+                        plugins: {
+                            title: {
+                            display: true,
+                        text: 'Top 5 Nhà cung cấp'
+                                            }
+                                        },
+                        scales: {
+                            y: {
+                            beginAtZero: true
+                                            }
+                                        }
+                                    }
+                                });
+                    </text>
+            }
+
+                // Biểu đồ nguyên liệu
+                @if (Model?.TopNguyenLieu != null && Model.TopNguyenLieu.Any())
+                {
+                    <text>
+                        var ingredientCtx = document.getElementById('ingredientChart').getContext('2d');
+                        var ingredientChart = new Chart(ingredientCtx, {
+                            type: 'doughnut',
+                        data: {
+                            labels: [
+                                            @foreach (var item in Model.TopNguyenLieu.Take(5))
+                        {
+                            <text>'@Html.Raw(item.ten_nguyen_lieu)',</text>
+                        }
+                        ],
+                        datasets: [{
+                            data: [
+                                                @foreach (var item in Model.TopNguyenLieu.Take(5))
+                        {
+                            <text>@item.luong_su_dung,</text>
+                        }
+                        ],
+                        backgroundColor: [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(255, 205, 86, 0.8)',
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(153, 102, 255, 0.8)'
+                        ],
+                        borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 205, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 1
+                                        }]
+                                    },
+                        options: {
+                            responsive: true,
+                        plugins: {
+                            title: {
+                            display: true,
+                        text: 'Top 5 Nguyên liệu'
+                                            },
+                        legend: {
+                            position: 'bottom'
+                                            }
+                                        }
+                                    }
+                                });
+                    </text>
+            }
+                });
+    </script>
+}
