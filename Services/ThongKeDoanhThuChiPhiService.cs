@@ -1,4 +1,5 @@
 using BTL.Web.Models;
+using Dapper;
 using Microsoft.Data.SqlClient;
 using System.Data;
 
@@ -16,14 +17,12 @@ namespace BTL.Web.Services
 
         public async Task<(ThongKeDoanhThuChiPhiTongQuan tongQuan,
                           List<ThongKeDoanhThuTheoLoaiMon> doanhThuTheoLoaiMon,
-                          List<ThongKeChiPhiTheoNguyenLieu> chiPhiTheoNguyenLieu,
-                          List<ThongKeChiPhiLuongTheoLoaiNhanVien> chiPhiLuongTheoLoaiNhanVien)>
+                          List<ThongKeChiPhiTheoNguyenLieu> chiPhiTheoNguyenLieu)>
             GetThongKeTheoNgayAsync(DateTime ngay)
         {
             var tongQuan = new ThongKeDoanhThuChiPhiTongQuan();
             var doanhThuTheoLoaiMon = new List<ThongKeDoanhThuTheoLoaiMon>();
             var chiPhiTheoNguyenLieu = new List<ThongKeChiPhiTheoNguyenLieu>();
-            var chiPhiLuongTheoLoaiNhanVien = new List<ThongKeChiPhiLuongTheoLoaiNhanVien>();
 
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
@@ -44,7 +43,6 @@ namespace BTL.Web.Services
                     Ngay = reader.GetDateTime("ngay"),
                     TongDoanhThu = reader.IsDBNull("tong_doanh_thu") ? 0 : reader.GetDecimal("tong_doanh_thu"),
                     TongChiPhiNguyenLieu = reader.IsDBNull("tong_chi_phi_nguyen_lieu") ? 0 : reader.GetDecimal("tong_chi_phi_nguyen_lieu"),
-                    TongChiPhiLuong = reader.IsDBNull("tong_chi_phi_luong") ? 0 : reader.GetDecimal("tong_chi_phi_luong"),
                     TongChiPhi = reader.IsDBNull("tong_chi_phi") ? 0 : reader.GetDecimal("tong_chi_phi"),
                     LoiNhuan = reader.IsDBNull("loi_nhuan") ? 0 : reader.GetDecimal("loi_nhuan"),
                     TyLeLoiNhuan = reader.IsDBNull("ty_le_loi_nhuan") ? 0 : reader.GetDecimal("ty_le_loi_nhuan"),
@@ -87,84 +85,64 @@ namespace BTL.Web.Services
                 }
             }
 
-            // Đọc kết quả thứ tư - Chi phí lương theo loại nhân viên
-            if (await reader.NextResultAsync())
-            {
-                while (await reader.ReadAsync())
-                {
-                    chiPhiLuongTheoLoaiNhanVien.Add(new ThongKeChiPhiLuongTheoLoaiNhanVien
-                    {
-                        LoaiNhanVien = reader.IsDBNull("loai_nv") ? "" : reader.GetString("loai_nv"),
-                        SoNhanVien = reader.IsDBNull("so_nhan_vien") ? 0 : reader.GetInt32("so_nhan_vien"),
-                        LuongCoBan = reader.IsDBNull("luong_co_ban") ? 0 : reader.GetDecimal("luong_co_ban"),
-                        LuongNgay = reader.IsDBNull("luong_ngay") ? 0 : reader.GetDecimal("luong_ngay"),
-                        TongChiPhiLuongLoai = reader.IsDBNull("tong_chi_phi_luong_loai") ? 0 : reader.GetDecimal("tong_chi_phi_luong_loai"),
-                        TyLeChiPhiLuongPhanTram = reader.IsDBNull("ty_le_chi_phi_luong_phan_tram") ? 0 : reader.GetDecimal("ty_le_chi_phi_luong_phan_tram")
-                    });
-                }
-            }
-
-            return (tongQuan, doanhThuTheoLoaiMon, chiPhiTheoNguyenLieu, chiPhiLuongTheoLoaiNhanVien);
+            return (tongQuan, doanhThuTheoLoaiMon, chiPhiTheoNguyenLieu);
         }
 
         public async Task<(ThongKeDoanhThuChiPhiKhoangThoiGian tongQuan,
                           List<ThongKeDoanhThuChiPhiTheoNgay> theoNgay)>
             GetThongKeTheoKhoangThoiGianAsync(DateTime tuNgay, DateTime denNgay)
         {
-            var tongQuan = new ThongKeDoanhThuChiPhiKhoangThoiGian();
-            var theoNgay = new List<ThongKeDoanhThuChiPhiTheoNgay>();
-
             using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
 
-            using var command = new SqlCommand("sp_ThongKe_DoanhThuChiPhiTheoKhoangThoiGian", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.AddWithValue("@tu_ngay", tuNgay.Date);
-            command.Parameters.AddWithValue("@den_ngay", denNgay.Date);
+            var parameters = new DynamicParameters();
+            parameters.Add("@tu_ngay", tuNgay.Date);
+            parameters.Add("@den_ngay", denNgay.Date);
 
-            using var reader = await command.ExecuteReaderAsync();
+            using var multi = await connection.QueryMultipleAsync(
+                "sp_ThongKe_DoanhThuChiPhiTheoKhoangThoiGian",
+                parameters,
+                commandType: CommandType.StoredProcedure);
 
             // Đọc kết quả đầu tiên - Tổng quan
-            if (await reader.ReadAsync())
+            var tongQuanData = await multi.ReadFirstOrDefaultAsync();
+            var tongQuan = new ThongKeDoanhThuChiPhiKhoangThoiGian();
+
+            if (tongQuanData != null)
             {
                 tongQuan = new ThongKeDoanhThuChiPhiKhoangThoiGian
                 {
-                    TuNgay = reader.GetDateTime("tu_ngay"),
-                    DenNgay = reader.GetDateTime("den_ngay"),
-                    SoNgay = reader.IsDBNull("so_ngay") ? 0 : reader.GetInt32("so_ngay"),
-                    TongDoanhThu = reader.IsDBNull("tong_doanh_thu") ? 0 : reader.GetDecimal("tong_doanh_thu"),
-                    TongChiPhiNguyenLieu = reader.IsDBNull("tong_chi_phi_nguyen_lieu") ? 0 : reader.GetDecimal("tong_chi_phi_nguyen_lieu"),
-                    TongChiPhiLuong = reader.IsDBNull("tong_chi_phi_luong") ? 0 : reader.GetDecimal("tong_chi_phi_luong"),
-                    TongChiPhi = reader.IsDBNull("tong_chi_phi") ? 0 : reader.GetDecimal("tong_chi_phi"),
-                    LoiNhuan = reader.IsDBNull("loi_nhuan") ? 0 : reader.GetDecimal("loi_nhuan"),
-                    TyLeLoiNhuan = reader.IsDBNull("ty_le_loi_nhuan") ? 0 : reader.GetDecimal("ty_le_loi_nhuan"),
-                    SoDonHang = reader.IsDBNull("so_don_hang") ? 0 : reader.GetInt32("so_don_hang"),
-                    SoDonHoanThanh = reader.IsDBNull("so_don_hoan_thanh") ? 0 : reader.GetInt32("so_don_hoan_thanh"),
-                    SoKhach = reader.IsDBNull("so_khach") ? 0 : reader.GetInt32("so_khach"),
-                    DoanhThuTrungBinhNgay = reader.IsDBNull("doanh_thu_trung_binh_ngay") ? 0 : reader.GetDecimal("doanh_thu_trung_binh_ngay"),
-                    LoiNhuanTrungBinhNgay = reader.IsDBNull("loi_nhuan_trung_binh_ngay") ? 0 : reader.GetDecimal("loi_nhuan_trung_binh_ngay")
+                    TuNgay = (DateTime)tongQuanData.tu_ngay,
+                    DenNgay = (DateTime)tongQuanData.den_ngay,
+                    SoNgay = (int)tongQuanData.so_ngay,
+                    TongDoanhThu = (decimal)tongQuanData.tong_doanh_thu,
+                    TongChiPhiNguyenLieu = (decimal)tongQuanData.tong_chi_phi_nguyen_lieu,
+                    TongChiPhi = (decimal)tongQuanData.tong_chi_phi,
+                    LoiNhuan = (decimal)tongQuanData.loi_nhuan,
+                    TyLeLoiNhuan = (decimal)tongQuanData.ty_le_loi_nhuan,
+                    SoDonHang = (int)tongQuanData.so_don_hang,
+                    SoDonHoanThanh = (int)tongQuanData.so_don_hoan_thanh,
+                    SoKhach = (int)tongQuanData.so_khach,
+                    DoanhThuTrungBinhNgay = (decimal)tongQuanData.doanh_thu_trung_binh_ngay,
+                    LoiNhuanTrungBinhNgay = (decimal)tongQuanData.loi_nhuan_trung_binh_ngay
                 };
             }
 
             // Đọc kết quả thứ hai - Thống kê theo ngày
-            if (await reader.NextResultAsync())
+            var theoNgayData = await multi.ReadAsync();
+            var theoNgay = new List<ThongKeDoanhThuChiPhiTheoNgay>();
+
+            foreach (dynamic item in theoNgayData)
             {
-                while (await reader.ReadAsync())
+                theoNgay.Add(new ThongKeDoanhThuChiPhiTheoNgay
                 {
-                    theoNgay.Add(new ThongKeDoanhThuChiPhiTheoNgay
-                    {
-                        Ngay = reader.GetDateTime("ngay"),
-                        SoDonHang = reader.IsDBNull("so_don_hang") ? 0 : reader.GetInt32("so_don_hang"),
-                        SoDonHoanThanh = reader.IsDBNull("so_don_hoan_thanh") ? 0 : reader.GetInt32("so_don_hoan_thanh"),
-                        DoanhThuNgay = reader.IsDBNull("doanh_thu_ngay") ? 0 : reader.GetDecimal("doanh_thu_ngay"),
-                        ChiPhiNguyenLieuNgay = reader.IsDBNull("chi_phi_nguyen_lieu_ngay") ? 0 : reader.GetDecimal("chi_phi_nguyen_lieu_ngay"),
-                        ChiPhiLuongNgay = reader.IsDBNull("chi_phi_luong_ngay") ? 0 : reader.GetDecimal("chi_phi_luong_ngay"),
-                        TongChiPhiNgay = reader.IsDBNull("tong_chi_phi_ngay") ? 0 : reader.GetDecimal("tong_chi_phi_ngay"),
-                        LoiNhuanNgay = reader.IsDBNull("loi_nhuan_ngay") ? 0 : reader.GetDecimal("loi_nhuan_ngay")
-                    });
-                }
+                    Ngay = (DateTime)item.ngay,
+                    SoDonHang = (int)item.so_don_hang,
+                    SoDonHoanThanh = (int)item.so_don_hoan_thanh,
+                    DoanhThuNgay = (decimal)item.doanh_thu_ngay,
+                    ChiPhiNguyenLieuNgay = (decimal)item.chi_phi_nguyen_lieu_ngay,
+                    TongChiPhiNgay = (decimal)item.tong_chi_phi_ngay,
+                    LoiNhuanNgay = (decimal)item.loi_nhuan_ngay
+                });
             }
 
             return (tongQuan, theoNgay);
@@ -172,14 +150,12 @@ namespace BTL.Web.Services
 
         public async Task<(ThongKeDoanhThuChiPhiTongQuan tongQuan,
                           List<ThongKeDoanhThuTheoLoaiMon> doanhThuTheoLoaiMon,
-                          List<ThongKeChiPhiTheoNguyenLieu> chiPhiTheoNguyenLieu,
-                          List<ThongKeChiPhiLuongTheoLoaiNhanVien> chiPhiLuongTheoLoaiNhanVien)>
+                          List<ThongKeChiPhiTheoNguyenLieu> chiPhiTheoNguyenLieu)>
             GetThongKeNgayHienTaiAsync()
         {
             var tongQuan = new ThongKeDoanhThuChiPhiTongQuan();
             var doanhThuTheoLoaiMon = new List<ThongKeDoanhThuTheoLoaiMon>();
             var chiPhiTheoNguyenLieu = new List<ThongKeChiPhiTheoNguyenLieu>();
-            var chiPhiLuongTheoLoaiNhanVien = new List<ThongKeChiPhiLuongTheoLoaiNhanVien>();
 
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
@@ -199,7 +175,6 @@ namespace BTL.Web.Services
                     Ngay = reader.GetDateTime("ngay"),
                     TongDoanhThu = reader.IsDBNull("tong_doanh_thu") ? 0 : reader.GetDecimal("tong_doanh_thu"),
                     TongChiPhiNguyenLieu = reader.IsDBNull("tong_chi_phi_nguyen_lieu") ? 0 : reader.GetDecimal("tong_chi_phi_nguyen_lieu"),
-                    TongChiPhiLuong = reader.IsDBNull("tong_chi_phi_luong") ? 0 : reader.GetDecimal("tong_chi_phi_luong"),
                     TongChiPhi = reader.IsDBNull("tong_chi_phi") ? 0 : reader.GetDecimal("tong_chi_phi"),
                     LoiNhuan = reader.IsDBNull("loi_nhuan") ? 0 : reader.GetDecimal("loi_nhuan"),
                     TyLeLoiNhuan = reader.IsDBNull("ty_le_loi_nhuan") ? 0 : reader.GetDecimal("ty_le_loi_nhuan"),
@@ -242,37 +217,19 @@ namespace BTL.Web.Services
                 }
             }
 
-            // Đọc kết quả thứ tư - Chi phí lương theo loại nhân viên
-            if (await reader.NextResultAsync())
-            {
-                while (await reader.ReadAsync())
-                {
-                    chiPhiLuongTheoLoaiNhanVien.Add(new ThongKeChiPhiLuongTheoLoaiNhanVien
-                    {
-                        LoaiNhanVien = reader.IsDBNull("loai_nv") ? "" : reader.GetString("loai_nv"),
-                        SoNhanVien = reader.IsDBNull("so_nhan_vien") ? 0 : reader.GetInt32("so_nhan_vien"),
-                        LuongCoBan = reader.IsDBNull("luong_co_ban") ? 0 : reader.GetDecimal("luong_co_ban"),
-                        LuongNgay = reader.IsDBNull("luong_ngay") ? 0 : reader.GetDecimal("luong_ngay"),
-                        TongChiPhiLuongLoai = reader.IsDBNull("tong_chi_phi_luong_loai") ? 0 : reader.GetDecimal("tong_chi_phi_luong_loai"),
-                        TyLeChiPhiLuongPhanTram = reader.IsDBNull("ty_le_chi_phi_luong_phan_tram") ? 0 : reader.GetDecimal("ty_le_chi_phi_luong_phan_tram")
-                    });
-                }
-            }
-
-            return (tongQuan, doanhThuTheoLoaiMon, chiPhiTheoNguyenLieu, chiPhiLuongTheoLoaiNhanVien);
+            return (tongQuan, doanhThuTheoLoaiMon, chiPhiTheoNguyenLieu);
         }
 
         public async Task<DashboardThongKe> GetDashboardThongKeAsync()
         {
-            var (tongQuan, doanhThuTheoLoaiMon, chiPhiTheoNguyenLieu, chiPhiLuongTheoLoaiNhanVien) =
+            var (tongQuan, doanhThuTheoLoaiMon, chiPhiTheoNguyenLieu) =
                 await GetThongKeNgayHienTaiAsync();
 
             return new DashboardThongKe
             {
                 ThongKeNgay = tongQuan,
                 DoanhThuTheoLoaiMon = doanhThuTheoLoaiMon,
-                ChiPhiTheoNguyenLieu = chiPhiTheoNguyenLieu,
-                ChiPhiLuongTheoLoaiNhanVien = chiPhiLuongTheoLoaiNhanVien
+                ChiPhiTheoNguyenLieu = chiPhiTheoNguyenLieu
             };
         }
     }

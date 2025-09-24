@@ -168,4 +168,27 @@ namespace BTL.Web.Models
         public string don_vi { get; set; } = string.Empty;
         public decimal tong_su_dung { get; set; }
     }
+
+    // Model cho kết quả từ stored procedure sp_ThongKe_NhaCungCapNguyenLieu_ChiTiet
+    public class ChiTietNhaCungCapNguyenLieu
+    {
+        public int ncc_id { get; set; }
+        public string ten { get; set; } = string.Empty;
+        public string don_vi { get; set; } = string.Empty;
+        public string ten_nguyen_lieu { get; set; } = string.Empty;
+        public int nl_id { get; set; }
+        public decimal gia_nhap { get; set; }
+        public decimal tong_su_dung { get; set; }
+        public decimal tong_gia_tri { get; set; }
+    }
+
+    // Model cho kết quả từ stored procedure sp_ThongKe_NhaCungCapNguyenLieu_TongChi
+    public class TongChiNhaCungCap
+    {
+        public int ncc_id { get; set; }
+        public string ten { get; set; } = string.Empty;
+        public string? dia_chi { get; set; }
+        public string? sdt { get; set; }
+        public decimal tong_gia_tri { get; set; }
+    }
 }

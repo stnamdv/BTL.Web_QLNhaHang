@@ -93,7 +93,8 @@ namespace BTL.Web.Controllers
                 };
 
                 var thongKe = await _thongKeNhaCungCapService.GetThongKeNhaCungCapNguyenLieuAsync(request);
-                var chiTiet = await _thongKeNhaCungCapService.GetChiTietNguyenLieuNhaCungCapAsync(request);
+                var chiTiet = await _thongKeNhaCungCapService.GetChiTietNhaCungCapNguyenLieuAsync(request);
+                var tongChi = await _thongKeNhaCungCapService.GetTongChiNhaCungCapAsync(request);
                 var danhSachNhaCungCap = await _thongKeNhaCungCapService.GetDanhSachNhaCungCapAsync();
 
                 var nhaCungCap = danhSachNhaCungCap.FirstOrDefault(ncc => ncc.ncc_id == id);
@@ -110,7 +111,8 @@ namespace BTL.Web.Controllers
                 var model = new
                 {
                     ThongKe = thongKe.FirstOrDefault(),
-                    ChiTiet = chiTiet
+                    ChiTiet = chiTiet,
+                    TongChi = tongChi
                 };
 
                 return View(model);

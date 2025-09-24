@@ -222,5 +222,53 @@ namespace BTL.Web.Services
                 throw new Exception($"Lỗi khi lấy thống kê nhà cung cấp nguyên liệu: {ex.Message}", ex);
             }
         }
+
+        public async Task<List<ChiTietNhaCungCapNguyenLieu>> GetChiTietNhaCungCapNguyenLieuAsync(ThongKeNhaCungCapRequest request)
+        {
+            try
+            {
+                using var connection = new SqlConnection(_connectionString);
+
+                var parameters = new DynamicParameters();
+                parameters.Add("@Thang", request.Thang);
+                parameters.Add("@Nam", request.Nam);
+                parameters.Add("@NccId", request.NccId);
+
+                var result = await connection.QueryAsync<ChiTietNhaCungCapNguyenLieu>(
+                    "sp_ThongKe_NhaCungCapNguyenLieu_ChiTiet",
+                    parameters,
+                    commandType: CommandType.StoredProcedure);
+
+                return result.ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi lấy chi tiết nhà cung cấp nguyên liệu: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<TongChiNhaCungCap?> GetTongChiNhaCungCapAsync(ThongKeNhaCungCapRequest request)
+        {
+            try
+            {
+                using var connection = new SqlConnection(_connectionString);
+
+                var parameters = new DynamicParameters();
+                parameters.Add("@Thang", request.Thang);
+                parameters.Add("@Nam", request.Nam);
+                parameters.Add("@NccId", request.NccId);
+
+                var result = await connection.QueryFirstOrDefaultAsync<TongChiNhaCungCap>(
+                    "sp_ThongKe_NhaCungCapNguyenLieu_TongChi",
+                    parameters,
+                    commandType: CommandType.StoredProcedure);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi lấy tổng chi nhà cung cấp: {ex.Message}", ex);
+            }
+        }
     }
 }

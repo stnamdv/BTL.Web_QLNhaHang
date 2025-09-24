@@ -25,7 +25,6 @@ namespace BTL.Web.Models
         public int SoNgay { get; set; }
         public decimal TongDoanhThu { get; set; }
         public decimal TongChiPhiNguyenLieu { get; set; }
-        public decimal TongChiPhiLuong { get; set; }
         public decimal TongChiPhi { get; set; }
         public decimal LoiNhuan { get; set; }
         public decimal TyLeLoiNhuan { get; set; }
@@ -57,16 +56,6 @@ namespace BTL.Web.Models
         public decimal TyLeChiPhiPhanTram { get; set; }
     }
 
-    // Model cho thống kê chi phí lương theo loại nhân viên
-    public class ThongKeChiPhiLuongTheoLoaiNhanVien
-    {
-        public string LoaiNhanVien { get; set; } = string.Empty;
-        public int SoNhanVien { get; set; }
-        public decimal LuongCoBan { get; set; }
-        public decimal LuongNgay { get; set; }
-        public decimal TongChiPhiLuongLoai { get; set; }
-        public decimal TyLeChiPhiLuongPhanTram { get; set; }
-    }
 
     // Model cho thống kê theo ngày trong khoảng thời gian
     public class ThongKeDoanhThuChiPhiTheoNgay
@@ -76,7 +65,6 @@ namespace BTL.Web.Models
         public int SoDonHoanThanh { get; set; }
         public decimal DoanhThuNgay { get; set; }
         public decimal ChiPhiNguyenLieuNgay { get; set; }
-        public decimal ChiPhiLuongNgay { get; set; }
         public decimal TongChiPhiNgay { get; set; }
         public decimal LoiNhuanNgay { get; set; }
     }
@@ -105,6 +93,5 @@ namespace BTL.Web.Models
         public ThongKeDoanhThuChiPhiTongQuan? ThongKeNgay { get; set; }
         public List<ThongKeDoanhThuTheoLoaiMon>? DoanhThuTheoLoaiMon { get; set; }
         public List<ThongKeChiPhiTheoNguyenLieu>? ChiPhiTheoNguyenLieu { get; set; }
-        public List<ThongKeChiPhiLuongTheoLoaiNhanVien>? ChiPhiLuongTheoLoaiNhanVien { get; set; }
     }
 }

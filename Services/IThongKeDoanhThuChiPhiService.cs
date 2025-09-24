@@ -7,8 +7,7 @@ namespace BTL.Web.Services
         // Thống kê theo ngày cụ thể
         Task<(ThongKeDoanhThuChiPhiTongQuan tongQuan,
               List<ThongKeDoanhThuTheoLoaiMon> doanhThuTheoLoaiMon,
-              List<ThongKeChiPhiTheoNguyenLieu> chiPhiTheoNguyenLieu,
-              List<ThongKeChiPhiLuongTheoLoaiNhanVien> chiPhiLuongTheoLoaiNhanVien)>
+              List<ThongKeChiPhiTheoNguyenLieu> chiPhiTheoNguyenLieu)>
             GetThongKeTheoNgayAsync(DateTime ngay);
 
         // Thống kê theo khoảng thời gian
@@ -19,8 +18,7 @@ namespace BTL.Web.Services
         // Thống kê ngày hiện tại
         Task<(ThongKeDoanhThuChiPhiTongQuan tongQuan,
               List<ThongKeDoanhThuTheoLoaiMon> doanhThuTheoLoaiMon,
-              List<ThongKeChiPhiTheoNguyenLieu> chiPhiTheoNguyenLieu,
-              List<ThongKeChiPhiLuongTheoLoaiNhanVien> chiPhiLuongTheoLoaiNhanVien)>
+              List<ThongKeChiPhiTheoNguyenLieu> chiPhiTheoNguyenLieu)>
             GetThongKeNgayHienTaiAsync();
 
         // Lấy dashboard thống kê

@@ -40,13 +40,12 @@ namespace BTL.Web.Controllers
                     case "ngay":
                         if (model.NgayCuThe.HasValue)
                         {
-                            var (tongQuan, doanhThuTheoLoaiMon, chiPhiTheoNguyenLieu, chiPhiLuongTheoLoaiNhanVien) =
+                            var (tongQuan, doanhThuTheoLoaiMon, chiPhiTheoNguyenLieu) =
                                 await _thongKeDoanhThuChiPhiService.GetThongKeTheoNgayAsync(model.NgayCuThe.Value);
 
                             ViewBag.TongQuan = tongQuan;
                             ViewBag.DoanhThuTheoLoaiMon = doanhThuTheoLoaiMon;
                             ViewBag.ChiPhiTheoNguyenLieu = chiPhiTheoNguyenLieu;
-                            ViewBag.ChiPhiLuongTheoLoaiNhanVien = chiPhiLuongTheoLoaiNhanVien;
                             ViewBag.LoaiThongKe = "ngay";
                         }
                         break;
@@ -64,13 +63,12 @@ namespace BTL.Web.Controllers
                         break;
 
                     case "ngay_hien_tai":
-                        var (tongQuanHienTai, doanhThuTheoLoaiMonHienTai, chiPhiTheoNguyenLieuHienTai, chiPhiLuongTheoLoaiNhanVienHienTai) =
+                        var (tongQuanHienTai, doanhThuTheoLoaiMonHienTai, chiPhiTheoNguyenLieuHienTai) =
                             await _thongKeDoanhThuChiPhiService.GetThongKeNgayHienTaiAsync();
 
                         ViewBag.TongQuan = tongQuanHienTai;
                         ViewBag.DoanhThuTheoLoaiMon = doanhThuTheoLoaiMonHienTai;
                         ViewBag.ChiPhiTheoNguyenLieu = chiPhiTheoNguyenLieuHienTai;
-                        ViewBag.ChiPhiLuongTheoLoaiNhanVien = chiPhiLuongTheoLoaiNhanVienHienTai;
                         ViewBag.LoaiThongKe = "ngay_hien_tai";
                         break;
                 }
@@ -90,13 +88,12 @@ namespace BTL.Web.Controllers
         {
             try
             {
-                var (tongQuan, doanhThuTheoLoaiMon, chiPhiTheoNguyenLieu, chiPhiLuongTheoLoaiNhanVien) =
+                var (tongQuan, doanhThuTheoLoaiMon, chiPhiTheoNguyenLieu) =
                     await _thongKeDoanhThuChiPhiService.GetThongKeNgayHienTaiAsync();
 
                 ViewBag.TongQuan = tongQuan;
                 ViewBag.DoanhThuTheoLoaiMon = doanhThuTheoLoaiMon;
                 ViewBag.ChiPhiTheoNguyenLieu = chiPhiTheoNguyenLieu;
-                ViewBag.ChiPhiLuongTheoLoaiNhanVien = chiPhiLuongTheoLoaiNhanVien;
                 ViewBag.LoaiThongKe = "ngay_hien_tai";
 
                 var searchModel = new ThongKeDoanhThuChiPhiSearchModel
@@ -120,13 +117,12 @@ namespace BTL.Web.Controllers
         {
             try
             {
-                var (tongQuan, doanhThuTheoLoaiMon, chiPhiTheoNguyenLieu, chiPhiLuongTheoLoaiNhanVien) =
+                var (tongQuan, doanhThuTheoLoaiMon, chiPhiTheoNguyenLieu) =
                     await _thongKeDoanhThuChiPhiService.GetThongKeTheoNgayAsync(ngay);
 
                 ViewBag.TongQuan = tongQuan;
                 ViewBag.DoanhThuTheoLoaiMon = doanhThuTheoLoaiMon;
                 ViewBag.ChiPhiTheoNguyenLieu = chiPhiTheoNguyenLieu;
-                ViewBag.ChiPhiLuongTheoLoaiNhanVien = chiPhiLuongTheoLoaiNhanVien;
                 ViewBag.LoaiThongKe = "ngay";
 
                 var searchModel = new ThongKeDoanhThuChiPhiSearchModel
