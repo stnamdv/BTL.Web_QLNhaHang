@@ -72,6 +72,16 @@ namespace BTL.Web.Models
         public decimal ChiPhiNguyenLieuNgay { get; set; }
     }
 
+    // Model cho thống kê nguyên liệu theo ngày (sử dụng stored procedure mới)
+    public class ThongKeNguyenLieuTheoNgayMoi
+    {
+        public int nl_id { get; set; }
+        public string ten_nguyen_lieu { get; set; } = string.Empty;
+        public string don_vi { get; set; } = string.Empty;
+        public decimal tong_luong { get; set; }
+        public decimal tong_gia_tri { get; set; }
+    }
+
     // Model cho form tìm kiếm thống kê
     public class ThongKeNguyenLieuSearchModel
     {

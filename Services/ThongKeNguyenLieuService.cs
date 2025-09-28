@@ -1,6 +1,7 @@
 using BTL.Web.Models;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using Dapper;
 
 namespace BTL.Web.Services
 {
@@ -266,6 +267,23 @@ namespace BTL.Web.Services
             }
 
             return (chiTiet, theoDonVi, monAn);
+        }
+
+        public async Task<List<ThongKeNguyenLieuTheoNgayMoi>>
+            GetThongKeNguyenLieuTheoNgayAsync(DateTime? tuNgay = null, DateTime? denNgay = null)
+        {
+            using var connection = new SqlConnection(_connectionString);
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@TuNgay", tuNgay?.Date, DbType.DateTime);
+            parameters.Add("@DenNgay", denNgay?.Date, DbType.DateTime);
+
+            var result = await connection.QueryAsync<ThongKeNguyenLieuTheoNgayMoi>(
+                "sp_ThongKe_NhaCungCapNguyenLieu_TongChi_TheoNgay",
+                parameters,
+                commandType: CommandType.StoredProcedure);
+
+            return result.ToList();
         }
     }
 }
