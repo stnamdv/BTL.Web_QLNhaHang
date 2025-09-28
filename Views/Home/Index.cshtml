@@ -150,7 +150,7 @@
         </div>
     </div>
 
-    <!-- Thêm hàng mới cho thống kê -->
+    <!-- Báo cáo & Thống kê - Chỉ hiển thị 4 báo cáo chính -->
     <h4 class="mb-4 mt-5">Báo cáo & Thống kê</h4>
     <div class="row">
         <div class="col-md-3 mb-3">
@@ -169,57 +169,6 @@
             <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title">
-                        <i class="fas fa-chart-line"></i> Thống kê doanh thu
-                    </h5>
-                    <p class="card-text">Thống kê doanh thu, chi phí và lợi nhuận theo ngày</p>
-                    <a asp-controller="ThongKeDoanhThuChiPhi" asp-action="Index" class="btn btn-outline-success">Xem
-                        doanh thu</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="fas fa-tachometer-alt"></i> Dashboard
-                    </h5>
-                    <p class="card-text">Tổng quan thống kê doanh thu và chi phí hôm nay</p>
-                    <a asp-controller="ThongKeDoanhThuChiPhi" asp-action="Dashboard" class="btn btn-outline-primary">Xem
-                        dashboard</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="fas fa-boxes"></i> Quản lý nguyên liệu
-                    </h5>
-                    <p class="card-text">Quản lý thông tin nguyên liệu và nhà cung cấp</p>
-                    <a asp-controller="NguyenLieu" asp-action="Index" class="btn btn-outline-secondary">Quản lý nguyên
-                        liệu</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="fas fa-truck"></i> Quản lý nhà cung cấp
-                    </h5>
-                    <p class="card-text">Quản lý thông tin nhà cung cấp nguyên liệu</p>
-                    <a asp-controller="NhaCungCap" asp-action="Index" class="btn btn-outline-secondary">Quản lý NCC</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Thêm hàng mới cho thống kê nhà cung cấp -->
-    <div class="row mt-3">
-        <div class="col-md-3 mb-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">
                         <i class="fas fa-building"></i> Thống kê nhà cung cấp
                     </h5>
                     <p class="card-text">Thống kê nhà cung cấp theo số lượng nguyên liệu sử dụng trong tháng</p>
@@ -232,11 +181,11 @@
             <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title">
-                        <i class="fas fa-balance-scale"></i> So sánh nhà cung cấp
+                        <i class="fas fa-money-bill-wave"></i> Tính lương theo tháng
                     </h5>
-                    <p class="card-text">So sánh thống kê nhà cung cấp giữa các tháng</p>
-                    <a asp-controller="ThongKeNhaCungCap" asp-action="SoSanh" class="btn btn-outline-info">So sánh
-                        tháng</a>
+                    <p class="card-text">Tính lương nhân viên theo tháng với tiền thưởng</p>
+                    <a asp-controller="LuongNhanVien" asp-action="TinhLuongTheoThang"
+                        class="btn btn-outline-success">Tính lương</a>
                 </div>
             </div>
         </div>
@@ -244,126 +193,11 @@
             <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title">
-                        <i class="fas fa-trophy"></i> Top nguyên liệu NCC
+                        <i class="fas fa-chart-line"></i> Thống kê doanh thu
                     </h5>
-                    <p class="card-text">Top nguyên liệu được sử dụng nhiều nhất của từng nhà cung cấp</p>
-                    <a asp-controller="ThongKeNhaCungCap" asp-action="TopNguyenLieu" class="btn btn-outline-success">Xem
-                        top NL</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="fas fa-chart-pie"></i> Dashboard NCC
-                    </h5>
-                    <p class="card-text">Dashboard tổng hợp thống kê nhà cung cấp với biểu đồ</p>
-                    <a asp-controller="ThongKeNhaCungCap" asp-action="Dashboard" class="btn btn-outline-primary">Xem
-                        dashboard</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Thêm hàng mới cho thống kê bàn ăn -->
-    <div class="row mt-3">
-        <div class="col-md-3 mb-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="fas fa-table"></i> Thống kê bàn ăn
-                    </h5>
-                    <p class="card-text">Thống kê số lượng từng loại bàn được khách ngồi trung bình theo ngày trong
-                        tháng</p>
-                    <a asp-controller="ThongKeBanAn" asp-action="Index" class="btn btn-outline-primary">Xem thống kê</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="fas fa-tachometer-alt"></i> Dashboard bàn ăn
-                    </h5>
-                    <p class="card-text">Dashboard tổng hợp thống kê bàn ăn với biểu đồ trực quan</p>
-                    <a asp-controller="ThongKeBanAn" asp-action="Dashboard" class="btn btn-outline-info">Xem
-                        dashboard</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="fas fa-balance-scale"></i> So sánh bàn ăn
-                    </h5>
-                    <p class="card-text">So sánh thống kê bàn ăn giữa các tháng</p>
-                    <a asp-controller="ThongKeBanAn" asp-action="SoSanh" class="btn btn-outline-warning">So sánh
-                        tháng</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="fas fa-chart-pie"></i> Tổng hợp bàn ăn
-                    </h5>
-                    <p class="card-text">Thống kê tổng hợp về việc sử dụng bàn ăn trong tháng</p>
-                    <a asp-controller="ThongKeBanAn" asp-action="TongHop" class="btn btn-outline-success">Xem tổng
-                        hợp</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Thêm hàng mới cho thống kê món ăn -->
-    <div class="row mt-3">
-        <div class="col-md-3 mb-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="fas fa-utensils"></i> Thống kê món ăn
-                    </h5>
-                    <p class="card-text">Thống kê tần suất được khách đặt/gọi cho từng món ăn trong tháng</p>
-                    <a asp-controller="ThongKeMonAn" asp-action="Index" class="btn btn-outline-primary">Xem thống kê</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="fas fa-tachometer-alt"></i> Dashboard món ăn
-                    </h5>
-                    <p class="card-text">Dashboard tổng hợp thống kê món ăn với biểu đồ trực quan</p>
-                    <a asp-controller="ThongKeMonAn" asp-action="Dashboard" class="btn btn-outline-info">Xem
-                        dashboard</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="fas fa-trophy"></i> Top món ăn
-                    </h5>
-                    <p class="card-text">Top món ăn được khách hàng đặt nhiều nhất trong tháng</p>
-                    <a asp-controller="ThongKeMonAn" asp-action="TopMonAn" class="btn btn-outline-warning">Xem top
-                        món</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="fas fa-balance-scale"></i> So sánh món ăn
-                    </h5>
-                    <p class="card-text">So sánh thống kê món ăn giữa các tháng</p>
-                    <a asp-controller="ThongKeMonAn" asp-action="SoSanh" class="btn btn-outline-success">So sánh
-                        tháng</a>
+                    <p class="card-text">Thống kê doanh thu, chi phí và lợi nhuận theo ngày</p>
+                    <a asp-controller="ThongKeDoanhThuChiPhi" asp-action="Index" class="btn btn-outline-primary">Xem
+                        doanh thu</a>
                 </div>
             </div>
         </div>
