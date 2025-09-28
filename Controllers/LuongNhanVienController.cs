@@ -76,25 +76,31 @@ namespace BTL.Web.Controllers
                 // Validation
                 if (thang < 1 || thang > 12)
                 {
-                    TempData["ErrorMessage"] = "Tháng phải từ 1 đến 12.";
-                    return RedirectToAction(nameof(Index));
+                    ViewBag.ErrorMessage = "Tháng phải từ 1 đến 12.";
+                    return View("Index", new LuongNhanVienViewModel());
                 }
 
                 if (nam < 2000 || nam > 2100)
                 {
-                    TempData["ErrorMessage"] = "Năm không hợp lệ.";
-                    return RedirectToAction(nameof(Index));
+                    ViewBag.ErrorMessage = "Năm không hợp lệ.";
+                    return View("Index", new LuongNhanVienViewModel());
                 }
 
                 var luongTheoThang = await _luongNhanVienService.TinhLuongTheoThangAsync(thang, nam);
-                TempData["SuccessMessage"] = $"Đã tính lương thành công cho tháng {thang}/{nam}.";
+                ViewBag.SuccessMessage = $"Đã tính lương thành công cho tháng {thang}/{nam}.";
+                ViewBag.StoredProcedure = "sp_NhanVien_TinhLuongTheoThang";
+                ViewBag.StoredProcedureDescription = "Stored procedure tính lương nhân viên theo tháng với tiền thưởng";
+                ViewBag.ExecutionTime = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
                 return View("Index", luongTheoThang);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi tính lương theo tháng {Thang}/{Nam}", thang, nam);
-                TempData["ErrorMessage"] = "Có lỗi xảy ra khi tính lương nhân viên.";
-                return RedirectToAction(nameof(Index));
+                ViewBag.ErrorMessage = "Có lỗi xảy ra khi tính lương nhân viên.";
+                ViewBag.StoredProcedure = "sp_NhanVien_TinhLuongTheoThang";
+                ViewBag.StoredProcedureDescription = "Stored procedure tính lương nhân viên theo tháng với tiền thưởng";
+                ViewBag.ExecutionTime = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+                return View("Index", new LuongNhanVienViewModel());
             }
         }
 

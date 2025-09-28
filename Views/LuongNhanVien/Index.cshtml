@@ -13,20 +13,32 @@
                     </h3>
                 </div>
                 <div class="card-body">
-                    <!-- Thông báo -->
-                    @if (TempData["SuccessMessage"] != null)
-                    {
-                                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                            <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
-                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                        </div>
+                    @{
+                        var storedProcedure = ViewBag.StoredProcedure as string;
+                        var storedProcedureDescription = ViewBag.StoredProcedureDescription as string;
+                        var executionTime = ViewBag.ExecutionTime as string;
+                        var successMessage = ViewBag.SuccessMessage as string;
+                        var errorMessage = ViewBag.ErrorMessage as string;
                     }
-                    @if (TempData["ErrorMessage"] != null)
+
+                    <!-- Hiển thị thông báo thành công -->
+                    @if (!string.IsNullOrEmpty(successMessage))
                     {
-                                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                            <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
-                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                        </div>
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle"></i>
+                            <strong>Thành công!</strong> @successMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <!-- Hiển thị thông báo lỗi -->
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Lỗi!</strong> @errorMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
                     }
 
                     <!-- Form chọn tháng/năm -->
@@ -69,6 +81,43 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Thông tin stored procedure được sử dụng -->
+                    @if (!string.IsNullOrEmpty(storedProcedure))
+                    {
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <div class="card border-info">
+                                    <div class="card-header bg-info text-white">
+                                        <h5 class="card-title mb-0">
+                                            <i class="fas fa-database"></i> Thông tin Stored Procedure
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <strong>Tên Stored Procedure:</strong><br>
+                                                <code class="text-primary">@storedProcedure</code>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <strong>Thời gian thực thi:</strong><br>
+                                                <span class="text-success">@executionTime</span>
+                                            </div>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(storedProcedureDescription))
+                                        {
+                                            <div class="row mt-2">
+                                                <div class="col-12">
+                                                    <strong>Mô tả:</strong><br>
+                                                    <span class="text-muted">@storedProcedureDescription</span>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
 
                     <!-- Thông tin tổng quan -->
                     @if (Model.ThongTinTongQuan != null)
@@ -237,9 +286,6 @@
 
 @section Scripts {
                     <script>
-                        // Auto dismiss alerts after 5 seconds
-                        setTimeout(function() {
-                            $('.alert').fadeOut('slow');
-                        }, 5000);
+                        // Không tự động ẩn thông báo - để người dùng tự đóng
                     </script>
 }

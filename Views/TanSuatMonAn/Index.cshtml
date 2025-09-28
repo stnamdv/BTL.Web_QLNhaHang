@@ -1,0 +1,316 @@
+@model BTL.Web.Models.TanSuatMonAnSearchModel
+@{
+    ViewData["Title"] = "Tần suất món ăn";
+}
+
+
+<!-- DataTables CSS -->
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
+
+<!-- DataTables -->
+<script type="text/javascript" src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-bar"></i> Tần suất món ăn theo tháng
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Form tìm kiếm -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <form asp-action="Index" method="post" class="form-inline">
+                                <div class="form-group me-3">
+                                    <label class="form-label me-2">Món ăn:</label>
+                                    <select asp-for="MonId" class="form-control" style="min-width: 200px;">
+                                        <option value="">-- Tất cả món ăn --</option>
+                                        @if (ViewBag.DanhSachMonAn != null)
+                                        {
+                                            @foreach (var mon in ViewBag.DanhSachMonAn)
+                                            {
+                                                <option value="@mon.mon_id">@mon.ten_mon</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="form-group me-3">
+                                    <label class="form-label me-2">Tháng:</label>
+                                    <select asp-for="Thang" class="form-control">
+                                        @for (int i = 1; i <= 12; i++)
+                                        {
+                                            <option value="@i" selected="@(i == Model.Thang)">Tháng @i</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="form-group me-3">
+                                    <label class="form-label me-2">Năm:</label>
+                                    <select asp-for="Nam" class="form-control">
+                                        @for (int i = DateTime.Now.Year - 2; i <= DateTime.Now.Year + 1; i++)
+                                        {
+                                            <option value="@i" selected="@(i == Model.Nam)">@i</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search"></i> Thống kê
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    @{
+                        var storedProcedure = ViewBag.StoredProcedure as string;
+                        var storedProcedureDescription = ViewBag.StoredProcedureDescription as string;
+                        var executionTime = ViewBag.ExecutionTime as string;
+                        var successMessage = ViewBag.SuccessMessage as string;
+                        var errorMessage = ViewBag.ErrorMessage as string;
+                        var tanSuatMonAn = ViewBag.TanSuatMonAn as List<BTL.Web.Models.TanSuatMonAn>;
+                    }
+
+                    <!-- Hiển thị thông báo thành công -->
+                    @if (!string.IsNullOrEmpty(successMessage))
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle"></i>
+                            <strong>Thành công!</strong> @successMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <!-- Hiển thị thông báo lỗi -->
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Lỗi!</strong> @errorMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <!-- Thông tin stored procedure được sử dụng -->
+                    @if (!string.IsNullOrEmpty(storedProcedure))
+                    {
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <div class="card border-info">
+                                    <div class="card-header bg-info text-white">
+                                        <h5 class="card-title mb-0">
+                                            <i class="fas fa-database"></i> Thông tin Stored Procedure
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <strong>Tên Stored Procedure:</strong><br>
+                                                <code class="text-primary">@storedProcedure</code>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <strong>Thời gian thực thi:</strong><br>
+                                                <span class="text-success">@executionTime</span>
+                                            </div>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(storedProcedureDescription))
+                                        {
+                                            <div class="row mt-2">
+                                                <div class="col-12">
+                                                    <strong>Mô tả:</strong><br>
+                                                    <span class="text-muted">@storedProcedureDescription</span>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    @if (tanSuatMonAn != null && tanSuatMonAn.Any())
+                    {
+                        <!-- Biểu đồ tần suất -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title">
+                                            <i class="fas fa-chart-line"></i> Biểu đồ tần suất món ăn
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas id="tanSuatChart" width="400" height="500"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bảng dữ liệu -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title">
+                                            <i class="fas fa-table"></i> Dữ liệu tần suất món ăn
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-striped table-hover" id="tanSuatTable">
+                                                <thead class="table-dark">
+                                                    <tr>
+                                                        <th>Ngày</th>
+                                                        <th>Món ăn</th>
+                                                        <th>Tổng số lượng</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var item in tanSuatMonAn)
+                                                    {
+                                                        <tr>
+                                                            <td>@item.thoi_diem_dat.ToString("dd/MM/yyyy")</td>
+                                                            <td><strong>@item.ten_mon</strong></td>
+                                                            <td class="text-end">
+                                                                <span class="badge bg-primary">@item.tong_so_luong</span>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else if (tanSuatMonAn != null)
+                    {
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            Không có dữ liệu tần suất món ăn cho tháng @Model.Thang/@Model.Nam
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Kiểm tra DataTable đã load chưa
+            if (typeof $.fn.DataTable !== 'undefined') {
+                // Khởi tạo DataTable
+                $('#tanSuatTable').DataTable({
+                    "language": {
+                        "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/vi.json"
+                    },
+                    "pageLength": 25,
+                    "order": [[0, "desc"]], // Sắp xếp theo ngày giảm dần
+                    "columnDefs": [
+                        { "orderable": false, "targets": [] }
+                    ]
+                });
+            } else {
+                console.error('DataTable library not loaded');
+            }
+
+            // Tạo biểu đồ
+            @if (tanSuatMonAn != null && tanSuatMonAn.Any())
+                {
+                    <text>
+                                                                        // Kiểm tra Chart.js đã load chưa
+                        if (typeof Chart !== 'undefined') {
+                                                                            var tanSuatData = @Html.Raw(Json.Serialize(tanSuatMonAn));
+
+                        // Nhóm dữ liệu theo ngày
+                        var groupedData = { };
+                        tanSuatData.forEach(function(item) {
+                                                                                var date = new Date(item.thoi_diem_dat).toLocaleDateString('vi-VN');
+                        if (!groupedData[date]) {
+                            groupedData[date] = {};
+                                                                                }
+                        groupedData[date][item.ten_mon] = item.tong_so_luong;
+                                                                            });
+
+                        // Chuẩn bị dữ liệu cho Chart.js
+                        var labels = Object.keys(groupedData);
+                        var datasets = [];
+                        var colors = [
+                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+                        '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
+                        ];
+
+                                                                                // Lấy danh sách tất cả món ăn
+                                                                                var allMonAn = [...new Set(tanSuatData.map(item => item.ten_mon))];
+
+                        allMonAn.forEach(function(monAn, index) {
+                                                                                                    var data = labels.map(function(label) {
+                                                                                                        return groupedData[label][monAn] || 0;
+                                                                                                    });
+
+                        datasets.push({
+                            label: monAn,
+                        data: data,
+                        backgroundColor: colors[index % colors.length] + '80',
+                        borderColor: colors[index % colors.length],
+                        borderWidth: 2,
+                        fill: false
+                                                                                                    });
+                                                                                                });
+
+                        // Vẽ biểu đồ
+                        var ctx = document.getElementById('tanSuatChart').getContext('2d');
+                        var tanSuatChart = new Chart(ctx, {
+                            type: 'line',
+                        data: {
+                            labels: labels,
+                        datasets: datasets
+                                                                                                    },
+                        options: {
+                            responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                            beginAtZero: true,
+                        title: {
+                            display: true,
+                        text: 'Số lượng'
+                                                                                                                }
+                                                                                                            },
+                        x: {
+                            title: {
+                            display: true,
+                        text: 'Ngày'
+                                                                                                                }
+                                                                                                            }
+                                                                                                        },
+                        plugins: {
+                            title: {
+                            display: true,
+                        text: 'Tần suất món ăn theo ngày - Tháng @Model.Thang/@Model.Nam'
+                                                                                                            },
+                        legend: {
+                            display: true,
+                        position: 'top'
+                                                                                                            }
+                                                                                                        }
+                                                                                                    }
+                                                                                        });
+                                                                } else {
+                            console.error('Chart.js library not loaded');
+                                                                }
+                    </text>
+            }
+                            });
+    </script>
+}

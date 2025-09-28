@@ -16,25 +16,13 @@
                     <!-- Form tìm kiếm -->
                     <div class="row mb-4">
                         <div class="col-12">
-                            <form asp-action="Search" method="post" class="form-inline">
+                            <form asp-action="Index" method="post" class="form-inline">
                                 <div class="form-group me-3">
-                                    <label class="form-label me-2">Loại thống kê:</label>
-                                    <select asp-for="LoaiThongKe" class="form-select" id="loaiThongKe"
-                                        onchange="toggleDateInputs()">
-                                        <option value="ngay_hien_tai">Ngày hiện tại</option>
-                                        <option value="ngay">Ngày cụ thể</option>
-                                        <option value="khoang_thoi_gian">Khoảng thời gian</option>
-                                    </select>
-                                </div>
-
-                                <div class="form-group me-3" id="ngayCuTheGroup" style="display: none;">
-                                    <label class="form-label me-2">Ngày:</label>
-                                    <input asp-for="NgayCuThe" type="date" class="form-control" />
-                                </div>
-
-                                <div class="form-group me-3" id="khoangThoiGianGroup" style="display: none;">
                                     <label class="form-label me-2">Từ ngày:</label>
-                                    <input asp-for="TuNgay" type="date" class="form-control me-2" />
+                                    <input asp-for="TuNgay" type="date" class="form-control" />
+                                </div>
+
+                                <div class="form-group me-3">
                                     <label class="form-label me-2">Đến ngày:</label>
                                     <input asp-for="DenNgay" type="date" class="form-control" />
                                 </div>
@@ -46,13 +34,6 @@
                         </div>
                     </div>
 
-                    @if (TempData["ErrorMessage"] != null)
-                    {
-                        <div class="alert alert-danger">
-                            @TempData["ErrorMessage"]
-                        </div>
-                    }
-
                     @{
                         var loaiThongKe = ViewBag.LoaiThongKe as string;
                         var tongQuan = ViewBag.TongQuan as dynamic;
@@ -61,6 +42,68 @@
                         var chiPhiTheoNguyenLieu = ViewBag.ChiPhiTheoNguyenLieu as
                         List<BTL.Web.Models.ThongKeChiPhiTheoNguyenLieu>;
                         var theoNgay = ViewBag.TheoNgay as List<BTL.Web.Models.ThongKeDoanhThuChiPhiTheoNgay>;
+                        var storedProcedure = ViewBag.StoredProcedure as string;
+                        var storedProcedureDescription = ViewBag.StoredProcedureDescription as string;
+                        var executionTime = ViewBag.ExecutionTime as string;
+                        var successMessage = ViewBag.SuccessMessage as string;
+                        var errorMessage = ViewBag.ErrorMessage as string;
+                    }
+
+                    <!-- Hiển thị thông báo thành công -->
+                    @if (!string.IsNullOrEmpty(successMessage))
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle"></i>
+                            <strong>Thành công!</strong> @successMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <!-- Hiển thị thông báo lỗi -->
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Lỗi!</strong> @errorMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <!-- Thông tin stored procedure được sử dụng -->
+                    @if (!string.IsNullOrEmpty(storedProcedure))
+                    {
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <div class="card border-info">
+                                    <div class="card-header bg-info text-white">
+                                        <h5 class="card-title mb-0">
+                                            <i class="fas fa-database"></i> Thông tin Stored Procedure
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <strong>Tên Stored Procedure:</strong><br>
+                                                <code class="text-primary">@storedProcedure</code>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <strong>Thời gian thực thi:</strong><br>
+                                                <span class="text-success">@executionTime</span>
+                                            </div>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(storedProcedureDescription))
+                                        {
+                                            <div class="row mt-2">
+                                                <div class="col-12">
+                                                    <strong>Mô tả:</strong><br>
+                                                    <span class="text-muted">@storedProcedureDescription</span>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     }
 
                     @if (loaiThongKe != null && tongQuan != null)
@@ -72,15 +115,8 @@
                                     <div class="card-body">
                                         <h5 class="card-title">
                                             <i class="fas fa-info-circle"></i>
-                                            @if (loaiThongKe == "khoang_thoi_gian")
-                                            {
-                                                <text>Tổng quan khoảng thời gian từ @tongQuan?.TuNgay.ToString("dd/MM/yyyy") đến
-                                                    @tongQuan?.DenNgay.ToString("dd/MM/yyyy")</text>
-                                            }
-                                            else
-                                            {
-                                                <text>Tổng quan ngày @tongQuan?.Ngay.ToString("dd/MM/yyyy")</text>
-                                            }
+                                            Tổng quan khoảng thời gian từ @tongQuan?.TuNgay.ToString("dd/MM/yyyy") đến
+                                            @tongQuan?.DenNgay.ToString("dd/MM/yyyy")
                                         </h5>
 
                                         <!-- Các chỉ số chính -->
@@ -152,9 +188,8 @@
                             </div>
                         </div>
 
-                        <!-- Doanh thu theo loại món (chỉ hiển thị cho ngày cụ thể và ngày hiện tại) -->
-                        @if ((loaiThongKe == "ngay" || loaiThongKe == "ngay_hien_tai") && doanhThuTheoLoaiMon != null &&
-                                            doanhThuTheoLoaiMon.Any())
+                        <!-- Doanh thu theo loại món (không hiển thị cho khoảng thời gian) -->
+                        @if (false)
                         {
                             <div class="row mb-4">
                                 <div class="col-12">
@@ -199,9 +234,8 @@
                             </div>
                         }
 
-                        <!-- Chi phí theo nguyên liệu (chỉ hiển thị cho ngày cụ thể và ngày hiện tại) -->
-                        @if ((loaiThongKe == "ngay" || loaiThongKe == "ngay_hien_tai") && chiPhiTheoNguyenLieu != null &&
-                                            chiPhiTheoNguyenLieu.Any())
+                        <!-- Chi phí theo nguyên liệu (không hiển thị cho khoảng thời gian) -->
+                        @if (false)
                         {
                             <div class="row mb-4">
                                 <div class="col-12">
@@ -249,8 +283,8 @@
                         }
 
 
-                        <!-- Thống kê theo ngày (chỉ có trong khoảng thời gian) -->
-                        @if (loaiThongKe == "khoang_thoi_gian" && theoNgay != null && theoNgay.Any())
+                        <!-- Thống kê theo ngày -->
+                        @if (theoNgay != null && theoNgay.Any())
                         {
                             <div class="row mb-4">
                                 <div class="col-12">
@@ -308,25 +342,5 @@
 </div>
 
 <script>
-    function toggleDateInputs() {
-        var loaiThongKe = document.getElementById('loaiThongKe').value;
-        var ngayCuTheGroup = document.getElementById('ngayCuTheGroup');
-        var khoangThoiGianGroup = document.getElementById('khoangThoiGianGroup');
-
-        // Ẩn tất cả các group
-        ngayCuTheGroup.style.display = 'none';
-        khoangThoiGianGroup.style.display = 'none';
-
-        // Hiển thị group tương ứng
-        if (loaiThongKe === 'ngay') {
-            ngayCuTheGroup.style.display = 'block';
-        } else if (loaiThongKe === 'khoang_thoi_gian') {
-            khoangThoiGianGroup.style.display = 'block';
-        }
-    }
-
-    // Khởi tạo khi trang load
-    document.addEventListener('DOMContentLoaded', function () {
-        toggleDateInputs();
-    });
+    // Không cần JavaScript vì chỉ có 2 datepicker cố định
 </script>

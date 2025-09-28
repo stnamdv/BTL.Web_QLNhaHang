@@ -150,7 +150,7 @@
         </div>
     </div>
 
-    <!-- Báo cáo & Thống kê - Chỉ hiển thị 4 báo cáo chính -->
+    <!-- Báo cáo & Thống kê - Hiển thị 5 báo cáo chính -->
     <h4 class="mb-4 mt-5">Báo cáo & Thống kê</h4>
     <div class="row">
         <div class="col-md-3 mb-3">
@@ -198,6 +198,34 @@
                     <p class="card-text">Thống kê doanh thu, chi phí và lợi nhuận theo ngày</p>
                     <a asp-controller="ThongKeDoanhThuChiPhi" asp-action="Index" class="btn btn-outline-primary">Xem
                         doanh thu</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thêm hàng mới cho tần suất món ăn và tần suất đặt bàn -->
+    <div class="row mt-3">
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-utensils"></i> Tần suất món ăn
+                    </h5>
+                    <p class="card-text">Biểu đồ tần suất món ăn theo tháng với Chart.js</p>
+                    <a asp-controller="TanSuatMonAn" asp-action="Index" class="btn btn-outline-secondary">Xem tần
+                        suất</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-table"></i> Tần suất đặt bàn
+                    </h5>
+                    <p class="card-text">Biểu đồ tần suất đặt bàn theo sức chứa với Chart.js</p>
+                    <a asp-controller="TanSuatDatBan" asp-action="Index" class="btn btn-outline-info">Xem tần suất
+                        bàn</a>
                 </div>
             </div>
         </div>

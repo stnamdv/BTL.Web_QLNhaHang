@@ -22,64 +22,49 @@ namespace BTL.Web.Controllers
         {
             var searchModel = new ThongKeDoanhThuChiPhiSearchModel
             {
-                NgayCuThe = DateTime.Today,
-                LoaiThongKe = "ngay_hien_tai"
+                TuNgay = DateTime.Today,
+                DenNgay = DateTime.Today,
+                LoaiThongKe = "khoang_thoi_gian"
             };
             return View(searchModel);
         }
 
-        // POST: ThongKeDoanhThuChiPhi/Search
+        // POST: ThongKeDoanhThuChiPhi/Index
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Search(ThongKeDoanhThuChiPhiSearchModel model)
+        public async Task<IActionResult> Index(ThongKeDoanhThuChiPhiSearchModel model)
         {
             try
             {
-                switch (model.LoaiThongKe)
+                ViewBag.StoredProcedure = "sp_ThongKe_DoanhThuChiPhiTheoKhoangThoiGian";
+                ViewBag.StoredProcedureDescription = "Stored procedure thống kê doanh thu, chi phí và lợi nhuận theo khoảng thời gian";
+                ViewBag.ExecutionTime = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+
+                if (model.TuNgay.HasValue && model.DenNgay.HasValue)
                 {
-                    case "ngay":
-                        if (model.NgayCuThe.HasValue)
-                        {
-                            var (tongQuan, doanhThuTheoLoaiMon, chiPhiTheoNguyenLieu) =
-                                await _thongKeDoanhThuChiPhiService.GetThongKeTheoNgayAsync(model.NgayCuThe.Value);
+                    var (tongQuan, theoNgay) = await _thongKeDoanhThuChiPhiService
+                        .GetThongKeTheoKhoangThoiGianAsync(model.TuNgay.Value, model.DenNgay.Value);
 
-                            ViewBag.TongQuan = tongQuan;
-                            ViewBag.DoanhThuTheoLoaiMon = doanhThuTheoLoaiMon;
-                            ViewBag.ChiPhiTheoNguyenLieu = chiPhiTheoNguyenLieu;
-                            ViewBag.LoaiThongKe = "ngay";
-                        }
-                        break;
-
-                    case "khoang_thoi_gian":
-                        if (model.TuNgay.HasValue && model.DenNgay.HasValue)
-                        {
-                            var (tongQuan, theoNgay) = await _thongKeDoanhThuChiPhiService
-                                .GetThongKeTheoKhoangThoiGianAsync(model.TuNgay.Value, model.DenNgay.Value);
-
-                            ViewBag.TongQuan = tongQuan;
-                            ViewBag.TheoNgay = theoNgay;
-                            ViewBag.LoaiThongKe = "khoang_thoi_gian";
-                        }
-                        break;
-
-                    case "ngay_hien_tai":
-                        var (tongQuanHienTai, doanhThuTheoLoaiMonHienTai, chiPhiTheoNguyenLieuHienTai) =
-                            await _thongKeDoanhThuChiPhiService.GetThongKeNgayHienTaiAsync();
-
-                        ViewBag.TongQuan = tongQuanHienTai;
-                        ViewBag.DoanhThuTheoLoaiMon = doanhThuTheoLoaiMonHienTai;
-                        ViewBag.ChiPhiTheoNguyenLieu = chiPhiTheoNguyenLieuHienTai;
-                        ViewBag.LoaiThongKe = "ngay_hien_tai";
-                        break;
+                    ViewBag.TongQuan = tongQuan;
+                    ViewBag.TheoNgay = theoNgay;
+                    ViewBag.LoaiThongKe = "khoang_thoi_gian";
+                    ViewBag.SuccessMessage = $"Thống kê thành công từ {model.TuNgay.Value:dd/MM/yyyy} đến {model.DenNgay.Value:dd/MM/yyyy}";
+                }
+                else
+                {
+                    ViewBag.ErrorMessage = "Vui lòng chọn từ ngày và đến ngày";
                 }
 
-                return View("Index", model);
+                return View(model);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi thực hiện thống kê doanh thu chi phí");
-                TempData["ErrorMessage"] = "Có lỗi xảy ra khi thực hiện thống kê: " + ex.Message;
-                return View("Index", model);
+                ViewBag.ErrorMessage = "Có lỗi xảy ra khi thực hiện thống kê: " + ex.Message;
+                ViewBag.StoredProcedure = "sp_ThongKe_DoanhThuChiPhiTheoKhoangThoiGian";
+                ViewBag.StoredProcedureDescription = "Stored procedure thống kê doanh thu, chi phí và lợi nhuận theo khoảng thời gian";
+                ViewBag.ExecutionTime = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+                return View(model);
             }
         }
 

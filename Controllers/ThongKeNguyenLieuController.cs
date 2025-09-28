@@ -45,6 +45,9 @@ namespace BTL.Web.Controllers
                     ViewBag.TuNgay = model.TuNgay.Value;
                     ViewBag.DenNgay = model.DenNgay.Value;
                     ViewBag.StoredProcedure = "sp_ThongKe_NhaCungCapNguyenLieu_TongChi_TheoNgay";
+                    ViewBag.StoredProcedureDescription = "Stored procedure thống kê nguyên liệu theo nhà cung cấp và tổng chi phí theo ngày";
+                    ViewBag.ExecutionTime = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+                    ViewBag.SuccessMessage = $"Thống kê thành công! Tìm thấy {nguyenLieuTheoNgay?.Count ?? 0} loại nguyên liệu.";
                 }
 
                 return View(model);
@@ -52,7 +55,10 @@ namespace BTL.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi thực hiện thống kê nguyên liệu");
-                TempData["ErrorMessage"] = "Có lỗi xảy ra khi thực hiện thống kê: " + ex.Message;
+                ViewBag.ErrorMessage = "Có lỗi xảy ra khi thực hiện thống kê: " + ex.Message;
+                ViewBag.StoredProcedure = "sp_ThongKe_NhaCungCapNguyenLieu_TongChi_TheoNgay";
+                ViewBag.StoredProcedureDescription = "Stored procedure thống kê nguyên liệu theo nhà cung cấp và tổng chi phí theo ngày";
+                ViewBag.ExecutionTime = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
                 return View(model);
             }
         }

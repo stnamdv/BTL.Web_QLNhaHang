@@ -39,14 +39,14 @@ namespace BTL.Web.Controllers
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = $"Lỗi khi tải dữ liệu: {ex.Message}";
+                ViewBag.ErrorMessage = $"Lỗi khi tải dữ liệu: {ex.Message}";
                 return View(new List<ThongKeNhaCungCapNguyenLieu>());
             }
         }
 
-        // POST: ThongKeNhaCungCap/Filter
+        // POST: ThongKeNhaCungCap/Index
         [HttpPost]
-        public async Task<IActionResult> Filter(ThongKeNhaCungCapRequest request)
+        public async Task<IActionResult> Index(ThongKeNhaCungCapRequest request)
         {
             try
             {
@@ -56,7 +56,8 @@ namespace BTL.Web.Controllers
                     ViewBag.DanhSachNhaCungCap = danhSachNhaCungCap;
                     ViewBag.ThangHienTai = request.Thang ?? DateTime.Now.Month;
                     ViewBag.NamHienTai = request.Nam ?? DateTime.Now.Year;
-                    return View("Index", new List<ThongKeNhaCungCapNguyenLieu>());
+                    ViewBag.ErrorMessage = "Dữ liệu không hợp lệ";
+                    return View(new List<ThongKeNhaCungCapNguyenLieu>());
                 }
 
                 var thongKe = await _thongKeNhaCungCapService.GetThongKeNhaCungCapNguyenLieuAsync(request);
@@ -66,17 +67,24 @@ namespace BTL.Web.Controllers
                 ViewBag.ThangHienTai = request.Thang ?? DateTime.Now.Month;
                 ViewBag.NamHienTai = request.Nam ?? DateTime.Now.Year;
                 ViewBag.NccIdSelected = request.NccId;
+                ViewBag.StoredProcedure = "sp_ThongKe_NhaCungCapNguyenLieu";
+                ViewBag.StoredProcedureDescription = "Stored procedure thống kê nhà cung cấp theo số lượng nguyên liệu sử dụng";
+                ViewBag.ExecutionTime = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+                ViewBag.SuccessMessage = $"Thống kê thành công! Tìm thấy {thongKe?.Count ?? 0} nhà cung cấp.";
 
-                return View("Index", thongKe);
+                return View(thongKe);
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = $"Lỗi khi lọc dữ liệu: {ex.Message}";
                 var danhSachNhaCungCap = await _thongKeNhaCungCapService.GetDanhSachNhaCungCapAsync();
                 ViewBag.DanhSachNhaCungCap = danhSachNhaCungCap;
                 ViewBag.ThangHienTai = request.Thang ?? DateTime.Now.Month;
                 ViewBag.NamHienTai = request.Nam ?? DateTime.Now.Year;
-                return View("Index", new List<ThongKeNhaCungCapNguyenLieu>());
+                ViewBag.ErrorMessage = $"Lỗi khi lọc dữ liệu: {ex.Message}";
+                ViewBag.StoredProcedure = "sp_ThongKe_NhaCungCapNguyenLieu";
+                ViewBag.StoredProcedureDescription = "Stored procedure thống kê nhà cung cấp theo số lượng nguyên liệu sử dụng";
+                ViewBag.ExecutionTime = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+                return View(new List<ThongKeNhaCungCapNguyenLieu>());
             }
         }
 
