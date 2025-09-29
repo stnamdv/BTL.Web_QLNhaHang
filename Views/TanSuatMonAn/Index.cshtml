@@ -4,15 +4,6 @@
 }
 
 
-<!-- DataTables CSS -->
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-
-
-<!-- DataTables -->
-<script type="text/javascript" src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <div class="container-fluid">
     <div class="row">
@@ -228,19 +219,19 @@
             @if (tanSuatMonAn != null && tanSuatMonAn.Any())
                 {
                     <text>
-                                                                        // Kiểm tra Chart.js đã load chưa
+                                                                                        // Kiểm tra Chart.js đã load chưa
                         if (typeof Chart !== 'undefined') {
-                                                                            var tanSuatData = @Html.Raw(Json.Serialize(tanSuatMonAn));
+                                                                                            var tanSuatData = @Html.Raw(Json.Serialize(tanSuatMonAn));
 
                         // Nhóm dữ liệu theo ngày
                         var groupedData = { };
                         tanSuatData.forEach(function(item) {
-                                                                                var date = new Date(item.thoi_diem_dat).toLocaleDateString('vi-VN');
+                                                                                                var date = new Date(item.thoi_diem_dat).toLocaleDateString('vi-VN');
                         if (!groupedData[date]) {
                             groupedData[date] = {};
-                                                                                }
+                                                                                                }
                         groupedData[date][item.ten_mon] = item.tong_so_luong;
-                                                                            });
+                                                                                            });
 
                         // Chuẩn bị dữ liệu cho Chart.js
                         var labels = Object.keys(groupedData);
@@ -250,13 +241,13 @@
                         '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
                         ];
 
-                                                                                // Lấy danh sách tất cả món ăn
-                                                                                var allMonAn = [...new Set(tanSuatData.map(item => item.ten_mon))];
+                                                                                                // Lấy danh sách tất cả món ăn
+                                                                                                var allMonAn = [...new Set(tanSuatData.map(item => item.ten_mon))];
 
                         allMonAn.forEach(function(monAn, index) {
-                                                                                                    var data = labels.map(function(label) {
-                                                                                                        return groupedData[label][monAn] || 0;
-                                                                                                    });
+                                                                                                                    var data = labels.map(function(label) {
+                                                                                                                        return groupedData[label][monAn] || 0;
+                                                                                                                    });
 
                         datasets.push({
                             label: monAn,
@@ -265,8 +256,8 @@
                         borderColor: colors[index % colors.length],
                         borderWidth: 2,
                         fill: false
-                                                                                                    });
-                                                                                                });
+                                                                                                                    });
+                                                                                                                });
 
                         // Vẽ biểu đồ
                         var ctx = document.getElementById('tanSuatChart').getContext('2d');
@@ -275,7 +266,7 @@
                         data: {
                             labels: labels,
                         datasets: datasets
-                                                                                                    },
+                                                                                                                    },
                         options: {
                             responsive: true,
                         maintainAspectRatio: false,
@@ -285,32 +276,32 @@
                         title: {
                             display: true,
                         text: 'Số lượng'
-                                                                                                                }
-                                                                                                            },
+                                                                                                                                }
+                                                                                                                            },
                         x: {
                             title: {
                             display: true,
                         text: 'Ngày'
-                                                                                                                }
-                                                                                                            }
-                                                                                                        },
+                                                                                                                                }
+                                                                                                                            }
+                                                                                                                        },
                         plugins: {
                             title: {
                             display: true,
                         text: 'Tần suất món ăn theo ngày - Tháng @Model.Thang/@Model.Nam'
-                                                                                                            },
+                                                                                                                            },
                         legend: {
                             display: true,
                         position: 'top'
-                                                                                                            }
-                                                                                                        }
-                                                                                                    }
-                                                                                        });
-                                                                } else {
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                        });
+                                                                                } else {
                             console.error('Chart.js library not loaded');
-                                                                }
+                                                                                }
                     </text>
             }
-                            });
+                                    });
     </script>
 }
